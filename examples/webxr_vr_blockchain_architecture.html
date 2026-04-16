@@ -1,0 +1,2320 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webxr - blockchain architecture scene 1</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+		<link type="text/css" rel="stylesheet" href="main.css">
+		<style>
+			body {
+				margin: 0;
+				overflow: hidden;
+				font-family: "Segoe UI", Tahoma, sans-serif;
+				background: radial-gradient( circle at 20% 20%, #0b2430 0%, #05070e 60%, #020308 100% );
+				color: #e8f4ff;
+			}
+
+			#hud {
+				position: absolute;
+				top: 14px;
+				left: 14px;
+				width: min( 420px, calc( 100vw - 28px ) );
+				padding: 14px;
+				border-radius: 12px;
+				background: rgba( 5, 14, 22, 0.72 );
+				border: 1px solid rgba( 111, 194, 255, 0.35 );
+				backdrop-filter: blur( 4px );
+				box-shadow: 0 8px 36px rgba( 0, 0, 0, 0.35 );
+				z-index: 4;
+			}
+
+			#hud h2 {
+				margin: 0 0 10px;
+				font-size: 18px;
+				font-weight: 700;
+				letter-spacing: 0.02em;
+			}
+
+			#hud p {
+				margin: 0 0 10px;
+				font-size: 13px;
+				line-height: 1.35;
+				color: #d3e6f5;
+			}
+
+			.toolbar {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 8px;
+				margin-bottom: 10px;
+			}
+
+			.toolbar.secondary {
+				margin-top: 6px;
+			}
+
+			button {
+				border: 1px solid rgba( 122, 199, 255, 0.45 );
+				border-radius: 8px;
+				padding: 8px 10px;
+				background: rgba( 29, 63, 87, 0.7 );
+				color: #eaf7ff;
+				font-size: 13px;
+				font-weight: 600;
+				cursor: pointer;
+				transition: background-color 0.25s ease, transform 0.2s ease;
+			}
+
+			button:hover {
+				background: rgba( 44, 90, 122, 0.9 );
+				transform: translateY( -1px );
+			}
+
+			button:disabled {
+				cursor: not-allowed;
+				opacity: 0.42;
+				transform: none;
+			}
+
+			.indicators {
+				display: grid;
+				grid-template-columns: auto 1fr;
+				gap: 6px 10px;
+				font-size: 12px;
+			}
+
+			.indicators span {
+				color: #9cc4df;
+			}
+
+			.value {
+				color: #ebf7ff;
+				font-weight: 600;
+			}
+
+			.badge {
+				display: inline-block;
+				padding: 2px 10px;
+				border-radius: 999px;
+				font-weight: 700;
+				letter-spacing: 0.02em;
+			}
+
+			.badge.valid {
+				background: rgba( 51, 189, 116, 0.25 );
+				color: #a7ffca;
+				border: 1px solid rgba( 105, 245, 166, 0.45 );
+			}
+
+			.badge.invalid {
+				background: rgba( 225, 68, 68, 0.24 );
+				color: #ffb9b9;
+				border: 1px solid rgba( 255, 131, 131, 0.45 );
+			}
+
+			.legend {
+				margin-top: 10px;
+				font-size: 11px;
+				color: #afcbde;
+				line-height: 1.4;
+			}
+
+			.timeline {
+				margin-top: 10px;
+				padding: 8px;
+				border-radius: 8px;
+				background: rgba( 9, 28, 43, 0.72 );
+				border: 1px solid rgba( 102, 175, 230, 0.32 );
+			}
+
+			.timeline-header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				margin-bottom: 6px;
+			}
+
+			.timeline-label {
+				font-size: 12px;
+				font-weight: 700;
+				color: #d9f1ff;
+			}
+
+			#timelineMeta {
+				font-size: 11px;
+				color: #9fc5de;
+			}
+
+			#timelineSlider {
+				width: 100%;
+			}
+
+			#timelineLiveButton {
+				margin-top: 6px;
+				width: 100%;
+			}
+
+			.legend strong {
+				color: #d9f2ff;
+			}
+
+			@media ( max-width: 560px ) {
+				.toolbar {
+					grid-template-columns: 1fr;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div id="hud">
+			<h2>Scene 1: Architecture Comparison</h2>
+			<p>
+				Centralized mode uses one central server.<br>
+				Decentralized mode uses distributed nodes.
+			</p>
+			<div class="toolbar">
+				<button id="switchModeButton">Switch to Decentralized</button>
+				<button id="centralServerButton">Disable Central Server</button>
+				<button id="decentralizedNodeButton">Disable Random Node</button>
+				<button id="resetButton">Reset Network</button>
+			</div>
+			<div class="toolbar secondary">
+				<button id="ddosButton">Trigger DDoS</button>
+				<button id="fireButton">Trigger Fire Event</button>
+				<button id="segmentButton">Cut Network Segment</button>
+				<button id="recoverButton">Recover System</button>
+			</div>
+			<div class="indicators">
+				<span>Mode</span>
+				<span class="value" id="modeValue">Centralized (Bank City)</span>
+				<span>State</span>
+				<span><span class="badge valid" id="stateBadge">VALID</span></span>
+				<span>Event</span>
+				<span class="value" id="eventValue">Network stable. Transactions are flowing.</span>
+			</div>
+			<div class="timeline">
+				<div class="timeline-header">
+					<span class="timeline-label">Timeline Replay</span>
+					<span id="timelineMeta">LIVE</span>
+				</div>
+				<input id="timelineSlider" type="range" min="0" max="0" step="1" value="0">
+				<button id="timelineLiveButton">Return to Live</button>
+			</div>
+			<div class="legend">
+				<strong>Legend:</strong> Green nodes are online. Red nodes are offline.<br>
+				Bright links indicate active data transfer.<br>
+				<strong>VR:</strong> Use controller ray + trigger on 3D panel or directly on nodes.
+			</div>
+		</div>
+
+		<script type="importmap">
+			{
+				"imports": {
+					"three": "../build/three.module.js",
+					"three/addons/": "./jsm/"
+				}
+			}
+		</script>
+
+		<script type="module">
+
+			import * as THREE from 'three';
+			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+			import { VRButton } from 'three/addons/webxr/VRButton.js';
+			import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
+
+			let camera, scene, renderer, controls;
+
+			const clock = new THREE.Clock();
+			const pulseNodes = [];
+			const spinElements = [];
+			const vrRayLength = 14;
+			const tempMatrix = new THREE.Matrix4();
+
+			const vr = {
+				raycaster: new THREE.Raycaster(),
+				controllers: [],
+				interactiveTargets: [],
+				buttons: {},
+				statusLabel: null,
+				panel: null
+			};
+
+			const state = {
+				mode: 'centralized',
+				centralOnline: true,
+				offlineDecentralizedNode: null,
+				incidentType: 'none',
+				fireTargetNode: null,
+				timelineIndex: - 1
+			};
+
+			const history = {
+				entries: [],
+				maxEntries: 160,
+				suspendRecording: false
+			};
+
+			const incidentVisuals = {
+				group: new THREE.Group(),
+				fireGroup: new THREE.Group(),
+				ddosGroup: new THREE.Group(),
+				segmentBarrier: null
+			};
+
+			const ui = {
+				switchModeButton: document.getElementById( 'switchModeButton' ),
+				centralServerButton: document.getElementById( 'centralServerButton' ),
+				decentralizedNodeButton: document.getElementById( 'decentralizedNodeButton' ),
+				resetButton: document.getElementById( 'resetButton' ),
+				ddosButton: document.getElementById( 'ddosButton' ),
+				fireButton: document.getElementById( 'fireButton' ),
+				segmentButton: document.getElementById( 'segmentButton' ),
+				recoverButton: document.getElementById( 'recoverButton' ),
+				modeValue: document.getElementById( 'modeValue' ),
+				stateBadge: document.getElementById( 'stateBadge' ),
+				eventValue: document.getElementById( 'eventValue' ),
+				timelineSlider: document.getElementById( 'timelineSlider' ),
+				timelineLiveButton: document.getElementById( 'timelineLiveButton' ),
+				timelineMeta: document.getElementById( 'timelineMeta' )
+			};
+
+			const centralized = {
+				group: new THREE.Group(),
+				nodes: [],
+				routes: [],
+				centralNode: null
+			};
+
+			const decentralized = {
+				group: new THREE.Group(),
+				nodes: [],
+				routes: []
+			};
+
+			init();
+
+			function init() {
+
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0x050913 );
+				scene.fog = new THREE.Fog( 0x050913, 30, 85 );
+
+				camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 0.1, 180 );
+				camera.position.set( 0, 14, 27 );
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.outputColorSpace = THREE.SRGBColorSpace;
+				renderer.xr.enabled = true;
+				renderer.setAnimationLoop( animate );
+				document.body.appendChild( renderer.domElement );
+				document.body.appendChild( VRButton.createButton( renderer ) );
+
+				controls = new OrbitControls( camera, renderer.domElement );
+				controls.target.set( 0, 3, 0 );
+				controls.enableDamping = true;
+				controls.minDistance = 12;
+				controls.maxDistance = 52;
+				controls.maxPolarAngle = Math.PI * 0.48;
+
+				const hemisphereLight = new THREE.HemisphereLight( 0x9ed1ff, 0x182431, 0.95 );
+				scene.add( hemisphereLight );
+
+				const keyLight = new THREE.DirectionalLight( 0xffffff, 1.25 );
+				keyLight.position.set( 14, 22, 7 );
+				scene.add( keyLight );
+
+				const fillLight = new THREE.PointLight( 0x77dbff, 18, 80 );
+				fillLight.position.set( - 12, 7, - 10 );
+				scene.add( fillLight );
+
+				const ground = new THREE.Mesh(
+					new THREE.CircleGeometry( 28, 64 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x10263a,
+						emissive: 0x071420,
+						emissiveIntensity: 0.4,
+						metalness: 0.2,
+						roughness: 0.82
+					} )
+				);
+				ground.rotation.x = - Math.PI / 2;
+				ground.position.y = - 0.05;
+				scene.add( ground );
+
+				const grid = new THREE.GridHelper( 56, 24, 0x1d4a70, 0x12324c );
+				grid.position.y = 0.01;
+				scene.add( grid );
+
+				addAtmosphereDetails();
+				initIncidentVisuals();
+
+				buildCentralizedCity( centralized.group, centralized.nodes, centralized.routes );
+				buildDecentralizedCity( decentralized.group, decentralized.nodes, decentralized.routes );
+				decentralized.group.visible = false;
+
+				scene.add( centralized.group, decentralized.group );
+				setupVRControllers();
+				setupVRControlPanel();
+
+				ui.switchModeButton.addEventListener( 'click', switchMode );
+				ui.centralServerButton.addEventListener( 'click', toggleCentralServer );
+				ui.decentralizedNodeButton.addEventListener( 'click', disableRandomNode );
+				ui.resetButton.addEventListener( 'click', resetNetwork );
+				ui.ddosButton.addEventListener( 'click', triggerDdosIncident );
+				ui.fireButton.addEventListener( 'click', triggerFireIncident );
+				ui.segmentButton.addEventListener( 'click', triggerSegmentIncident );
+				ui.recoverButton.addEventListener( 'click', recoverIncident );
+				ui.timelineSlider.addEventListener( 'input', onTimelineSliderInput );
+				ui.timelineLiveButton.addEventListener( 'click', jumpToLiveTimeline );
+
+				window.addEventListener( 'resize', onWindowResize );
+
+				updateNetworkState();
+				recordHistorySnapshot( 'initial' );
+				syncTimelineControls();
+
+			}
+
+			function buildCentralizedCity( group, nodes, routes ) {
+
+				group.position.x = 0;
+
+				const baseRing = new THREE.Mesh(
+					new THREE.TorusGeometry( 9.5, 0.12, 12, 80 ),
+					new THREE.MeshStandardMaterial( { color: 0x315a7e, emissive: 0x12324a, emissiveIntensity: 0.55 } )
+				);
+				baseRing.rotation.x = Math.PI / 2;
+				baseRing.position.y = 0.04;
+				group.add( baseRing );
+
+				addCityBuildings( group, 0x46789f, 0 );
+				addCentralServerComplex( group );
+
+				const centralNode = createNode( 1.25, 0xffca54, new THREE.Vector3( 0, 3.2, 0 ), true );
+				centralNode.userData.nodeMesh.userData.nodeRole = 'central';
+				group.add( centralNode );
+				nodes.push( centralNode );
+				centralized.centralNode = centralNode;
+
+				const clientCount = 8;
+				for ( let i = 0; i < clientCount; i ++ ) {
+
+					const angle = i / clientCount * Math.PI * 2;
+					const node = createNode(
+						0.78,
+						0x6de7ff,
+						new THREE.Vector3( Math.cos( angle ) * 10, 1.25, Math.sin( angle ) * 10 ),
+						false
+					);
+					node.userData.nodeMesh.userData.nodeRole = 'client';
+					group.add( node );
+					nodes.push( node );
+
+					const route = createRoute( group, centralNode, node, 0x6de7ff );
+					routes.push( route );
+
+				}
+
+				const namePlate = createPlate( 'BANK CITY / CENTRALIZED' );
+				namePlate.position.set( 0, 0.1, - 13 );
+				group.add( namePlate );
+
+			}
+
+			function buildDecentralizedCity( group, nodes, routes ) {
+
+				group.position.x = 0;
+
+				const baseRing = new THREE.Mesh(
+					new THREE.TorusGeometry( 12.6, 0.12, 12, 100 ),
+					new THREE.MeshStandardMaterial( { color: 0x2e6f57, emissive: 0x0f382b, emissiveIntensity: 0.6 } )
+				);
+				baseRing.rotation.x = Math.PI / 2;
+				baseRing.position.y = 0.04;
+				group.add( baseRing );
+
+				addCityBuildings( group, 0x3e996d, 1 );
+				addDistributedInfrastructure( group );
+
+				const count = 10;
+				for ( let i = 0; i < count; i ++ ) {
+
+					const angle = i / count * Math.PI * 2;
+					const radius = 11.2 + Math.sin( i * 2.1 ) * 0.8;
+
+					const node = createNode(
+						0.72,
+						0x6dffbc,
+						new THREE.Vector3( Math.cos( angle ) * radius, 1.2, Math.sin( angle ) * radius ),
+						false
+					);
+					node.userData.index = i;
+					node.userData.nodeMesh.userData.nodeIndex = i;
+					node.userData.nodeMesh.userData.nodeRole = 'decentralized';
+					group.add( node );
+					nodes.push( node );
+
+				}
+
+				const links = new Set();
+
+				const addLink = ( a, b ) => {
+
+					const i = Math.min( a, b );
+					const j = Math.max( a, b );
+					const key = `${i}-${j}`;
+
+					if ( links.has( key ) ) return;
+					links.add( key );
+
+					const route = createRoute( group, nodes[ i ], nodes[ j ], 0x75ffca );
+					route.a = i;
+					route.b = j;
+					routes.push( route );
+
+				};
+
+				for ( let i = 0; i < count; i ++ ) {
+
+					addLink( i, ( i + 1 ) % count );
+					addLink( i, ( i + 2 ) % count );
+
+					if ( i % 2 === 0 ) {
+
+						addLink( i, ( i + 5 ) % count );
+
+					}
+
+				}
+
+				const namePlate = createPlate( 'BLOCKCHAIN CITY / DECENTRALIZED' );
+				namePlate.position.set( 0, 0.1, - 15.2 );
+				group.add( namePlate );
+
+			}
+
+			function createNode( radius, color, position, isCore ) {
+
+				const holder = new THREE.Group();
+				const coreMaterial = new THREE.MeshStandardMaterial( {
+					color,
+					emissive: color,
+					emissiveIntensity: 0.36,
+					metalness: 0.34,
+					roughness: 0.24
+				} );
+				const beaconMaterial = new THREE.MeshStandardMaterial( {
+					color,
+					emissive: color,
+					emissiveIntensity: 0.7,
+					metalness: 0.22,
+					roughness: 0.2
+				} );
+				const shellMaterial = new THREE.MeshPhysicalMaterial( {
+					color: 0xb6dfff,
+					emissive: color,
+					emissiveIntensity: 0.12,
+					metalness: 0.12,
+					roughness: 0.08,
+					transmission: 0.42,
+					opacity: 0.82,
+					transparent: true,
+					thickness: 0.8
+				} );
+
+				const stem = new THREE.Mesh(
+					new THREE.CylinderGeometry( radius * 0.28, radius * 0.44, Math.max( position.y - 0.2, 0.3 ), 12 ),
+					new THREE.MeshStandardMaterial( { color: 0x2a3f51, roughness: 0.8, metalness: 0.18 } )
+				);
+				stem.position.set( position.x, ( position.y - 0.2 ) * 0.5, position.z );
+
+				const shellGeometry = isCore ? new THREE.IcosahedronGeometry( radius * 1.02, 1 ) : new THREE.SphereGeometry( radius * 1.03, 22, 16 );
+				const shell = new THREE.Mesh( shellGeometry, shellMaterial );
+				shell.position.copy( position );
+
+				const coreGeometry = isCore ? new THREE.IcosahedronGeometry( radius * 0.72, 2 ) : new THREE.OctahedronGeometry( radius * 0.72, 1 );
+				const node = new THREE.Mesh( coreGeometry, coreMaterial );
+				node.position.copy( position );
+
+				const beacon = new THREE.Mesh(
+					new THREE.SphereGeometry( radius * 0.22, 14, 10 ),
+					beaconMaterial
+				);
+				beacon.position.set( position.x, position.y + radius * 0.96, position.z );
+
+				const ringMaterial = new THREE.MeshStandardMaterial( {
+					color: 0xbfeaff,
+					emissive: color,
+					emissiveIntensity: 0.32,
+					metalness: 0.7,
+					roughness: 0.22
+				} );
+				const ringA = new THREE.Mesh(
+					new THREE.TorusGeometry( radius * 1.18, radius * 0.08, 10, 46 ),
+					ringMaterial
+				);
+				ringA.position.copy( position );
+				ringA.rotation.x = Math.PI / 2;
+
+				const ringB = new THREE.Mesh(
+					new THREE.TorusGeometry( radius * 0.96, radius * 0.065, 10, 38 ),
+					ringMaterial.clone()
+				);
+				ringB.position.copy( position );
+				ringB.rotation.y = Math.PI / 2;
+				ringB.rotation.z = Math.PI / 6;
+
+				const finCount = isCore ? 6 : 4;
+				for ( let i = 0; i < finCount; i ++ ) {
+
+					const angle = i / finCount * Math.PI * 2;
+					const fin = new THREE.Mesh(
+						new THREE.BoxGeometry( radius * 0.14, radius * 0.46, radius * 0.14 ),
+						new THREE.MeshStandardMaterial( {
+							color: 0x5f7a92,
+							emissive: 0x152836,
+							emissiveIntensity: 0.2,
+							metalness: 0.3,
+							roughness: 0.62
+						} )
+					);
+					fin.position.set(
+						position.x + Math.cos( angle ) * radius * 0.96,
+						position.y,
+						position.z + Math.sin( angle ) * radius * 0.96
+					);
+					fin.lookAt( position.x, position.y, position.z );
+					holder.add( fin );
+
+				}
+
+				node.userData.online = true;
+				node.userData.onlineColor = color;
+				node.userData.offlineColor = 0xff5f66;
+				node.userData.pulseOffset = Math.random() * Math.PI * 2;
+				node.userData.baseScale = 1;
+				node.userData.currentEmissive = 0.36;
+				node.userData.currentShellOpacity = 0.82;
+				node.userData.nodeRole = isCore ? 'central' : 'client';
+				node.userData.nodeIndex = null;
+				node.userData.statusMaterials = [ coreMaterial, beaconMaterial, ringMaterial, ringB.material ];
+				node.userData.shellMaterial = shellMaterial;
+				node.castShadow = false;
+
+				holder.add( stem, shell, ringA, ringB, node, beacon );
+				holder.userData.nodeMesh = node;
+				holder.userData.index = null;
+				holder.position.set( 0, 0, 0 );
+
+				pulseNodes.push( node );
+				spinElements.push( { mesh: ringA, axis: 'z', speed: 0.62 + Math.random() * 0.38 } );
+				spinElements.push( { mesh: ringB, axis: 'x', speed: - ( 0.45 + Math.random() * 0.28 ) } );
+				registerInteractiveTarget( node, 'node', () => onNodeSelected( node ) );
+
+				return holder;
+
+			}
+
+			function createRoute( parent, fromNodeHolder, toNodeHolder, activeColor ) {
+
+				const fromNode = fromNodeHolder.userData.nodeMesh;
+				const toNode = toNodeHolder.userData.nodeMesh;
+				const start = fromNode.position.clone();
+				const end = toNode.position.clone();
+				const middle = start.clone().lerp( end, 0.5 );
+				middle.y += 0.4 + start.distanceTo( end ) * 0.05;
+
+				const curve = new THREE.QuadraticBezierCurve3( start, middle, end );
+
+				const conduit = new THREE.Mesh(
+					new THREE.TubeGeometry( curve, 24, 0.055, 10, false ),
+					new THREE.MeshStandardMaterial( {
+						color: activeColor,
+						emissive: activeColor,
+						emissiveIntensity: 0.34,
+						metalness: 0.18,
+						roughness: 0.3,
+						opacity: 0.92,
+						transparent: true
+					} )
+				);
+
+				const packet = new THREE.Mesh(
+					new THREE.IcosahedronGeometry( 0.2, 1 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0xffffff,
+						emissive: 0x8aeaff,
+						emissiveIntensity: 1.5,
+						metalness: 0.24,
+						roughness: 0.14
+					} )
+				);
+
+				parent.add( conduit, packet );
+
+				return {
+					fromNode,
+					toNode,
+					conduit,
+					packet,
+					curve,
+					start,
+					end,
+					phase: Math.random(),
+					speed: 0.25 + Math.random() * 0.4,
+					activeColor,
+					inactiveColor: 0x6a2f34,
+					active: true,
+					a: - 1,
+					b: - 1
+				};
+
+			}
+
+			function registerInteractiveTarget( mesh, type, onActivate ) {
+
+				mesh.userData.interactiveType = type;
+				mesh.userData.onActivate = onActivate;
+				mesh.userData.hovered = false;
+				vr.interactiveTargets.push( mesh );
+
+			}
+
+			function setupVRControllers() {
+
+				const controllerModelFactory = new XRControllerModelFactory();
+				const rayGeometry = new THREE.BufferGeometry().setFromPoints( [
+					new THREE.Vector3( 0, 0, 0 ),
+					new THREE.Vector3( 0, 0, - 1 )
+				] );
+
+				for ( let i = 0; i < 2; i ++ ) {
+
+					const controller = renderer.xr.getController( i );
+					const ray = new THREE.Line(
+						rayGeometry,
+						new THREE.LineBasicMaterial( { color: 0x9fdfff, transparent: true, opacity: 0.92 } )
+					);
+					ray.name = 'ray';
+					ray.scale.z = vrRayLength;
+					controller.add( ray );
+					controller.userData.ray = ray;
+					controller.userData.hoveredTarget = null;
+					controller.userData.hoveredIntersection = null;
+					controller.addEventListener( 'selectstart', onVRSelectStart );
+					scene.add( controller );
+					vr.controllers.push( controller );
+
+					const controllerGrip = renderer.xr.getControllerGrip( i );
+					controllerGrip.add( controllerModelFactory.createControllerModel( controllerGrip ) );
+					scene.add( controllerGrip );
+
+				}
+
+			}
+
+			function setupVRControlPanel() {
+
+				const panel = new THREE.Group();
+				panel.position.set( - 4.7, 2.3, - 6.4 );
+				panel.rotation.y = Math.PI / 9;
+
+				const body = new THREE.Mesh(
+					new THREE.BoxGeometry( 5.4, 5.4, 0.12 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x0c2434,
+						emissive: 0x091c2a,
+						emissiveIntensity: 0.6,
+						metalness: 0.24,
+						roughness: 0.4,
+						opacity: 0.9,
+						transparent: true
+					} )
+				);
+				panel.add( body );
+
+				const title = createVrLabel( 'VR NETWORK CONTROL', 1024, 180, 4.2, 0.48, '#d7f4ff', 'rgba(20, 65, 92, 0.88)' );
+				title.mesh.position.set( 0, 2.08, 0.08 );
+				panel.add( title.mesh );
+
+				vr.buttons.switchMode = createVrButton( 'Switch: Decentralized', 0x3a7ea3, switchMode );
+				vr.buttons.centralServer = createVrButton( 'Central Server: Disable', 0x8d6c30, toggleCentralServer );
+				vr.buttons.disableNode = createVrButton( 'Disable Random Node', 0x2d8f63, disableRandomNode );
+				vr.buttons.reset = createVrButton( 'Reset Network', 0x7a3d89, resetNetwork );
+				vr.buttons.ddos = createVrButton( 'Trigger DDoS', 0x8f3f3f, triggerDdosIncident );
+				vr.buttons.fire = createVrButton( 'Trigger Fire', 0xb35d2d, triggerFireIncident );
+				vr.buttons.segment = createVrButton( 'Cut Segment', 0x2f7f88, triggerSegmentIncident );
+				vr.buttons.recover = createVrButton( 'Recover System', 0x3f8b5e, recoverIncident );
+
+				vr.buttons.switchMode.group.position.set( - 1.3, 1.42, 0.12 );
+				vr.buttons.centralServer.group.position.set( 1.3, 1.42, 0.12 );
+				vr.buttons.disableNode.group.position.set( - 1.3, 0.84, 0.12 );
+				vr.buttons.reset.group.position.set( 1.3, 0.84, 0.12 );
+				vr.buttons.ddos.group.position.set( - 1.3, 0.08, 0.12 );
+				vr.buttons.fire.group.position.set( 1.3, 0.08, 0.12 );
+				vr.buttons.segment.group.position.set( - 1.3, - 0.5, 0.12 );
+				vr.buttons.recover.group.position.set( 1.3, - 0.5, 0.12 );
+
+				panel.add(
+					vr.buttons.switchMode.group,
+					vr.buttons.centralServer.group,
+					vr.buttons.disableNode.group,
+					vr.buttons.reset.group,
+					vr.buttons.ddos.group,
+					vr.buttons.fire.group,
+					vr.buttons.segment.group,
+					vr.buttons.recover.group
+				);
+
+				vr.statusLabel = createVrStatusLabel();
+				vr.statusLabel.mesh.position.set( 0, - 1.36, 0.12 );
+				panel.add( vr.statusLabel.mesh );
+
+				vr.timelineSlider = createVrTimelineSlider();
+				vr.timelineSlider.group.position.set( 0, - 2.24, 0.12 );
+				panel.add( vr.timelineSlider.group );
+
+				scene.add( panel );
+				vr.panel = panel;
+
+			}
+
+			function createVrButton( text, baseColor, onActivate ) {
+
+				const group = new THREE.Group();
+
+				const frame = new THREE.Mesh(
+					new THREE.BoxGeometry( 2.04, 0.58, 0.1 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x1c3241,
+						emissive: 0x102130,
+						emissiveIntensity: 0.45,
+						metalness: 0.4,
+						roughness: 0.45
+					} )
+				);
+				group.add( frame );
+
+				const material = new THREE.MeshStandardMaterial( {
+					color: baseColor,
+					emissive: baseColor,
+					emissiveIntensity: 0.3,
+					metalness: 0.2,
+					roughness: 0.35,
+					transparent: true,
+					opacity: 0.96
+				} );
+				const hitMesh = new THREE.Mesh( new THREE.BoxGeometry( 1.92, 0.46, 0.14 ), material );
+				hitMesh.position.z = 0.03;
+				group.add( hitMesh );
+
+				const label = createVrLabel( text, 1024, 180, 1.8, 0.3, '#eef9ff', 'rgba(0,0,0,0)' );
+				label.mesh.position.set( 0, 0, 0.12 );
+				group.add( label.mesh );
+
+				const button = {
+					group,
+					hitMesh,
+					material,
+					label,
+					baseColor,
+					hoverColor: new THREE.Color( baseColor ).offsetHSL( 0, 0, 0.15 ).getHex(),
+					enabled: true,
+					hovered: false,
+					setText( nextText ) {
+
+						label.redraw( nextText );
+
+					},
+					setEnabled( enabled ) {
+
+						button.enabled = enabled;
+						refreshVrButtonVisual( button );
+
+					}
+				};
+
+				hitMesh.userData.button = button;
+				registerInteractiveTarget( hitMesh, 'button', () => {
+
+					if ( button.enabled ) onActivate();
+
+				} );
+
+				refreshVrButtonVisual( button );
+
+				return button;
+
+			}
+
+			function createVrStatusLabel() {
+
+				const label = createVrLabel( '', 1400, 220, 4.3, 0.55, '#d8f3ff', 'rgba(14, 45, 63, 0.9)' );
+
+				return {
+					mesh: label.mesh,
+					setText( text, valid ) {
+
+						const bg = valid ? 'rgba(34, 98, 66, 0.92)' : 'rgba(112, 38, 45, 0.92)';
+						const fg = valid ? '#b8ffdb' : '#ffd0d0';
+						label.redraw( text, fg, bg );
+
+					}
+				};
+
+			}
+
+			function createVrTimelineSlider() {
+
+				const group = new THREE.Group();
+
+				const base = new THREE.Mesh(
+					new THREE.BoxGeometry( 4.7, 0.72, 0.1 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x172f42,
+						emissive: 0x0d2334,
+						emissiveIntensity: 0.5,
+						metalness: 0.2,
+						roughness: 0.5
+					} )
+				);
+				group.add( base );
+
+				const trackWidth = 3.8;
+				const track = new THREE.Mesh(
+					new THREE.BoxGeometry( trackWidth, 0.14, 0.08 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x468cb3,
+						emissive: 0x2b6f94,
+						emissiveIntensity: 0.44,
+						metalness: 0.38,
+						roughness: 0.3
+					} )
+				);
+				track.position.y = - 0.05;
+				track.position.z = 0.02;
+				group.add( track );
+
+				const knob = new THREE.Mesh(
+					new THREE.SphereGeometry( 0.16, 18, 12 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0xd3f5ff,
+						emissive: 0x67d4ff,
+						emissiveIntensity: 0.72,
+						metalness: 0.36,
+						roughness: 0.2
+					} )
+				);
+				knob.position.set( track.position.x + trackWidth * 0.5, track.position.y, 0.09 );
+				group.add( knob );
+
+				const label = createVrLabel( 'Timeline: LIVE', 1024, 150, 4.0, 0.28, '#dcf5ff', 'rgba(17, 53, 76, 0.9)' );
+				label.mesh.position.set( 0, 0.28, 0.08 );
+				group.add( label.mesh );
+
+				const slider = {
+					group,
+					track,
+					knob,
+					label,
+					trackWidth,
+					value: 1,
+					setNormalized( value, isLive ) {
+
+						slider.value = THREE.MathUtils.clamp( value, 0, 1 );
+						slider.knob.position.x = slider.track.position.x + ( slider.value - 0.5 ) * slider.trackWidth;
+						label.redraw( isLive ? 'Timeline: LIVE' : `Timeline: ${Math.round( slider.value * 100 )}%` );
+
+					}
+				};
+
+				track.userData.slider = slider;
+				knob.userData.slider = slider;
+
+				registerInteractiveTarget( track, 'slider', ( intersection ) => onVrTimelineSelect( intersection, slider ) );
+				registerInteractiveTarget( knob, 'slider', ( intersection ) => onVrTimelineSelect( intersection, slider ) );
+
+				slider.setNormalized( 1, true );
+
+				return slider;
+
+			}
+
+			function onVrTimelineSelect( intersection, slider ) {
+
+				if ( ! intersection || history.entries.length === 0 ) return;
+
+				const point = slider.track.worldToLocal( intersection.point.clone() );
+				const normalized = THREE.MathUtils.clamp( point.x / slider.trackWidth + 0.5, 0, 1 );
+				const maxIndex = history.entries.length - 1;
+				const index = Math.round( normalized * maxIndex );
+
+				scrubTimelineTo( index );
+
+			}
+
+			function createVrLabel( text, width, height, worldWidth, worldHeight, color, background ) {
+
+				const canvas = document.createElement( 'canvas' );
+				canvas.width = width;
+				canvas.height = height;
+				const ctx = canvas.getContext( '2d' );
+				const texture = new THREE.CanvasTexture( canvas );
+				texture.colorSpace = THREE.SRGBColorSpace;
+
+				const material = new THREE.MeshBasicMaterial( {
+					map: texture,
+					transparent: true,
+					opacity: 0.98
+				} );
+				const mesh = new THREE.Mesh( new THREE.PlaneGeometry( worldWidth, worldHeight ), material );
+
+				const redraw = ( nextText, nextColor = color, nextBackground = background ) => {
+
+					ctx.clearRect( 0, 0, width, height );
+					ctx.fillStyle = nextBackground;
+					ctx.fillRect( 0, 0, width, height );
+					ctx.strokeStyle = 'rgba(166, 225, 255, 0.8)';
+					ctx.lineWidth = 6;
+					ctx.strokeRect( 4, 4, width - 8, height - 8 );
+					ctx.fillStyle = nextColor;
+					ctx.font = `700 ${Math.floor( height * 0.42 )}px Segoe UI`;
+					ctx.textAlign = 'center';
+					ctx.textBaseline = 'middle';
+					ctx.fillText( nextText, width / 2, height / 2 );
+					texture.needsUpdate = true;
+
+				};
+
+				redraw( text );
+
+				return { mesh, redraw };
+
+			}
+
+			function refreshVrButtonVisual( button ) {
+
+				const activeColor = button.hovered && button.enabled ? button.hoverColor : button.baseColor;
+				button.material.color.setHex( activeColor );
+				button.material.emissive.setHex( activeColor );
+				button.material.emissiveIntensity = button.enabled ? ( button.hovered ? 0.52 : 0.3 ) : 0.08;
+				button.material.opacity = button.enabled ? 0.96 : 0.42;
+
+			}
+
+			function onVRSelectStart( event ) {
+
+				const controller = event.target;
+				const target = controller.userData.hoveredTarget;
+				const intersection = controller.userData.hoveredIntersection;
+
+				if ( target && target.userData.onActivate ) {
+
+					target.userData.onActivate( intersection, controller );
+					triggerControllerHaptics( event.data, 0.45, 45 );
+
+				}
+
+			}
+
+			function triggerControllerHaptics( inputSource, intensity, duration ) {
+
+				const gamepad = inputSource && inputSource.gamepad;
+
+				if ( ! gamepad || ! gamepad.hapticActuators || gamepad.hapticActuators.length === 0 ) return;
+
+				const actuator = gamepad.hapticActuators[ 0 ];
+				if ( actuator && actuator.pulse ) actuator.pulse( intensity, duration );
+
+			}
+
+			function onNodeSelected( nodeMesh ) {
+
+				ensureLiveStateForAction();
+
+				if ( state.mode === 'centralized' ) {
+
+					if ( nodeMesh.userData.nodeRole === 'central' ) {
+
+						toggleCentralServer();
+
+					} else {
+
+						setUiState( true, 'Client selected. Disable the central server to demonstrate single point of failure.' );
+						updateVRPanelState();
+
+					}
+
+					return;
+
+				}
+
+				if ( nodeMesh.userData.nodeRole !== 'decentralized' || nodeMesh.userData.nodeIndex === null ) return;
+
+				if ( state.offlineDecentralizedNode === nodeMesh.userData.nodeIndex ) {
+
+					state.offlineDecentralizedNode = null;
+
+				} else {
+
+					state.offlineDecentralizedNode = nodeMesh.userData.nodeIndex;
+
+				}
+
+				updateNetworkState();
+				recordHistorySnapshot( 'node interaction' );
+
+			}
+
+			function updateVRInteraction() {
+
+				if ( renderer.xr.isPresenting === false ) {
+
+					for ( const controller of vr.controllers ) {
+
+						controller.userData.ray.scale.z = vrRayLength;
+						controller.userData.hoveredIntersection = null;
+						setControllerHoverTarget( controller, null );
+
+					}
+
+					return;
+
+				}
+
+				for ( const controller of vr.controllers ) {
+
+					tempMatrix.identity().extractRotation( controller.matrixWorld );
+					vr.raycaster.ray.origin.setFromMatrixPosition( controller.matrixWorld );
+					vr.raycaster.ray.direction.set( 0, 0, - 1 ).applyMatrix4( tempMatrix );
+
+					const intersections = vr.raycaster.intersectObjects( vr.interactiveTargets, false );
+
+					if ( intersections.length > 0 ) {
+
+						controller.userData.ray.scale.z = intersections[ 0 ].distance;
+						controller.userData.hoveredIntersection = intersections[ 0 ];
+						setControllerHoverTarget( controller, intersections[ 0 ].object );
+
+					} else {
+
+						controller.userData.ray.scale.z = vrRayLength;
+						controller.userData.hoveredIntersection = null;
+						setControllerHoverTarget( controller, null );
+
+					}
+
+				}
+
+			}
+
+			function setControllerHoverTarget( controller, target ) {
+
+				const previous = controller.userData.hoveredTarget;
+				if ( previous === target ) return;
+
+				setInteractiveHoverState( previous, false );
+				controller.userData.hoveredTarget = target;
+				setInteractiveHoverState( target, true );
+
+			}
+
+			function setInteractiveHoverState( target, hovered ) {
+
+				if ( ! target ) return;
+
+				target.userData.hovered = hovered;
+
+				if ( target.userData.interactiveType === 'button' ) {
+
+					const button = target.userData.button;
+					button.hovered = hovered;
+					refreshVrButtonVisual( button );
+					return;
+
+				}
+
+				if ( target.userData.interactiveType === 'slider' ) {
+
+					const slider = target.userData.slider;
+					if ( slider ) {
+
+						slider.knob.material.emissiveIntensity = hovered ? 1.15 : 0.72;
+
+					}
+
+					return;
+
+				}
+
+				if ( target.userData.interactiveType === 'node' ) {
+
+					const nodeMesh = target;
+					const intensity = hovered ? Math.min( 1.0, nodeMesh.userData.currentEmissive + 0.34 ) : nodeMesh.userData.currentEmissive;
+
+					for ( const material of nodeMesh.userData.statusMaterials ) {
+
+						material.emissiveIntensity = intensity;
+
+					}
+
+					nodeMesh.userData.shellMaterial.opacity = hovered ? Math.min( 1, nodeMesh.userData.currentShellOpacity + 0.12 ) : nodeMesh.userData.currentShellOpacity;
+
+				}
+
+			}
+
+			function createPlate( text ) {
+
+				const canvas = document.createElement( 'canvas' );
+				canvas.width = 640;
+				canvas.height = 140;
+
+				const ctx = canvas.getContext( '2d' );
+				ctx.fillStyle = 'rgba(6, 24, 34, 0.82)';
+				ctx.fillRect( 0, 0, canvas.width, canvas.height );
+				ctx.strokeStyle = 'rgba(124, 214, 255, 0.85)';
+				ctx.lineWidth = 6;
+				ctx.strokeRect( 6, 6, canvas.width - 12, canvas.height - 12 );
+				ctx.font = '700 44px Segoe UI';
+				ctx.textAlign = 'center';
+				ctx.textBaseline = 'middle';
+				ctx.fillStyle = '#d7f2ff';
+				ctx.fillText( text, canvas.width / 2, canvas.height / 2 );
+
+				const texture = new THREE.CanvasTexture( canvas );
+				texture.colorSpace = THREE.SRGBColorSpace;
+
+				const plate = new THREE.Mesh(
+					new THREE.PlaneGeometry( 9, 2 ),
+					new THREE.MeshBasicMaterial( {
+						map: texture,
+						transparent: true,
+						opacity: 0.95,
+						side: THREE.DoubleSide
+					} )
+				);
+				plate.rotation.x = - Math.PI / 2;
+
+				return plate;
+
+			}
+
+			function addAtmosphereDetails() {
+
+				const skyDome = new THREE.Mesh(
+					new THREE.SphereGeometry( 78, 32, 20, 0, Math.PI * 2, 0, Math.PI * 0.5 ),
+					new THREE.MeshBasicMaterial( {
+						color: 0x0a1522,
+						transparent: true,
+						opacity: 0.45,
+						side: THREE.BackSide
+					} )
+				);
+				skyDome.position.y = - 2;
+				scene.add( skyDome );
+
+				const signalRing = new THREE.Mesh(
+					new THREE.TorusGeometry( 24, 0.08, 10, 120 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x8cc8ff,
+						emissive: 0x4da9ff,
+						emissiveIntensity: 0.45,
+						metalness: 0.45,
+						roughness: 0.28,
+						opacity: 0.5,
+						transparent: true
+					} )
+				);
+				signalRing.rotation.x = Math.PI / 2;
+				signalRing.position.y = 8.4;
+				scene.add( signalRing );
+				spinElements.push( { mesh: signalRing, axis: 'z', speed: 0.08 } );
+
+				const starGeometry = new THREE.BufferGeometry();
+				const positions = [];
+
+				for ( let i = 0; i < 420; i ++ ) {
+
+					const theta = Math.random() * Math.PI * 2;
+					const phi = Math.random() * Math.PI * 0.46;
+					const radius = 56 + Math.random() * 16;
+
+					positions.push(
+						Math.cos( theta ) * Math.cos( phi ) * radius,
+						Math.sin( phi ) * radius + 7,
+						Math.sin( theta ) * Math.cos( phi ) * radius
+					);
+
+				}
+
+				starGeometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
+				const stars = new THREE.Points(
+					starGeometry,
+					new THREE.PointsMaterial( {
+						color: 0xb8deff,
+						size: 0.1,
+						sizeAttenuation: true,
+						transparent: true,
+						opacity: 0.78
+					} )
+				);
+				scene.add( stars );
+
+			}
+
+			function addCentralServerComplex( group ) {
+
+				const podium = new THREE.Mesh(
+					new THREE.CylinderGeometry( 3.5, 4.4, 0.9, 28 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x29465f,
+						emissive: 0x0f2535,
+						emissiveIntensity: 0.5,
+						metalness: 0.42,
+						roughness: 0.46
+					} )
+				);
+				podium.position.y = 0.46;
+				group.add( podium );
+
+				const tower = new THREE.Mesh(
+					new THREE.CylinderGeometry( 1.1, 1.45, 5.8, 14 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x4f7ea7,
+						emissive: 0x1a3850,
+						emissiveIntensity: 0.45,
+						metalness: 0.4,
+						roughness: 0.33
+					} )
+				);
+				tower.position.y = 3;
+				group.add( tower );
+
+				const crown = new THREE.Mesh(
+					new THREE.TorusGeometry( 1.6, 0.12, 10, 56 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0xc7ebff,
+						emissive: 0x56bcff,
+						emissiveIntensity: 0.6,
+						metalness: 0.75,
+						roughness: 0.22
+					} )
+				);
+				crown.rotation.x = Math.PI / 2;
+				crown.position.y = 5.9;
+				group.add( crown );
+				spinElements.push( { mesh: crown, axis: 'z', speed: 0.44 } );
+
+				const antenna = new THREE.Mesh(
+					new THREE.ConeGeometry( 0.24, 1.1, 12 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0xdaf6ff,
+						emissive: 0x6fcfff,
+						emissiveIntensity: 0.72,
+						metalness: 0.45,
+						roughness: 0.18
+					} )
+				);
+				antenna.position.y = 6.7;
+				group.add( antenna );
+
+				const satelliteCount = 6;
+				for ( let i = 0; i < satelliteCount; i ++ ) {
+
+					const angle = i / satelliteCount * Math.PI * 2;
+					const relay = new THREE.Mesh(
+						new THREE.CylinderGeometry( 0.22, 0.34, 1.3, 12 ),
+						new THREE.MeshStandardMaterial( {
+							color: 0x5f8aac,
+							emissive: 0x1f4460,
+							emissiveIntensity: 0.4,
+							metalness: 0.32,
+							roughness: 0.5
+						} )
+					);
+					relay.position.set( Math.cos( angle ) * 2.7, 1.1, Math.sin( angle ) * 2.7 );
+					group.add( relay );
+
+				}
+
+			}
+
+			function addDistributedInfrastructure( group ) {
+
+				const hubCount = 7;
+				for ( let i = 0; i < hubCount; i ++ ) {
+
+					const angle = i / hubCount * Math.PI * 2;
+					const radius = 6.6 + Math.sin( i * 2.7 ) * 1.1;
+
+					const hub = new THREE.Group();
+					hub.position.set( Math.cos( angle ) * radius, 0, Math.sin( angle ) * radius );
+
+					const base = new THREE.Mesh(
+						new THREE.CylinderGeometry( 0.8, 1.2, 0.5, 6 ),
+						new THREE.MeshStandardMaterial( {
+							color: 0x3c7a62,
+							emissive: 0x184032,
+							emissiveIntensity: 0.45,
+							metalness: 0.36,
+							roughness: 0.52
+						} )
+					);
+					base.position.y = 0.25;
+					hub.add( base );
+
+					const crystal = new THREE.Mesh(
+						new THREE.DodecahedronGeometry( 0.58, 0 ),
+						new THREE.MeshStandardMaterial( {
+							color: 0x84ffd0,
+							emissive: 0x3fbe96,
+							emissiveIntensity: 0.62,
+							metalness: 0.26,
+							roughness: 0.2
+						} )
+					);
+					crystal.position.y = 1.15;
+					hub.add( crystal );
+					spinElements.push( { mesh: crystal, axis: 'y', speed: 0.5 + i * 0.03 } );
+
+					const halo = new THREE.Mesh(
+						new THREE.TorusGeometry( 1.03, 0.05, 8, 40 ),
+						new THREE.MeshStandardMaterial( {
+							color: 0xa2ffdd,
+							emissive: 0x5de7b4,
+							emissiveIntensity: 0.45,
+							metalness: 0.52,
+							roughness: 0.25
+						} )
+					);
+					halo.rotation.x = Math.PI / 2;
+					halo.position.y = 0.95;
+					hub.add( halo );
+					spinElements.push( { mesh: halo, axis: 'z', speed: - 0.36 - i * 0.02 } );
+
+					group.add( hub );
+
+				}
+
+			}
+
+			function addCityBuildings( group, baseColor, seed ) {
+
+				for ( let i = 0; i < 56; i ++ ) {
+
+					const n1 = seededNoise( i + 11, seed + 3 );
+					const n2 = seededNoise( i + 27, seed + 7 );
+					const n3 = seededNoise( i + 33, seed + 13 );
+					const n4 = seededNoise( i + 53, seed + 19 );
+
+					const radius = 6 + n1 * 17;
+					const angle = n2 * Math.PI * 2;
+					const height = 0.7 + n2 * 4.6;
+					const buildingColor = new THREE.Color( baseColor ).offsetHSL( ( n2 - 0.5 ) * 0.08, 0.06, ( n3 - 0.5 ) * 0.22 );
+
+					const cluster = new THREE.Group();
+					cluster.position.set( Math.cos( angle ) * radius, 0, Math.sin( angle ) * radius );
+					cluster.rotation.y = angle;
+
+					const variant = Math.floor( n4 * 4 );
+					let body;
+
+					if ( variant === 0 ) {
+
+						body = new THREE.Mesh(
+							new THREE.CylinderGeometry( 0.35 + n3 * 0.52, 0.55 + n1 * 0.65, height, 12 ),
+							new THREE.MeshStandardMaterial( {
+								color: buildingColor,
+								emissive: 0x122d3f,
+								emissiveIntensity: 0.34,
+								metalness: 0.24,
+								roughness: 0.74
+							} )
+						);
+						body.position.y = height * 0.5;
+
+					} else if ( variant === 1 ) {
+
+						body = new THREE.Mesh(
+							new THREE.CylinderGeometry( 0.48 + n3 * 0.42, 0.48 + n3 * 0.42, height, 6 ),
+							new THREE.MeshStandardMaterial( {
+								color: buildingColor,
+								emissive: 0x10263a,
+								emissiveIntensity: 0.32,
+								metalness: 0.28,
+								roughness: 0.68
+							} )
+						);
+						body.position.y = height * 0.5;
+
+						const roof = new THREE.Mesh(
+							new THREE.ConeGeometry( 0.5 + n3 * 0.32, 0.72 + n1 * 0.5, 6 ),
+							new THREE.MeshStandardMaterial( {
+								color: 0x79b7de,
+								emissive: 0x2d6f98,
+								emissiveIntensity: 0.45,
+								metalness: 0.36,
+								roughness: 0.28
+							} )
+						);
+						roof.position.y = height + 0.3;
+						cluster.add( roof );
+
+					} else if ( variant === 2 ) {
+
+						body = new THREE.Mesh(
+							new THREE.CapsuleGeometry( 0.42 + n1 * 0.32, Math.max( height - 1.2, 0.5 ), 8, 16 ),
+							new THREE.MeshStandardMaterial( {
+								color: buildingColor,
+								emissive: 0x163246,
+								emissiveIntensity: 0.38,
+								metalness: 0.22,
+								roughness: 0.58
+							} )
+						);
+						body.position.y = height * 0.5;
+
+					} else {
+
+						body = new THREE.Mesh(
+							new THREE.BoxGeometry( 0.55 + n3 * 0.75, height, 0.55 + n1 * 0.7 ),
+							new THREE.MeshStandardMaterial( {
+								color: buildingColor,
+								emissive: 0x122b3d,
+								emissiveIntensity: 0.35,
+								metalness: 0.18,
+								roughness: 0.82
+							} )
+						);
+						body.position.y = height * 0.5;
+
+						const satellite = new THREE.Mesh(
+							new THREE.TorusGeometry( 0.32 + n1 * 0.2, 0.04, 8, 24 ),
+							new THREE.MeshStandardMaterial( {
+								color: 0xc0ebff,
+								emissive: 0x4cb3ff,
+								emissiveIntensity: 0.54,
+								metalness: 0.62,
+								roughness: 0.26
+							} )
+						);
+						satellite.position.y = height + 0.36;
+						satellite.rotation.x = Math.PI / 2;
+						cluster.add( satellite );
+						spinElements.push( { mesh: satellite, axis: 'z', speed: 0.55 + n3 * 0.25 } );
+
+					}
+
+					cluster.add( body );
+
+					const windowBand = new THREE.Mesh(
+						new THREE.TorusGeometry( 0.48 + n1 * 0.35, 0.03 + n2 * 0.02, 8, 30 ),
+						new THREE.MeshStandardMaterial( {
+							color: 0xbde8ff,
+							emissive: 0x67c7ff,
+							emissiveIntensity: 0.42,
+							metalness: 0.58,
+							roughness: 0.22
+						} )
+					);
+					windowBand.position.y = Math.max( height * 0.62, 0.6 );
+					windowBand.rotation.x = Math.PI / 2;
+					cluster.add( windowBand );
+					spinElements.push( { mesh: windowBand, axis: 'z', speed: - 0.32 - n2 * 0.24 } );
+
+					if ( n2 > 0.62 ) {
+
+						const antenna = new THREE.Mesh(
+							new THREE.ConeGeometry( 0.12, 0.42 + n3 * 0.46, 8 ),
+							new THREE.MeshStandardMaterial( {
+								color: 0xd6f4ff,
+								emissive: 0x58bbff,
+								emissiveIntensity: 0.66,
+								metalness: 0.4,
+								roughness: 0.22
+							} )
+						);
+						antenna.position.y = height + 0.55;
+						cluster.add( antenna );
+
+					}
+
+					group.add( cluster );
+
+				}
+
+			}
+
+			function seededNoise( index, seed ) {
+
+				const value = Math.sin( index * 127.1 + seed * 311.7 ) * 43758.5453123;
+				return value - Math.floor( value );
+
+			}
+
+			function initIncidentVisuals() {
+
+				incidentVisuals.group.add( incidentVisuals.fireGroup );
+				incidentVisuals.group.add( incidentVisuals.ddosGroup );
+
+				const barrierMaterial = new THREE.MeshStandardMaterial( {
+					color: 0xff8b8b,
+					emissive: 0xff5f69,
+					emissiveIntensity: 0.45,
+					transparent: true,
+					opacity: 0.12,
+					metalness: 0.15,
+					roughness: 0.3,
+					side: THREE.DoubleSide
+				} );
+				incidentVisuals.segmentBarrier = new THREE.Mesh( new THREE.PlaneGeometry( 29, 8 ), barrierMaterial );
+				incidentVisuals.segmentBarrier.position.set( 0, 2.9, 0 );
+				incidentVisuals.segmentBarrier.rotation.y = Math.PI / 2;
+				incidentVisuals.segmentBarrier.visible = false;
+				incidentVisuals.group.add( incidentVisuals.segmentBarrier );
+
+				for ( let i = 0; i < 16; i ++ ) {
+
+					const angle = i / 16 * Math.PI * 2;
+					const radius = 4.8 + ( i % 3 ) * 0.65;
+					const spike = new THREE.Mesh(
+						new THREE.TetrahedronGeometry( 0.22 + ( i % 4 ) * 0.03, 0 ),
+						new THREE.MeshStandardMaterial( {
+							color: 0xff8f74,
+							emissive: 0xff7a4f,
+							emissiveIntensity: 0.6,
+							metalness: 0.22,
+							roughness: 0.25,
+							transparent: true,
+							opacity: 0.84
+						} )
+					);
+					spike.position.set( Math.cos( angle ) * radius, 1.5 + ( i % 5 ) * 0.24, Math.sin( angle ) * radius );
+					spike.userData.phase = Math.random() * Math.PI * 2;
+					incidentVisuals.ddosGroup.add( spike );
+
+				}
+
+				incidentVisuals.ddosGroup.visible = false;
+				incidentVisuals.fireGroup.visible = false;
+
+				scene.add( incidentVisuals.group );
+
+			}
+
+			function ensureLiveStateForAction() {
+
+				if ( state.timelineIndex === - 1 || history.entries.length === 0 ) return;
+
+				history.suspendRecording = true;
+				applySnapshot( history.entries[ history.entries.length - 1 ] );
+				history.suspendRecording = false;
+				state.timelineIndex = - 1;
+				updateNetworkState();
+				syncTimelineControls();
+
+			}
+
+			function triggerDdosIncident() {
+
+				ensureLiveStateForAction();
+				state.incidentType = 'ddos';
+				state.fireTargetNode = null;
+				updateNetworkState();
+				recordHistorySnapshot( 'ddos' );
+
+			}
+
+			function triggerFireIncident() {
+
+				ensureLiveStateForAction();
+				state.incidentType = 'fire';
+
+				if ( state.mode === 'decentralized' ) {
+
+					state.fireTargetNode = pickRandomDecentralizedNode();
+
+				} else {
+
+					state.fireTargetNode = null;
+
+				}
+
+				updateNetworkState();
+				recordHistorySnapshot( 'fire' );
+
+			}
+
+			function triggerSegmentIncident() {
+
+				ensureLiveStateForAction();
+				state.incidentType = 'segment';
+				state.fireTargetNode = null;
+				updateNetworkState();
+				recordHistorySnapshot( 'segment' );
+
+			}
+
+			function recoverIncident() {
+
+				ensureLiveStateForAction();
+				state.incidentType = 'none';
+				state.fireTargetNode = null;
+				updateNetworkState();
+				recordHistorySnapshot( 'recovered' );
+
+			}
+
+			function pickRandomDecentralizedNode() {
+
+				const options = [];
+				for ( let i = 0; i < decentralized.nodes.length; i ++ ) {
+
+					if ( i !== state.offlineDecentralizedNode ) options.push( i );
+
+				}
+
+				if ( options.length === 0 ) return null;
+
+				return options[ Math.floor( Math.random() * options.length ) ];
+
+			}
+
+			function isRouteAllowedByIncident( route, active, isCentralized ) {
+
+				if ( ! active ) return false;
+
+				if ( state.incidentType === 'fire' ) {
+
+					if ( isCentralized ) {
+
+						const centralNodeMesh = centralized.centralNode.userData.nodeMesh;
+						return route.fromNode !== centralNodeMesh && route.toNode !== centralNodeMesh;
+
+					}
+
+					if ( state.fireTargetNode === null ) return active;
+
+					return route.a !== state.fireTargetNode && route.b !== state.fireTargetNode;
+
+				}
+
+				if ( state.incidentType === 'segment' ) {
+
+					if ( isCentralized ) return active;
+
+					if ( route.a < 0 || route.b < 0 ) return active;
+
+					const leftA = route.a <= 4;
+					const leftB = route.b <= 4;
+
+					return leftA === leftB;
+
+				}
+
+				return active;
+
+			}
+
+			function updateIncidentVisuals( isCentralized ) {
+
+				incidentVisuals.ddosGroup.visible = state.incidentType === 'ddos';
+				incidentVisuals.segmentBarrier.visible = state.incidentType === 'segment' && ! isCentralized;
+				incidentVisuals.segmentBarrier.position.x = isCentralized ? 0 : 0.7;
+
+				incidentVisuals.fireGroup.clear();
+				incidentVisuals.fireGroup.visible = state.incidentType === 'fire';
+
+				if ( state.incidentType !== 'fire' ) return;
+
+				let targetNode = null;
+
+				if ( isCentralized ) {
+
+					targetNode = centralized.centralNode.userData.nodeMesh;
+
+				} else if ( state.fireTargetNode !== null && decentralized.nodes[ state.fireTargetNode ] ) {
+
+					targetNode = decentralized.nodes[ state.fireTargetNode ].userData.nodeMesh;
+
+				}
+
+				if ( ! targetNode ) return;
+
+				const worldPos = new THREE.Vector3();
+				targetNode.getWorldPosition( worldPos );
+				incidentVisuals.fireGroup.position.copy( worldPos );
+
+				for ( let i = 0; i < 7; i ++ ) {
+
+					const flame = new THREE.Mesh(
+						new THREE.ConeGeometry( 0.24 + Math.random() * 0.2, 0.9 + Math.random() * 0.6, 10 ),
+						new THREE.MeshStandardMaterial( {
+							color: 0xff9d3c,
+							emissive: 0xff5b25,
+							emissiveIntensity: 0.7,
+							metalness: 0.08,
+							roughness: 0.28,
+							transparent: true,
+							opacity: 0.84
+						} )
+					);
+					const angle = i / 7 * Math.PI * 2;
+					const radius = 0.18 + Math.random() * 0.42;
+					flame.position.set( Math.cos( angle ) * radius, 0.5 + Math.random() * 0.7, Math.sin( angle ) * radius );
+					flame.userData.phase = Math.random() * Math.PI * 2;
+					incidentVisuals.fireGroup.add( flame );
+
+				}
+
+			}
+
+			function animateIncidentEffects( elapsed, delta ) {
+
+				if ( incidentVisuals.ddosGroup.visible ) {
+
+					incidentVisuals.ddosGroup.rotation.y += delta * 0.65;
+					for ( const spike of incidentVisuals.ddosGroup.children ) {
+
+						const pulse = 0.42 + 0.32 * Math.sin( elapsed * 6.2 + spike.userData.phase );
+						spike.material.emissiveIntensity = pulse;
+						spike.position.y += Math.sin( elapsed * 4 + spike.userData.phase ) * 0.0008;
+
+					}
+
+				}
+
+				if ( incidentVisuals.fireGroup.visible ) {
+
+					for ( const flame of incidentVisuals.fireGroup.children ) {
+
+						const sway = 0.8 + 0.2 * Math.sin( elapsed * 8 + flame.userData.phase );
+						flame.scale.set( sway * 0.9, sway, sway * 0.9 );
+						flame.material.emissiveIntensity = 0.58 + 0.25 * Math.sin( elapsed * 9 + flame.userData.phase );
+
+					}
+
+				}
+
+				if ( incidentVisuals.segmentBarrier.visible ) {
+
+					incidentVisuals.segmentBarrier.material.opacity = 0.1 + 0.08 * Math.sin( elapsed * 3.4 );
+					incidentVisuals.segmentBarrier.material.emissiveIntensity = 0.35 + 0.2 * Math.sin( elapsed * 4.8 );
+
+				}
+
+			}
+
+			function createSnapshot( reason ) {
+
+				return {
+					mode: state.mode,
+					centralOnline: state.centralOnline,
+					offlineDecentralizedNode: state.offlineDecentralizedNode,
+					incidentType: state.incidentType,
+					fireTargetNode: state.fireTargetNode,
+					reason
+				};
+
+			}
+
+			function applySnapshot( snapshot ) {
+
+				state.mode = snapshot.mode;
+				state.centralOnline = snapshot.centralOnline;
+				state.offlineDecentralizedNode = snapshot.offlineDecentralizedNode;
+				state.incidentType = snapshot.incidentType;
+				state.fireTargetNode = snapshot.fireTargetNode;
+
+			}
+
+			function areSnapshotsEqual( a, b ) {
+
+				return a.mode === b.mode &&
+					a.centralOnline === b.centralOnline &&
+					a.offlineDecentralizedNode === b.offlineDecentralizedNode &&
+					a.incidentType === b.incidentType &&
+					a.fireTargetNode === b.fireTargetNode;
+
+			}
+
+			function recordHistorySnapshot( reason ) {
+
+				if ( history.suspendRecording ) return;
+
+				const snapshot = createSnapshot( reason );
+				const last = history.entries[ history.entries.length - 1 ];
+
+				if ( last && areSnapshotsEqual( snapshot, last ) ) return;
+
+				history.entries.push( snapshot );
+
+				if ( history.entries.length > history.maxEntries ) {
+
+					history.entries.shift();
+
+				}
+
+				state.timelineIndex = - 1;
+				syncTimelineControls();
+
+			}
+
+			function onTimelineSliderInput() {
+
+				const index = Number( ui.timelineSlider.value );
+				scrubTimelineTo( index );
+
+			}
+
+			function scrubTimelineTo( index ) {
+
+				if ( history.entries.length === 0 ) return;
+
+				const maxIndex = history.entries.length - 1;
+				const clamped = THREE.MathUtils.clamp( Math.round( index ), 0, maxIndex );
+
+				history.suspendRecording = true;
+				applySnapshot( history.entries[ clamped ] );
+				history.suspendRecording = false;
+
+				state.timelineIndex = clamped === maxIndex ? - 1 : clamped;
+				updateNetworkState();
+				syncTimelineControls();
+
+			}
+
+			function jumpToLiveTimeline() {
+
+				if ( history.entries.length === 0 ) return;
+
+				scrubTimelineTo( history.entries.length - 1 );
+
+			}
+
+			function syncTimelineControls() {
+
+				const count = history.entries.length;
+
+				if ( count === 0 ) {
+
+					ui.timelineSlider.max = '0';
+					ui.timelineSlider.value = '0';
+					ui.timelineMeta.textContent = 'LIVE';
+					ui.timelineLiveButton.disabled = true;
+					if ( vr.timelineSlider ) vr.timelineSlider.setNormalized( 1, true );
+					return;
+
+				}
+
+				const maxIndex = count - 1;
+				const activeIndex = state.timelineIndex === - 1 ? maxIndex : state.timelineIndex;
+
+				ui.timelineSlider.max = String( maxIndex );
+				ui.timelineSlider.value = String( activeIndex );
+
+				if ( state.timelineIndex === - 1 ) {
+
+					ui.timelineMeta.textContent = `LIVE | snapshot ${count}/${count}`;
+					ui.timelineLiveButton.disabled = true;
+
+				} else {
+
+					const reason = history.entries[ activeIndex ].reason || 'state';
+					ui.timelineMeta.textContent = `Snapshot ${activeIndex + 1}/${count} | ${reason}`;
+					ui.timelineLiveButton.disabled = false;
+
+				}
+
+				if ( vr.timelineSlider ) {
+
+					const normalized = maxIndex > 0 ? activeIndex / maxIndex : 1;
+					vr.timelineSlider.setNormalized( normalized, state.timelineIndex === - 1 );
+
+				}
+
+			}
+
+			function setNodeOnline( nodeMesh, online ) {
+
+				nodeMesh.userData.online = online;
+				nodeMesh.userData.currentEmissive = online ? 0.36 : 0.14;
+				nodeMesh.userData.currentShellOpacity = online ? 0.82 : 0.45;
+
+				const color = online ? nodeMesh.userData.onlineColor : nodeMesh.userData.offlineColor;
+				for ( const material of nodeMesh.userData.statusMaterials ) {
+
+					material.color.setHex( color );
+					material.emissive.setHex( color );
+					material.emissiveIntensity = nodeMesh.userData.currentEmissive;
+
+				}
+
+				nodeMesh.userData.shellMaterial.emissive.setHex( color );
+				nodeMesh.userData.shellMaterial.opacity = nodeMesh.userData.currentShellOpacity;
+
+			}
+
+			function setRouteActive( route, active ) {
+
+				route.active = active;
+				route.packet.visible = active;
+				route.conduit.material.color.setHex( active ? route.activeColor : route.inactiveColor );
+				route.conduit.material.emissive.setHex( active ? route.activeColor : route.inactiveColor );
+				route.conduit.material.emissiveIntensity = active ? 0.34 : 0.12;
+				route.conduit.material.opacity = active ? 0.92 : 0.24;
+
+			}
+
+			function switchMode() {
+
+				ensureLiveStateForAction();
+				state.mode = state.mode === 'centralized' ? 'decentralized' : 'centralized';
+
+				if ( state.incidentType === 'fire' ) {
+
+					state.fireTargetNode = state.mode === 'decentralized' ? pickRandomDecentralizedNode() : null;
+
+				}
+
+				updateNetworkState();
+				recordHistorySnapshot( 'switch mode' );
+
+			}
+
+			function toggleCentralServer() {
+
+				ensureLiveStateForAction();
+				if ( state.mode !== 'centralized' ) return;
+				state.centralOnline = ! state.centralOnline;
+				updateNetworkState();
+				recordHistorySnapshot( 'toggle central' );
+
+			}
+
+			function disableRandomNode() {
+
+				ensureLiveStateForAction();
+				if ( state.mode !== 'decentralized' ) return;
+
+				const options = [];
+				for ( let i = 0; i < decentralized.nodes.length; i ++ ) {
+
+					if ( i !== state.offlineDecentralizedNode ) options.push( i );
+
+				}
+
+				if ( options.length === 0 ) return;
+
+				const choice = options[ Math.floor( Math.random() * options.length ) ];
+				state.offlineDecentralizedNode = choice;
+
+				if ( state.incidentType === 'fire' && state.fireTargetNode === choice ) {
+
+					state.fireTargetNode = pickRandomDecentralizedNode();
+
+				}
+
+				updateNetworkState();
+				recordHistorySnapshot( 'disable node' );
+
+			}
+
+			function resetNetwork() {
+
+				ensureLiveStateForAction();
+				state.centralOnline = true;
+				state.offlineDecentralizedNode = null;
+				state.incidentType = 'none';
+				state.fireTargetNode = null;
+				updateNetworkState();
+				recordHistorySnapshot( 'reset' );
+
+			}
+
+			function updateNetworkState() {
+
+				const isCentralized = state.mode === 'centralized';
+				centralized.group.visible = isCentralized;
+				decentralized.group.visible = ! isCentralized;
+
+				if ( isCentralized ) {
+
+					const centralNodeOnline = state.centralOnline && state.incidentType !== 'fire';
+					setNodeOnline( centralized.centralNode.userData.nodeMesh, centralNodeOnline );
+
+					for ( let i = 1; i < centralized.nodes.length; i ++ ) {
+
+						setNodeOnline( centralized.nodes[ i ].userData.nodeMesh, true );
+
+					}
+
+					for ( const route of centralized.routes ) {
+
+						const active = isRouteAllowedByIncident( route, state.centralOnline, true );
+						setRouteActive( route, active );
+
+					}
+
+					ui.modeValue.textContent = 'Centralized (Bank City)';
+
+					if ( state.centralOnline && state.incidentType !== 'fire' ) {
+
+						setUiState( true, 'Central server is online. All transaction paths are operational.' );
+
+					} else {
+
+						setUiState( false, 'Central server offline. Entire system is halted (single point of failure).' );
+
+					}
+
+				} else {
+
+					for ( let i = 0; i < decentralized.nodes.length; i ++ ) {
+
+						const online = i !== state.offlineDecentralizedNode && ! ( state.incidentType === 'fire' && i === state.fireTargetNode );
+						setNodeOnline( decentralized.nodes[ i ].userData.nodeMesh, online );
+
+					}
+
+					for ( const route of decentralized.routes ) {
+
+						const baseActive = route.a !== state.offlineDecentralizedNode && route.b !== state.offlineDecentralizedNode;
+						const active = isRouteAllowedByIncident( route, baseActive, false );
+						setRouteActive( route, active );
+
+					}
+
+					const connected = isDecentralizedNetworkConnected();
+					ui.modeValue.textContent = 'Decentralized (Blockchain City)';
+
+					if ( state.offlineDecentralizedNode === null ) {
+
+						setUiState( true, 'All nodes online. Distributed traffic is stable.' );
+
+					} else if ( connected ) {
+
+						setUiState( true, `Node ${state.offlineDecentralizedNode} is offline. Network remains operational.` );
+
+					} else {
+
+						setUiState( false, 'Network partition detected. Connectivity degraded.' );
+
+					}
+
+				}
+
+				if ( state.incidentType === 'ddos' ) {
+
+					setUiState( false, 'DDoS attack: packet storm and congestion are degrading consensus stability.' );
+
+				} else if ( state.incidentType === 'fire' ) {
+
+					if ( isCentralized ) {
+
+						setUiState( false, 'Fire at the central server: processing core damaged and traffic interrupted.' );
+
+					} else {
+
+						const targetLabel = state.fireTargetNode === null ? 'unknown' : state.fireTargetNode;
+						setUiState( false, `Fire at decentralized node ${targetLabel}. Mesh reroutes around damaged zone.` );
+
+					}
+
+				} else if ( state.incidentType === 'segment' ) {
+
+					if ( isCentralized ) {
+
+						setUiState( false, 'Segment cut simulation is active. Switch to decentralized mode to see partition effects.' );
+
+					} else {
+
+						const connected = isDecentralizedNetworkConnected();
+						setUiState( false, connected ? 'Segment cut: cross-zone links removed but core network still partially connected.' : 'Segment cut: partition detected between network zones.' );
+
+					}
+
+				}
+
+				ui.switchModeButton.textContent = isCentralized ? 'Switch to Decentralized' : 'Switch to Centralized';
+				ui.centralServerButton.disabled = ! isCentralized;
+				ui.decentralizedNodeButton.disabled = isCentralized;
+				ui.centralServerButton.textContent = state.centralOnline ? 'Disable Central Server' : 'Restore Central Server';
+				ui.ddosButton.disabled = state.incidentType === 'ddos';
+				ui.fireButton.disabled = state.incidentType === 'fire';
+				ui.segmentButton.disabled = isCentralized;
+				ui.recoverButton.disabled = state.incidentType === 'none';
+
+				updateIncidentVisuals( isCentralized );
+				updateVRPanelState();
+
+			}
+
+			function isDecentralizedNetworkConnected() {
+
+				const nodeCount = decentralized.nodes.length;
+				const offlineIndex = state.offlineDecentralizedNode;
+
+				const onlineIndices = [];
+				for ( let i = 0; i < nodeCount; i ++ ) {
+
+					if ( i !== offlineIndex && ! ( state.incidentType === 'fire' && i === state.fireTargetNode ) ) onlineIndices.push( i );
+
+				}
+
+				if ( onlineIndices.length <= 1 ) return true;
+
+				const adjacency = new Map();
+				for ( const idx of onlineIndices ) adjacency.set( idx, [] );
+
+				for ( const route of decentralized.routes ) {
+
+					const baseActive = route.a !== offlineIndex && route.b !== offlineIndex;
+					if ( ! isRouteAllowedByIncident( route, baseActive, false ) ) continue;
+					adjacency.get( route.a ).push( route.b );
+					adjacency.get( route.b ).push( route.a );
+
+				}
+
+				const start = onlineIndices[ 0 ];
+				const stack = [ start ];
+				const visited = new Set();
+
+				while ( stack.length > 0 ) {
+
+					const current = stack.pop();
+
+					if ( visited.has( current ) ) continue;
+					visited.add( current );
+
+					const neighbors = adjacency.get( current );
+					for ( const next of neighbors ) {
+
+						if ( ! visited.has( next ) ) stack.push( next );
+
+					}
+
+				}
+
+				return visited.size === onlineIndices.length;
+
+			}
+
+			function setUiState( isValid, eventText ) {
+
+				ui.stateBadge.className = isValid ? 'badge valid' : 'badge invalid';
+				ui.stateBadge.textContent = isValid ? 'VALID' : 'INVALID';
+				ui.eventValue.textContent = eventText;
+
+			}
+
+			function updateVRPanelState() {
+
+				if ( ! vr.panel ) return;
+
+				const isCentralized = state.mode === 'centralized';
+				vr.buttons.switchMode.setText( isCentralized ? 'Switch: Decentralized' : 'Switch: Centralized' );
+				vr.buttons.centralServer.setText( state.centralOnline ? 'Central Server: Disable' : 'Central Server: Restore' );
+				vr.buttons.centralServer.setEnabled( isCentralized );
+				vr.buttons.disableNode.setEnabled( ! isCentralized );
+				vr.buttons.ddos.setEnabled( state.incidentType !== 'ddos' );
+				vr.buttons.fire.setEnabled( state.incidentType !== 'fire' );
+				vr.buttons.segment.setEnabled( ! isCentralized );
+				vr.buttons.recover.setEnabled( state.incidentType !== 'none' );
+
+				const summary = `${ui.stateBadge.textContent} | ${ui.modeValue.textContent}`;
+				vr.statusLabel.setText( `${summary} - ${ui.eventValue.textContent}`, ui.stateBadge.textContent === 'VALID' );
+
+				if ( vr.timelineSlider ) {
+
+					const count = history.entries.length;
+					const maxIndex = Math.max( count - 1, 0 );
+					const activeIndex = state.timelineIndex === - 1 ? maxIndex : state.timelineIndex;
+					const normalized = maxIndex > 0 ? activeIndex / maxIndex : 1;
+					vr.timelineSlider.setNormalized( normalized, state.timelineIndex === - 1 );
+
+				}
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function animate() {
+
+				const delta = clock.getDelta();
+				const elapsed = clock.elapsedTime;
+
+				if ( renderer.xr.isPresenting === false ) {
+
+					controls.update();
+
+				}
+
+				animatePackets( centralized.routes, delta );
+				animatePackets( decentralized.routes, delta );
+				animateNodePulse( elapsed );
+				animateDecorativeSpin( delta );
+				animateIncidentEffects( elapsed, delta );
+				updateVRInteraction();
+
+				renderer.render( scene, camera );
+
+			}
+
+			function animatePackets( routes, delta ) {
+
+				const speedFactor = state.incidentType === 'ddos' ? 2.8 : 1;
+
+				for ( const route of routes ) {
+
+					if ( ! route.active ) continue;
+
+					route.phase = ( route.phase + delta * route.speed * speedFactor ) % 1;
+					route.packet.position.copy( route.curve.getPointAt( route.phase ) );
+					route.packet.material.emissiveIntensity = state.incidentType === 'ddos' ? 1.8 : 1.5;
+
+				}
+
+			}
+
+			function animateDecorativeSpin( delta ) {
+
+				for ( const item of spinElements ) {
+
+					item.mesh.rotation[ item.axis ] += delta * item.speed;
+
+				}
+
+			}
+
+			function animateNodePulse( elapsed ) {
+
+				for ( const nodeMesh of pulseNodes ) {
+
+					if ( ! nodeMesh.userData.online ) {
+
+						nodeMesh.scale.setScalar( 1 );
+						continue;
+
+					}
+
+					const pulse = 1 + 0.065 * Math.sin( elapsed * 3.4 + nodeMesh.userData.pulseOffset );
+					nodeMesh.scale.setScalar( pulse );
+
+				}
+
+			}
+
+		</script>
+	</body>
+</html>

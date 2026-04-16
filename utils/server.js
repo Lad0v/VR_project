@@ -47,6 +47,15 @@ function createHandler( rootDirectory ) {
 	return ( req, res ) => {
 
 		const pathname = decodeURIComponent( req.url.split( '?' )[ 0 ] );
+
+		if ( pathname === '/' ) {
+
+			res.writeHead( 302, { Location: '/examples/' } );
+			res.end();
+			return;
+
+		}
+
 		let filePath = path.join( rootDirectory, pathname );
 
 		// Prevent path traversal attacks
