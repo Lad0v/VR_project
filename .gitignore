@@ -1,0 +1,29 @@
+# OS / Editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.vs/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build / Temp
+coverage/
+dist/
+out/
+tmp/
+.temp/
+
+# Local runtime artifacts
+*.log
+*.pid
+*.seed
+
+# Optional cache folders
+.cache/
+.puppeteer_profile/
