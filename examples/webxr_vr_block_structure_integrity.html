@@ -1,0 +1,2580 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webxr - blockchain block integrity scene 2</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+		<link type="text/css" rel="stylesheet" href="main.css">
+		<style>
+			body {
+				margin: 0;
+				overflow: hidden;
+				font-family: "Segoe UI", Tahoma, sans-serif;
+				background: radial-gradient( circle at 12% 10%, #16344a 0%, #0a1521 54%, #04060b 100% );
+				color: #e9f6ff;
+			}
+
+			#hud {
+				position: absolute;
+				inset-block-start: 14px;
+				inset-inline-start: 14px;
+				inline-size: min( 460px, calc( 100vw - 28px ) );
+				max-block-size: calc( 100vh - 28px );
+				overflow-y: auto;
+				overflow-x: hidden;
+				scrollbar-gutter: stable;
+				overscroll-behavior: contain;
+				scrollbar-width: thin;
+				scrollbar-color: rgba( 138, 212, 255, 0.74 ) rgba( 17, 45, 65, 0.68 );
+				padding: 14px;
+				border-radius: 12px;
+				background: rgba( 7, 18, 30, 0.75 );
+				border: 1px solid rgba( 123, 199, 255, 0.34 );
+				backdrop-filter: blur( 4px );
+				box-shadow: 0 8px 34px rgba( 0, 0, 0, 0.35 );
+				z-index: 4;
+			}
+
+			#hud.is-hidden {
+				display: none;
+			}
+
+			#hud::-webkit-scrollbar {
+				inline-size: 10px;
+				block-size: 10px;
+			}
+
+			#hud::-webkit-scrollbar-track {
+				background: rgba( 17, 45, 65, 0.68 );
+				border-radius: 999px;
+			}
+
+			#hud::-webkit-scrollbar-thumb {
+				background: linear-gradient( 180deg, rgba( 170, 230, 255, 0.92 ) 0%, rgba( 90, 176, 225, 0.9 ) 100% );
+				border-radius: 999px;
+				border: 2px solid rgba( 17, 45, 65, 0.95 );
+			}
+
+			#hud::-webkit-scrollbar-thumb:hover {
+				background: linear-gradient( 180deg, rgba( 189, 238, 255, 0.96 ) 0%, rgba( 109, 195, 244, 0.93 ) 100% );
+			}
+
+			.hud-toggle {
+				position: absolute;
+				inset-block-start: 14px;
+				inset-inline-end: 14px;
+				z-index: 5;
+				inline-size: 144px;
+				padding: 8px 12px;
+				border-radius: 999px;
+				border: 1px solid rgba( 123, 199, 255, 0.5 );
+				background: rgba( 12, 36, 53, 0.86 );
+				color: #eef9ff;
+				font-size: 12px;
+				font-weight: 700;
+				letter-spacing: 0.02em;
+				cursor: pointer;
+				transition: background-color 0.2s ease, transform 0.2s ease;
+			}
+
+			.hud-toggle:hover {
+				background: rgba( 25, 61, 84, 0.95 );
+				transform: translateY( -1px );
+			}
+
+			#hud h2 {
+				margin: 0 0 10px;
+				font-size: 18px;
+				font-weight: 700;
+				letter-spacing: 0.02em;
+			}
+
+			#hud p {
+				margin: 0 0 10px;
+				font-size: 13px;
+				line-height: 1.35;
+				color: #cce5f8;
+			}
+
+			.toolbar {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 8px;
+				margin-block-end: 8px;
+			}
+
+			.editor-row {
+				display: grid;
+				grid-template-columns: 1fr auto;
+				gap: 8px;
+				margin-block-end: 8px;
+			}
+
+			#txInput {
+				border: 1px solid rgba( 132, 208, 255, 0.38 );
+				border-radius: 8px;
+				padding: 8px 10px;
+				background: rgba( 16, 40, 57, 0.82 );
+				color: #eff8ff;
+				font-size: 13px;
+			}
+
+			button {
+				border: 1px solid rgba( 123, 199, 255, 0.44 );
+				border-radius: 8px;
+				padding: 8px 10px;
+				background: rgba( 33, 68, 92, 0.74 );
+				color: #eef9ff;
+				font-size: 13px;
+				font-weight: 600;
+				cursor: pointer;
+				transition: background-color 0.2s ease, transform 0.2s ease;
+			}
+
+			button:hover {
+				background: rgba( 46, 90, 121, 0.9 );
+				transform: translateY( -1px );
+			}
+
+			button:disabled {
+				cursor: not-allowed;
+				opacity: 0.42;
+				transform: none;
+			}
+
+			.indicators {
+				display: grid;
+				grid-template-columns: auto 1fr;
+				gap: 6px 10px;
+				font-size: 12px;
+				margin-block-start: 2px;
+			}
+
+			.indicators span {
+				color: #9cc4df;
+			}
+
+			.value {
+				color: #ecf8ff;
+				font-weight: 600;
+			}
+
+			.badge {
+				display: inline-block;
+				padding: 2px 10px;
+				border-radius: 999px;
+				font-weight: 700;
+				letter-spacing: 0.02em;
+			}
+
+			.badge.valid {
+				background: rgba( 52, 189, 116, 0.25 );
+				color: #a8ffcc;
+				border: 1px solid rgba( 108, 247, 167, 0.45 );
+			}
+
+			.badge.invalid {
+				background: rgba( 228, 68, 68, 0.24 );
+				color: #ffbcbc;
+				border: 1px solid rgba( 255, 136, 136, 0.48 );
+			}
+
+			.timeline {
+				margin-block-start: 10px;
+				padding: 8px;
+				border-radius: 8px;
+				background: rgba( 10, 29, 44, 0.7 );
+				border: 1px solid rgba( 100, 176, 233, 0.33 );
+			}
+
+			.timeline-header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				margin-block-end: 6px;
+			}
+
+			.timeline-label {
+				font-size: 12px;
+				font-weight: 700;
+				color: #d9f2ff;
+			}
+
+			#timelineMeta {
+				font-size: 11px;
+				color: #9fc5de;
+			}
+
+			#timelineSlider {
+				inline-size: 100%;
+			}
+
+			#timelineLiveButton {
+				margin-block-start: 6px;
+				inline-size: 100%;
+			}
+
+			.legend {
+				margin-block-start: 10px;
+				font-size: 11px;
+				line-height: 1.4;
+				color: #a8c7dd;
+			}
+
+			.legend strong {
+				color: #d9f2ff;
+			}
+
+			.inspector,
+			.tutorial {
+				margin-block-start: 10px;
+				padding: 8px;
+				border-radius: 8px;
+				background: rgba( 10, 29, 44, 0.72 );
+				border: 1px solid rgba( 96, 173, 231, 0.33 );
+			}
+
+			.panel-title {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				font-size: 12px;
+				font-weight: 700;
+				color: #d9f2ff;
+				margin-block-end: 6px;
+			}
+
+			.inspector-grid {
+				display: grid;
+				grid-template-columns: auto 1fr;
+				gap: 5px 10px;
+				font-size: 11px;
+			}
+
+			.inspector-grid span {
+				color: #9bc2dc;
+			}
+
+			.inspector-grid .value {
+				color: #e9f7ff;
+			}
+
+			.mismatch-ok {
+				color: #b9ffd9;
+			}
+
+			.mismatch-bad {
+				color: #ffbec0;
+			}
+
+			#tutorialText {
+				margin: 0;
+				font-size: 12px;
+				line-height: 1.35;
+				color: #d8ecfa;
+			}
+
+			#tutorialRestartButton {
+				margin-block-start: 8px;
+				inline-size: 100%;
+			}
+
+			@media ( max-inline-size: 560px ) {
+				.toolbar {
+					grid-template-columns: 1fr;
+				}
+
+				.editor-row {
+					grid-template-columns: 1fr;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div id="hud">
+			<h2>Scene 2: Block Integrity Lab</h2>
+			<p>
+				Inspect block fields, tamper one transaction, and watch downstream blocks fail.<br>
+				Then remint to restore chain integrity.
+			</p>
+			<div class="toolbar">
+				<button id="selectPrevButton">Select Previous Block</button>
+				<button id="selectNextButton">Select Next Block</button>
+			</div>
+			<div class="editor-row">
+				<input id="txInput" type="text" value="Transfer 90 TOK" maxlength="48" autocomplete="off" spellcheck="false">
+				<button id="applyTamperButton">Apply Tamper</button>
+			</div>
+			<div class="toolbar">
+				<button id="randomTamperButton">Random Tamper</button>
+				<button id="restoreTxButton">Restore Block Tx</button>
+				<button id="remintButton">Remint Chain</button>
+				<button id="resetButton">Reset Chain</button>
+			</div>
+			<div class="indicators">
+				<span>Selected</span>
+				<span class="value" id="selectedValue">Block #0</span>
+				<span>Status</span>
+				<span><span class="badge valid" id="stateBadge">VALID</span></span>
+				<span>Causal Event</span>
+				<span class="value" id="eventValue">Chain is valid. Waiting for changes.</span>
+				<span>Metrics</span>
+				<span class="value" id="metricsValue">Total: 0 | Valid: 0 | Invalid: 0 | First broken: none | Tamps: 0 | Last recover: n/a</span>
+			</div>
+			<div class="inspector">
+				<div class="panel-title">
+					<span>Integrity Inspector</span>
+					<span id="inspectorStepHint">Select a block</span>
+				</div>
+				<div class="inspector-grid">
+					<span>Expected prevHash</span>
+					<span class="value" id="expectedPrevValue">-</span>
+					<span>Actual prevHash</span>
+					<span class="value" id="actualPrevValue">-</span>
+					<span>Mismatch</span>
+					<span class="value mismatch-ok" id="mismatchValue">No mismatch</span>
+					<span>Reason</span>
+					<span class="value" id="mismatchReasonValue">Chain linkage is intact.</span>
+				</div>
+			</div>
+			<div class="tutorial">
+				<div class="panel-title">
+					<span>Guided Tutorial</span>
+					<span id="tutorialStepLabel">Step 1/4</span>
+				</div>
+				<p id="tutorialText">Select a non-genesis block (#1 and above).</p>
+				<button id="tutorialRestartButton">Restart Tutorial</button>
+			</div>
+			<div class="timeline">
+				<div class="timeline-header">
+					<span class="timeline-label">Timeline Replay</span>
+					<span id="timelineMeta">LIVE</span>
+				</div>
+				<input id="timelineSlider" type="range" min="0" max="0" step="1" value="0">
+				<button id="timelineLiveButton">Return to Live</button>
+			</div>
+			<div class="legend">
+				<strong>Legend:</strong> Green blocks are valid, red blocks are invalid.<br>
+				Connectors turn red where chain linkage is broken.<br>
+				<strong>VR:</strong> Use controller ray + trigger to select blocks and press panel controls.
+			</div>
+		</div>
+		<button id="hudToggleButton" class="hud-toggle" type="button" aria-controls="hud" aria-pressed="false">Hide Panel (H)</button>
+
+		<script type="importmap">
+			{
+				"imports": {
+					"three": "../build/three.module.js",
+					"three/addons/": "./jsm/"
+				}
+			}
+		</script>
+
+		<script type="module">
+
+			import * as THREE from 'three';
+			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+			import { VRButton } from 'three/addons/webxr/VRButton.js';
+			import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
+
+			let camera, scene, renderer, controls;
+
+			const clock = new THREE.Clock();
+			const vrRayLength = 13;
+			const tempMatrix = new THREE.Matrix4();
+			const blockCount = 7;
+			const blockSpacing = 3.4;
+			const chainGroup = new THREE.Group();
+			const animables = {
+				spin: [],
+				packets: []
+			};
+
+			const vr = {
+				raycaster: new THREE.Raycaster(),
+				controllers: [],
+				interactiveTargets: [],
+				buttons: {},
+				statusLabel: null,
+				chainLabel: null,
+				timelineSlider: null,
+				txPad: null,
+				panel: null
+			};
+
+			const chain = {
+				blocks: [],
+				selectedIndex: 2,
+				firstBrokenIndex: - 1,
+				timelineIndex: - 1,
+				lastAction: 'Chain initialized and valid.'
+			};
+
+			const history = {
+				entries: [],
+				maxEntries: 200,
+				suspendRecording: false
+			};
+
+			const metrics = {
+				tamperCount: 0,
+				breakStartedAt: 0,
+				lastRecoveryMs: 0
+			};
+
+			const tutorial = {
+				step: 0,
+				total: 4,
+				completed: false
+			};
+
+			const tutorialSteps = [
+				'Select a non-genesis block (#1 and above).',
+				'Edit TX and apply tamper to break the chain.',
+				'Select the first broken block to inspect the mismatch.',
+				'Recover integrity with Remint Chain or Reset Chain.'
+			];
+
+			const cameraFocus = {
+				desiredTarget: new THREE.Vector3( 0, 2.1, 0 ),
+				desiredPosition: new THREE.Vector3( 0, 10, 26 )
+			};
+
+			const chainVisual = {
+				breakOffset: 0,
+				breakOffsetTarget: 0
+			};
+
+			const audioFx = {
+				listener: null,
+				breakSound: null,
+				recoverSound: null,
+				initialized: false
+			};
+
+			const panelState = {
+				hudVisible: true
+			};
+
+			const breakFx = {
+				group: new THREE.Group(),
+				ring: null,
+				beam: null,
+				glow: null
+			};
+
+			const palette = {
+				valid: 0x4be38d,
+				invalid: 0xff5e66,
+				neutral: 0x6db7f0,
+				bg: 0x060c14
+			};
+
+			const baseTransactions = [
+				'Transfer 50 TOK',
+				'Stake 14 TOK',
+				'Bridge 8 TOK',
+				'Vote #A17',
+				'Swap 24 TOK',
+				'Payroll batch',
+				'NFT mint #402'
+			];
+
+			const tamperPool = [
+				'Transfer 999 TOK',
+				'Inject fake reward',
+				'Rewrite validator set',
+				'Replay tx #1482',
+				'Spoof treasury payout',
+				'Alter bridge receipt'
+			];
+
+			const ui = {
+				hud: document.getElementById( 'hud' ),
+				hudToggleButton: document.getElementById( 'hudToggleButton' ),
+				selectPrevButton: document.getElementById( 'selectPrevButton' ),
+				selectNextButton: document.getElementById( 'selectNextButton' ),
+				txInput: document.getElementById( 'txInput' ),
+				applyTamperButton: document.getElementById( 'applyTamperButton' ),
+				randomTamperButton: document.getElementById( 'randomTamperButton' ),
+				restoreTxButton: document.getElementById( 'restoreTxButton' ),
+				remintButton: document.getElementById( 'remintButton' ),
+				resetButton: document.getElementById( 'resetButton' ),
+				selectedValue: document.getElementById( 'selectedValue' ),
+				stateBadge: document.getElementById( 'stateBadge' ),
+				eventValue: document.getElementById( 'eventValue' ),
+				metricsValue: document.getElementById( 'metricsValue' ),
+				expectedPrevValue: document.getElementById( 'expectedPrevValue' ),
+				actualPrevValue: document.getElementById( 'actualPrevValue' ),
+				mismatchValue: document.getElementById( 'mismatchValue' ),
+				mismatchReasonValue: document.getElementById( 'mismatchReasonValue' ),
+				inspectorStepHint: document.getElementById( 'inspectorStepHint' ),
+				tutorialStepLabel: document.getElementById( 'tutorialStepLabel' ),
+				tutorialText: document.getElementById( 'tutorialText' ),
+				tutorialRestartButton: document.getElementById( 'tutorialRestartButton' ),
+				timelineSlider: document.getElementById( 'timelineSlider' ),
+				timelineLiveButton: document.getElementById( 'timelineLiveButton' ),
+				timelineMeta: document.getElementById( 'timelineMeta' )
+			};
+
+			init();
+
+			function init() {
+
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( palette.bg );
+				scene.fog = new THREE.Fog( palette.bg, 24, 90 );
+
+				camera = new THREE.PerspectiveCamera( 54, window.innerWidth / window.innerHeight, 0.1, 180 );
+				camera.position.set( 0, 10, 26 );
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.outputColorSpace = THREE.SRGBColorSpace;
+				renderer.xr.enabled = true;
+				renderer.setAnimationLoop( animate );
+				document.body.appendChild( renderer.domElement );
+				document.body.appendChild( VRButton.createButton( renderer ) );
+
+				controls = new OrbitControls( camera, renderer.domElement );
+				controls.target.set( 0, 2.1, 0 );
+				controls.enableDamping = true;
+				controls.minDistance = 12;
+				controls.maxDistance = 56;
+				controls.maxPolarAngle = Math.PI * 0.48;
+				cameraFocus.desiredTarget.copy( controls.target );
+				cameraFocus.desiredPosition.copy( camera.position );
+				initAudioSystem();
+
+				const hemi = new THREE.HemisphereLight( 0xa8d9ff, 0x1a2532, 0.95 );
+				scene.add( hemi );
+
+				const key = new THREE.DirectionalLight( 0xffffff, 1.2 );
+				key.position.set( 13, 20, 7 );
+				scene.add( key );
+
+				const fill = new THREE.PointLight( 0x66d9ff, 18, 64 );
+				fill.position.set( - 12, 6, - 8 );
+				scene.add( fill );
+
+				const floor = new THREE.Mesh(
+					new THREE.CircleGeometry( 36, 72 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x0f2435,
+						emissive: 0x081520,
+						emissiveIntensity: 0.38,
+						metalness: 0.2,
+						roughness: 0.84
+					} )
+				);
+				floor.rotation.x = - Math.PI / 2;
+				floor.position.y = - 0.04;
+				scene.add( floor );
+
+				const grid = new THREE.GridHelper( 62, 30, 0x1f537d, 0x14324d );
+				grid.position.y = 0.01;
+				scene.add( grid );
+
+				addAtmosphereDetails();
+				initBreakEffect();
+				buildChain();
+				buildConnectors();
+				scene.add( chainGroup );
+
+				setupVRControllers();
+				setupVRControlPanel();
+				bindEvents();
+				restartTutorial( false );
+
+				validateChain();
+				updateSegmentLayout( true );
+				selectBlock( chain.selectedIndex, false );
+				recordHistorySnapshot( 'initial' );
+				syncTimelineControls();
+				refreshUI();
+
+			}
+
+			function bindEvents() {
+
+				ui.selectPrevButton.addEventListener( 'click', () => cycleSelection( - 1 ) );
+				ui.selectNextButton.addEventListener( 'click', () => cycleSelection( 1 ) );
+				ui.applyTamperButton.addEventListener( 'click', () => applyTamperFromInput() );
+				ui.randomTamperButton.addEventListener( 'click', tamperSelectedWithRandom );
+				ui.restoreTxButton.addEventListener( 'click', restoreSelectedTransaction );
+				ui.remintButton.addEventListener( 'click', remintChain );
+				ui.resetButton.addEventListener( 'click', resetChain );
+				ui.tutorialRestartButton.addEventListener( 'click', () => restartTutorial( true ) );
+				ui.txInput.addEventListener( 'keydown', ( event ) => {
+
+					if ( event.key === 'Enter' ) applyTamperFromInput();
+
+				} );
+				ui.txInput.addEventListener( 'input', syncVrTxPadLabel );
+				ui.timelineSlider.addEventListener( 'input', onTimelineSliderInput );
+				ui.timelineLiveButton.addEventListener( 'click', jumpToLiveTimeline );
+				ui.hudToggleButton.addEventListener( 'click', () => toggleHudVisibility() );
+				window.addEventListener( 'resize', onWindowResize );
+				window.addEventListener( 'keydown', onGlobalKeyDown );
+
+				toggleHudVisibility( true );
+
+			}
+
+			function buildChain() {
+
+				for ( let i = 0; i < blockCount; i ++ ) {
+
+					const tx = baseTransactions[ i % baseTransactions.length ];
+					const blockData = {
+						index: i,
+						tx,
+						baseTx: tx,
+						prevHash: i === 0 ? 'GENESIS' : '',
+						hash: '',
+						valid: true,
+						mesh: null,
+						materials: null,
+						labels: null
+					};
+
+					if ( i > 0 ) {
+
+						blockData.prevHash = chain.blocks[ i - 1 ].hash;
+
+					}
+
+					blockData.hash = computeHash( blockData.index, blockData.tx, blockData.prevHash );
+
+					const mesh = createBlockVisual( blockData );
+					const baseX = ( i - ( blockCount - 1 ) * 0.5 ) * blockSpacing;
+					mesh.position.set( baseX, 2, 0 );
+					mesh.userData.baseX = baseX;
+					mesh.userData.blockIndex = i;
+					blockData.mesh = mesh;
+
+					chain.blocks.push( blockData );
+					chainGroup.add( mesh );
+
+				}
+
+			}
+
+			function createBlockVisual( block ) {
+
+				const group = new THREE.Group();
+
+				const shellMaterial = new THREE.MeshPhysicalMaterial( {
+					color: 0x8bd8ff,
+					emissive: palette.neutral,
+					emissiveIntensity: 0.22,
+					metalness: 0.12,
+					roughness: 0.18,
+					transmission: 0.3,
+					thickness: 0.65,
+					transparent: true,
+					opacity: 0.78
+				} );
+
+				const coreMaterial = new THREE.MeshStandardMaterial( {
+					color: 0x2f7cb4,
+					emissive: 0x2f7cb4,
+					emissiveIntensity: 0.35,
+					metalness: 0.38,
+					roughness: 0.34
+				} );
+
+				const statusBarMaterial = new THREE.MeshStandardMaterial( {
+					color: 0x3ebd76,
+					emissive: 0x3ebd76,
+					emissiveIntensity: 0.6,
+					metalness: 0.3,
+					roughness: 0.4
+				} );
+
+				const crackMaterial = new THREE.LineBasicMaterial( {
+					color: palette.invalid,
+					transparent: true,
+					opacity: 0.82
+				} );
+
+				const pedestal = new THREE.Mesh(
+					new THREE.CylinderGeometry( 0.58, 0.72, 0.52, 18 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x233646,
+						emissive: 0x112130,
+						emissiveIntensity: 0.35,
+						metalness: 0.26,
+						roughness: 0.72
+					} )
+				);
+				pedestal.position.y = - 0.64;
+				group.add( pedestal );
+
+				const shell = new THREE.Mesh( new THREE.BoxGeometry( 2.05, 1.35, 1.25 ), shellMaterial );
+				shell.position.y = 0.05;
+				group.add( shell );
+
+				const core = new THREE.Mesh( new THREE.BoxGeometry( 1.53, 0.94, 0.78 ), coreMaterial );
+				core.position.y = 0.05;
+				group.add( core );
+
+				const statusBar = new THREE.Mesh( new THREE.BoxGeometry( 1.9, 0.12, 1.22 ), statusBarMaterial );
+				statusBar.position.y = 0.77;
+				group.add( statusBar );
+
+				const ring = new THREE.Mesh(
+					new THREE.TorusGeometry( 1.16, 0.05, 12, 64 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x91d8ff,
+						emissive: 0x68beff,
+						emissiveIntensity: 0.36,
+						metalness: 0.55,
+						roughness: 0.22
+					} )
+				);
+				ring.rotation.x = Math.PI / 2;
+				ring.position.y = 0.05;
+				group.add( ring );
+				animables.spin.push( { mesh: ring, speed: 0.25 + Math.random() * 0.22 } );
+
+				const socketLeft = new THREE.Mesh(
+					new THREE.CylinderGeometry( 0.08, 0.08, 0.22, 12 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0xd2efff,
+						emissive: 0x93d8ff,
+						emissiveIntensity: 0.5,
+						metalness: 0.4,
+						roughness: 0.28
+					} )
+				);
+				socketLeft.rotation.z = Math.PI / 2;
+				socketLeft.position.set( - 1.05, 0.07, 0 );
+				group.add( socketLeft );
+
+				const socketRight = socketLeft.clone();
+				socketRight.position.x = 1.05;
+				group.add( socketRight );
+
+				const crackEdges = new THREE.LineSegments( new THREE.EdgesGeometry( new THREE.BoxGeometry( 2.08, 1.38, 1.28 ) ), crackMaterial );
+				crackEdges.visible = false;
+				crackEdges.position.y = 0.05;
+				group.add( crackEdges );
+
+				const labelGroup = new THREE.Group();
+				labelGroup.position.set( 0, 1.95, 0 );
+				group.add( labelGroup );
+
+				const indexLabel = createWorldLabel( '', 760, 130, 2.15, 0.32, '#dff4ff', 'rgba(16, 52, 73, 0.9)' );
+				indexLabel.mesh.position.set( 0, 0.32, 0 );
+				labelGroup.add( indexLabel.mesh );
+
+				const txLabel = createWorldLabel( '', 760, 130, 2.15, 0.32, '#e8f8ff', 'rgba(20, 60, 82, 0.9)' );
+				txLabel.mesh.position.set( 0, 0, 0 );
+				labelGroup.add( txLabel.mesh );
+
+				const hashLabel = createWorldLabel( '', 760, 130, 2.15, 0.32, '#d6edff', 'rgba(9, 31, 45, 0.9)' );
+				hashLabel.mesh.position.set( 0, - 0.32, 0 );
+				labelGroup.add( hashLabel.mesh );
+
+				const prevHashLabel = createWorldLabel( '', 760, 130, 2.15, 0.32, '#d6ecff', 'rgba(9, 31, 45, 0.9)' );
+				prevHashLabel.mesh.position.set( 0, - 0.64, 0 );
+				labelGroup.add( prevHashLabel.mesh );
+
+				const statusLabel = createWorldLabel( '', 760, 130, 2.15, 0.3, '#b6ffd7', 'rgba(20, 86, 58, 0.92)' );
+				statusLabel.mesh.position.set( 0, - 0.94, 0 );
+				labelGroup.add( statusLabel.mesh );
+
+				const buttonMesh = new THREE.Mesh(
+					new THREE.BoxGeometry( 1.72, 1.1, 0.66 ),
+					new THREE.MeshBasicMaterial( {
+						color: 0xffffff,
+						opacity: 0,
+						transparent: true
+					} )
+				);
+				buttonMesh.position.y = 0.05;
+				buttonMesh.userData.blockIndex = block.index;
+				group.add( buttonMesh );
+
+				registerInteractiveTarget( buttonMesh, 'block', () => selectBlock( block.index, true ) );
+
+				block.materials = {
+					shell: shellMaterial,
+					core: coreMaterial,
+					statusBar: statusBarMaterial,
+					crack: crackMaterial,
+					ring: ring.material
+				};
+
+				block.labels = {
+					index: indexLabel,
+					tx: txLabel,
+					hash: hashLabel,
+					prevHash: prevHashLabel,
+					status: statusLabel
+				};
+
+				block.userMeshes = {
+					group,
+					ring,
+					crackEdges,
+					selectorMesh: buttonMesh,
+					socketLeft,
+					socketRight
+				};
+
+				return group;
+
+			}
+
+			function buildConnectors() {
+
+				for ( let i = 0; i < chain.blocks.length - 1; i ++ ) {
+
+					const current = chain.blocks[ i ];
+					const next = chain.blocks[ i + 1 ];
+					const start = current.mesh.position.clone().add( new THREE.Vector3( 1.05, 0.07, 0 ) );
+					const end = next.mesh.position.clone().add( new THREE.Vector3( - 1.05, 0.07, 0 ) );
+					const middle = start.clone().lerp( end, 0.5 );
+					middle.y += 0.5;
+
+					const curve = new THREE.QuadraticBezierCurve3( start, middle, end );
+					const material = new THREE.MeshStandardMaterial( {
+						color: palette.valid,
+						emissive: palette.valid,
+						emissiveIntensity: 0.38,
+						metalness: 0.22,
+						roughness: 0.34,
+						transparent: true,
+						opacity: 0.94
+					} );
+					const conduit = new THREE.Mesh( new THREE.TubeGeometry( curve, 24, 0.06, 10, false ), material );
+					chainGroup.add( conduit );
+
+					const packet = new THREE.Mesh(
+						new THREE.IcosahedronGeometry( 0.12, 1 ),
+						new THREE.MeshStandardMaterial( {
+							color: 0xffffff,
+							emissive: 0x8be3ff,
+							emissiveIntensity: 1.4,
+							metalness: 0.2,
+							roughness: 0.2
+						} )
+					);
+					chainGroup.add( packet );
+
+					animables.packets.push( {
+						fromIndex: i,
+						toIndex: i + 1,
+						curve,
+						conduit,
+						packet,
+						radius: 0.06,
+						segments: 24,
+						speed: 0.22 + Math.random() * 0.2,
+						phase: Math.random(),
+						active: true
+					} );
+
+				}
+
+			}
+
+			function addAtmosphereDetails() {
+
+				const skyline = new THREE.Group();
+
+				for ( let i = 0; i < 46; i ++ ) {
+
+					const angle = Math.random() * Math.PI * 2;
+					const radius = 15 + Math.random() * 13;
+					const tower = new THREE.Mesh(
+						new THREE.BoxGeometry( 0.65 + Math.random() * 0.85, 1.4 + Math.random() * 4.6, 0.65 + Math.random() * 0.85 ),
+						new THREE.MeshStandardMaterial( {
+							color: 0x1e3f57,
+							emissive: 0x0d2434,
+							emissiveIntensity: 0.34,
+							metalness: 0.15,
+							roughness: 0.82
+						} )
+					);
+
+					tower.position.set( Math.cos( angle ) * radius, tower.geometry.parameters.height * 0.5, Math.sin( angle ) * radius );
+					skyline.add( tower );
+
+				}
+
+				scene.add( skyline );
+
+				const stars = new THREE.Group();
+
+				for ( let i = 0; i < 90; i ++ ) {
+
+					const dot = new THREE.Mesh(
+						new THREE.SphereGeometry( 0.05 + Math.random() * 0.03, 8, 6 ),
+						new THREE.MeshBasicMaterial( {
+							color: 0x9fddff,
+							transparent: true,
+							opacity: 0.6 + Math.random() * 0.2
+						} )
+					);
+					dot.position.set( ( Math.random() - 0.5 ) * 90, 16 + Math.random() * 20, ( Math.random() - 0.5 ) * 90 );
+					dot.userData.phase = Math.random() * Math.PI * 2;
+					stars.add( dot );
+
+				}
+
+				scene.add( stars );
+				animables.stars = stars;
+
+			}
+
+			function initBreakEffect() {
+
+				const ring = new THREE.Mesh(
+					new THREE.TorusGeometry( 0.76, 0.08, 12, 42 ),
+					new THREE.MeshStandardMaterial( {
+						color: palette.invalid,
+						emissive: palette.invalid,
+						emissiveIntensity: 1,
+						metalness: 0.22,
+						roughness: 0.24,
+						transparent: true,
+						opacity: 0.84
+					} )
+				);
+				ring.rotation.y = Math.PI / 2;
+
+				const beam = new THREE.Mesh(
+					new THREE.CylinderGeometry( 0.09, 0.09, 2.6, 18, 1, true ),
+					new THREE.MeshStandardMaterial( {
+						color: 0xff8f95,
+						emissive: palette.invalid,
+						emissiveIntensity: 1.2,
+						transparent: true,
+						opacity: 0.5,
+						side: THREE.DoubleSide
+					} )
+				);
+
+				const glow = new THREE.Mesh(
+					new THREE.PlaneGeometry( 1.6, 1.6 ),
+					new THREE.MeshBasicMaterial( {
+						color: 0xff7f8e,
+						transparent: true,
+						opacity: 0.3,
+						side: THREE.DoubleSide,
+						depthWrite: false
+					} )
+				);
+				glow.rotation.y = Math.PI / 2;
+
+				breakFx.group.add( ring, beam, glow );
+				breakFx.group.visible = false;
+				breakFx.ring = ring;
+				breakFx.beam = beam;
+				breakFx.glow = glow;
+				chainGroup.add( breakFx.group );
+
+			}
+
+			function initAudioSystem() {
+
+				try {
+
+					const listener = new THREE.AudioListener();
+					camera.add( listener );
+					audioFx.listener = listener;
+
+					const context = listener.context;
+					const breakBuffer = createGlitchBuffer( context, 0.4 );
+					const recoverBuffer = createRecoveryToneBuffer( context, 0.32 );
+
+					const breakSound = new THREE.PositionalAudio( listener );
+					breakSound.setBuffer( breakBuffer );
+					breakSound.setRefDistance( 4.6 );
+					breakSound.setRolloffFactor( 1.25 );
+					breakSound.setVolume( 0.55 );
+					breakFx.group.add( breakSound );
+
+					const recoverSound = new THREE.PositionalAudio( listener );
+					recoverSound.setBuffer( recoverBuffer );
+					recoverSound.setRefDistance( 8 );
+					recoverSound.setRolloffFactor( 0.95 );
+					recoverSound.setVolume( 0.42 );
+					chainGroup.add( recoverSound );
+
+					audioFx.breakSound = breakSound;
+					audioFx.recoverSound = recoverSound;
+					audioFx.initialized = true;
+
+				} catch ( error ) {
+
+					console.warn( 'Audio init failed:', error );
+
+				}
+
+			}
+
+			function unlockAudioContext() {
+
+				if ( ! audioFx.listener ) return;
+
+				const context = audioFx.listener.context;
+				if ( context.state === 'suspended' ) context.resume();
+
+			}
+
+			function createGlitchBuffer( context, duration ) {
+
+				const frameCount = Math.floor( context.sampleRate * duration );
+				const buffer = context.createBuffer( 1, frameCount, context.sampleRate );
+				const data = buffer.getChannelData( 0 );
+
+				for ( let i = 0; i < frameCount; i ++ ) {
+
+					const t = i / frameCount;
+					const envelope = Math.pow( 1 - t, 1.3 );
+					const crack = Math.sin( t * 190 * Math.PI ) * 0.25;
+					data[ i ] = ( ( Math.random() * 2 - 1 ) * 0.7 + crack ) * envelope;
+
+				}
+
+				return buffer;
+
+			}
+
+			function createRecoveryToneBuffer( context, duration ) {
+
+				const frameCount = Math.floor( context.sampleRate * duration );
+				const buffer = context.createBuffer( 1, frameCount, context.sampleRate );
+				const data = buffer.getChannelData( 0 );
+
+				for ( let i = 0; i < frameCount; i ++ ) {
+
+					const t = i / frameCount;
+					const freq = 420 + 260 * t;
+					const envelope = Math.pow( 1 - t, 1.5 );
+					data[ i ] = Math.sin( 2 * Math.PI * freq * t ) * 0.35 * envelope;
+
+				}
+
+				return buffer;
+
+			}
+
+			function playBreakAudio() {
+
+				if ( ! audioFx.initialized || ! audioFx.breakSound ) return;
+				unlockAudioContext();
+
+				if ( audioFx.breakSound.isPlaying ) {
+
+					audioFx.breakSound.stop();
+
+				}
+
+				audioFx.breakSound.play();
+
+			}
+
+			function playRecoveryAudio() {
+
+				if ( ! audioFx.initialized || ! audioFx.recoverSound ) return;
+				unlockAudioContext();
+
+				if ( audioFx.recoverSound.isPlaying ) {
+
+					audioFx.recoverSound.stop();
+
+				}
+
+				audioFx.recoverSound.play();
+
+			}
+
+			function createWorldLabel( text, width, height, worldWidth, worldHeight, color, background ) {
+
+				const canvas = document.createElement( 'canvas' );
+				canvas.width = width;
+				canvas.height = height;
+				const ctx = canvas.getContext( '2d' );
+
+				const texture = new THREE.CanvasTexture( canvas );
+				texture.colorSpace = THREE.SRGBColorSpace;
+				texture.needsUpdate = true;
+
+				const material = new THREE.MeshBasicMaterial( {
+					map: texture,
+					transparent: true,
+					opacity: 0.98,
+					depthWrite: false
+				} );
+				const mesh = new THREE.Mesh( new THREE.PlaneGeometry( worldWidth, worldHeight ), material );
+
+				const redraw = ( nextText, nextColor = color, nextBackground = background ) => {
+
+					ctx.clearRect( 0, 0, width, height );
+					ctx.fillStyle = nextBackground;
+					ctx.fillRect( 0, 0, width, height );
+					ctx.strokeStyle = 'rgba(160, 223, 255, 0.85)';
+					ctx.lineWidth = Math.max( 2, Math.floor( width * 0.004 ) );
+					ctx.strokeRect( 2, 2, width - 4, height - 4 );
+					ctx.fillStyle = nextColor;
+					ctx.font = `600 ${Math.floor( height * 0.42 )}px "Segoe UI", sans-serif`;
+					ctx.textAlign = 'center';
+					ctx.textBaseline = 'middle';
+					ctx.fillText( truncateLabel( nextText, 34 ), width / 2, height * 0.52 );
+					texture.needsUpdate = true;
+
+				};
+
+				redraw( text );
+
+				return { mesh, redraw, texture, canvas };
+
+			}
+
+			function truncateLabel( value, max ) {
+
+				if ( value.length <= max ) return value;
+				return `${value.slice( 0, max - 1 )}...`;
+
+			}
+
+			function computeHash( index, tx, prevHash ) {
+
+				let hash = 2166136261;
+				const source = `${index}|${tx}|${prevHash}`;
+
+				for ( let i = 0; i < source.length; i ++ ) {
+
+					hash ^= source.charCodeAt( i );
+					hash = Math.imul( hash, 16777619 );
+
+				}
+
+				return ( hash >>> 0 ).toString( 16 ).padStart( 8, '0' ).toUpperCase();
+
+			}
+
+			function setCameraFocusOnBlock( index ) {
+
+				const block = chain.blocks[ THREE.MathUtils.clamp( index, 0, chain.blocks.length - 1 ) ];
+				const side = block.index < chain.blocks.length * 0.5 ? 1 : - 1;
+				cameraFocus.desiredTarget.set( block.mesh.position.x, 2.05, 0 );
+				cameraFocus.desiredPosition.set( block.mesh.position.x + side * 6.2, 9.4, 21.3 );
+
+			}
+
+			function setCameraFocusOnBreak() {
+
+				if ( chain.firstBrokenIndex <= 0 ) return;
+
+				const left = chain.blocks[ chain.firstBrokenIndex - 1 ].mesh.position;
+				const right = chain.blocks[ chain.firstBrokenIndex ].mesh.position;
+				const centerX = ( left.x + right.x ) * 0.5;
+
+				cameraFocus.desiredTarget.set( centerX, 2.18, 0 );
+				cameraFocus.desiredPosition.set( centerX + 4.2, 8.8, 18.5 );
+
+			}
+
+			function selectBlock( index, record = false ) {
+
+				chain.selectedIndex = THREE.MathUtils.clamp( index, 0, chain.blocks.length - 1 );
+				const selected = chain.blocks[ chain.selectedIndex ];
+				ui.txInput.value = selected.tx;
+				setCameraFocusOnBlock( chain.selectedIndex );
+				syncVrTxPadLabel();
+
+				if ( chain.firstBrokenIndex !== - 1 && chain.selectedIndex === chain.firstBrokenIndex ) {
+
+					ui.inspectorStepHint.textContent = `Inspecting first broken block #${chain.firstBrokenIndex}`;
+
+				} else {
+
+					ui.inspectorStepHint.textContent = `Inspecting block #${chain.selectedIndex}`;
+
+				}
+
+				if ( record ) {
+
+					chain.lastAction = `Selected block #${selected.index}.`;
+					updateTutorialProgress( 'select' );
+					recordHistorySnapshot( 'select block' );
+
+				}
+
+				refreshUI();
+
+			}
+
+			function cycleSelection( direction ) {
+
+				unlockAudioContext();
+				selectBlock( ( chain.selectedIndex + direction + chain.blocks.length ) % chain.blocks.length, true );
+
+			}
+
+			function applyTamperFromInput() {
+
+				unlockAudioContext();
+				const nextTx = ui.txInput.value.trim();
+				if ( nextTx.length === 0 ) return;
+				tamperSelectedTransaction( nextTx, 'tamper input' );
+
+			}
+
+			function tamperSelectedWithRandom() {
+
+				unlockAudioContext();
+				const randomTx = tamperPool[ Math.floor( Math.random() * tamperPool.length ) ];
+				ui.txInput.value = randomTx;
+				syncVrTxPadLabel();
+				tamperSelectedTransaction( randomTx, 'tamper random' );
+
+			}
+
+			function tamperSelectedTransaction( tx, reason ) {
+
+				ensureLiveState();
+
+				const block = chain.blocks[ chain.selectedIndex ];
+				const wasBroken = chain.firstBrokenIndex !== - 1;
+				block.tx = tx;
+				block.hash = computeHash( block.index, block.tx, block.prevHash );
+				metrics.tamperCount ++;
+
+				validateChain();
+				updateTutorialProgress( 'tamper' );
+
+				if ( chain.firstBrokenIndex !== - 1 ) {
+
+					pulseHaptics( 0.7, 90 );
+					chain.lastAction = `Tamper on block #${block.index}. Chain broken at block #${chain.firstBrokenIndex}.`;
+
+					if ( ! wasBroken ) {
+
+						setCameraFocusOnBreak();
+
+					}
+
+				} else {
+
+					chain.lastAction = `Tamper on block #${block.index}, chain still valid.`;
+					setCameraFocusOnBlock( block.index );
+
+				}
+
+				recordHistorySnapshot( reason );
+				refreshUI();
+
+			}
+
+			function restoreSelectedTransaction() {
+
+				unlockAudioContext();
+				ensureLiveState();
+
+				const block = chain.blocks[ chain.selectedIndex ];
+				block.tx = block.baseTx;
+				block.hash = computeHash( block.index, block.tx, block.prevHash );
+
+				validateChain();
+				chain.lastAction = `Transaction restored in block #${block.index}.`;
+				if ( chain.firstBrokenIndex === - 1 ) updateTutorialProgress( 'recover' );
+				recordHistorySnapshot( 'restore tx' );
+				refreshUI();
+
+			}
+
+			function remintChain() {
+
+				unlockAudioContext();
+				ensureLiveState();
+
+				const start = chain.firstBrokenIndex === - 1 ? chain.selectedIndex : chain.firstBrokenIndex;
+				const startIndex = Math.max( start, 1 );
+
+				for ( let i = startIndex; i < chain.blocks.length; i ++ ) {
+
+					chain.blocks[ i ].prevHash = chain.blocks[ i - 1 ].hash;
+					chain.blocks[ i ].hash = computeHash( chain.blocks[ i ].index, chain.blocks[ i ].tx, chain.blocks[ i ].prevHash );
+
+				}
+
+				validateChain();
+				chain.lastAction = 'Chain reminted from first broken block.';
+				if ( chain.firstBrokenIndex === - 1 ) updateTutorialProgress( 'recover' );
+				recordHistorySnapshot( 'remint chain' );
+				refreshUI();
+
+			}
+
+			function resetChain() {
+
+				unlockAudioContext();
+				ensureLiveState();
+
+				for ( let i = 0; i < chain.blocks.length; i ++ ) {
+
+					const block = chain.blocks[ i ];
+					block.tx = block.baseTx;
+					block.prevHash = i === 0 ? 'GENESIS' : chain.blocks[ i - 1 ].hash;
+					block.hash = computeHash( block.index, block.tx, block.prevHash );
+
+				}
+
+				validateChain();
+				chain.lastAction = 'Chain reset to baseline state.';
+				updateTutorialProgress( 'recover' );
+				recordHistorySnapshot( 'reset chain' );
+				refreshUI();
+
+			}
+
+			function validateChain() {
+
+				const previousBrokenIndex = chain.firstBrokenIndex;
+				const wasBroken = previousBrokenIndex !== - 1;
+
+				let firstBroken = - 1;
+
+				for ( let i = 0; i < chain.blocks.length; i ++ ) {
+
+					const block = chain.blocks[ i ];
+					let valid;
+
+					if ( i === 0 ) {
+
+						valid = block.prevHash === 'GENESIS';
+
+					} else if ( firstBroken !== - 1 ) {
+
+						valid = false;
+
+					} else {
+
+						valid = block.prevHash === chain.blocks[ i - 1 ].hash;
+
+						if ( ! valid ) {
+
+							firstBroken = i;
+
+						}
+
+					}
+
+					block.valid = valid;
+
+				}
+
+				chain.firstBrokenIndex = firstBroken;
+				chainVisual.breakOffsetTarget = firstBroken !== - 1 ? 0.78 : 0;
+
+				if ( ! wasBroken && firstBroken !== - 1 ) {
+
+					if ( metrics.breakStartedAt === 0 ) metrics.breakStartedAt = performance.now();
+					playBreakAudio();
+
+				} else if ( wasBroken && firstBroken === - 1 ) {
+
+					if ( metrics.breakStartedAt > 0 ) {
+
+						metrics.lastRecoveryMs = performance.now() - metrics.breakStartedAt;
+
+					}
+
+					metrics.breakStartedAt = 0;
+					playRecoveryAudio();
+
+				}
+
+				if ( previousBrokenIndex !== firstBroken ) {
+
+					updateSegmentLayout( true );
+
+				} else {
+
+					updateBreakEffect();
+
+				}
+
+				updateBlockVisuals();
+				updateConnectorVisuals();
+
+			}
+
+			function updateBreakEffect() {
+
+				if ( chain.firstBrokenIndex <= 0 ) {
+
+					breakFx.group.visible = false;
+					return;
+
+				}
+
+				const left = chain.blocks[ chain.firstBrokenIndex - 1 ].mesh.position;
+				const right = chain.blocks[ chain.firstBrokenIndex ].mesh.position;
+				breakFx.group.visible = true;
+				breakFx.group.position.set( ( left.x + right.x ) * 0.5, 2.24, 0 );
+
+			}
+
+			function rebuildPacketPath( packetData ) {
+
+				const from = chain.blocks[ packetData.fromIndex ].mesh.position;
+				const to = chain.blocks[ packetData.toIndex ].mesh.position;
+				const start = from.clone().add( new THREE.Vector3( 1.05, 0.07, 0 ) );
+				const end = to.clone().add( new THREE.Vector3( - 1.05, 0.07, 0 ) );
+				const middle = start.clone().lerp( end, 0.5 );
+				middle.y += 0.5;
+
+				packetData.curve = new THREE.QuadraticBezierCurve3( start, middle, end );
+				packetData.conduit.geometry.dispose();
+				packetData.conduit.geometry = new THREE.TubeGeometry( packetData.curve, packetData.segments, packetData.radius, 10, false );
+
+			}
+
+			function updateSegmentLayout( force = false ) {
+
+				const active = chain.firstBrokenIndex !== - 1;
+				const offset = active ? chainVisual.breakOffset : 0;
+				if ( ! force && ! active && offset === 0 ) return;
+
+				for ( const block of chain.blocks ) {
+
+					const baseX = block.mesh.userData.baseX;
+					const shift = active && block.index >= chain.firstBrokenIndex ? offset : 0;
+					block.mesh.position.x = baseX + shift;
+
+				}
+
+				for ( const packetData of animables.packets ) {
+
+					rebuildPacketPath( packetData );
+
+				}
+
+				updateBreakEffect();
+
+			}
+
+			function updateBlockVisuals() {
+
+				for ( const block of chain.blocks ) {
+
+					const selected = block.index === chain.selectedIndex;
+					const isInvalid = ! block.valid;
+					const color = isInvalid ? palette.invalid : palette.valid;
+
+					block.materials.core.color.setHex( color );
+					block.materials.core.emissive.setHex( color );
+					block.materials.core.emissiveIntensity = selected ? 0.72 : 0.4;
+
+					block.materials.shell.emissive.setHex( selected ? 0x8fe3ff : color );
+					block.materials.shell.emissiveIntensity = selected ? 0.34 : ( isInvalid ? 0.2 : 0.15 );
+					block.materials.shell.opacity = isInvalid ? 0.88 : 0.76;
+
+					block.materials.statusBar.color.setHex( color );
+					block.materials.statusBar.emissive.setHex( color );
+					block.materials.statusBar.emissiveIntensity = selected ? 0.95 : 0.58;
+
+					block.materials.ring.emissive.setHex( selected ? 0xa6ecff : color );
+					block.materials.ring.emissiveIntensity = selected ? 0.68 : ( isInvalid ? 0.44 : 0.38 );
+
+					block.materials.crack.opacity = isInvalid ? 0.84 : 0;
+					block.userMeshes.crackEdges.visible = isInvalid;
+
+					block.labels.index.redraw( `BLOCK #${block.index}` );
+					block.labels.tx.redraw( `TX: ${block.tx}` );
+					block.labels.hash.redraw( `HASH: ${block.hash}` );
+					block.labels.prevHash.redraw( `PREV: ${block.prevHash}` );
+					block.labels.status.redraw(
+						block.valid ? 'STATUS: VALID' : 'STATUS: INVALID',
+						block.valid ? '#b7ffd7' : '#ffd0d0',
+						block.valid ? 'rgba(20, 86, 58, 0.92)' : 'rgba(109, 31, 38, 0.92)'
+					);
+
+					block.userMeshes.group.scale.setScalar( selected ? 1.06 : 1 );
+
+				}
+
+			}
+
+			function updateConnectorVisuals() {
+
+				for ( const packetData of animables.packets ) {
+
+					const isFirstBrokenEdge = chain.firstBrokenIndex !== - 1 && packetData.toIndex === chain.firstBrokenIndex;
+					const downstreamBroken = chain.firstBrokenIndex !== - 1 && packetData.toIndex >= chain.firstBrokenIndex;
+					const color = isFirstBrokenEdge ? 0xff2f58 : ( downstreamBroken ? palette.invalid : palette.valid );
+
+					packetData.active = ! downstreamBroken;
+					packetData.conduit.material.color.setHex( color );
+					packetData.conduit.material.emissive.setHex( color );
+					packetData.conduit.material.emissiveIntensity = isFirstBrokenEdge ? 1.15 : ( downstreamBroken ? 0.72 : 0.42 );
+					packetData.conduit.material.opacity = isFirstBrokenEdge ? 0.98 : ( downstreamBroken ? 0.86 : 0.94 );
+					packetData.packet.material.emissive.setHex( isFirstBrokenEdge ? 0xffcfcf : ( downstreamBroken ? 0xff9ea5 : 0x9deaff ) );
+					packetData.packet.material.emissiveIntensity = isFirstBrokenEdge ? 2.4 : ( downstreamBroken ? 2.05 : 1.4 );
+
+				}
+
+			}
+
+			function serializeSnapshotChain( snapshot ) {
+
+				let signature = '';
+
+				for ( const block of snapshot.blocks ) {
+
+					signature += `${block.index}|${block.tx}|${block.prevHash}|${block.hash}|${block.valid ? 1 : 0};`;
+
+				}
+
+				return `${signature}#${snapshot.selectedIndex}#${snapshot.firstBrokenIndex}#${snapshot.action}#${snapshot.tamperCount}`;
+
+			}
+
+			function createSnapshot( reason ) {
+
+				return {
+					reason,
+					action: chain.lastAction,
+					selectedIndex: chain.selectedIndex,
+					firstBrokenIndex: chain.firstBrokenIndex,
+					tamperCount: metrics.tamperCount,
+					blocks: chain.blocks.map( ( block ) => ( {
+						index: block.index,
+						tx: block.tx,
+						baseTx: block.baseTx,
+						prevHash: block.prevHash,
+						hash: block.hash,
+						valid: block.valid
+					} ) )
+				};
+
+			}
+
+			function applySnapshot( snapshot ) {
+
+				history.suspendRecording = true;
+
+				for ( let i = 0; i < chain.blocks.length; i ++ ) {
+
+					const target = chain.blocks[ i ];
+					const source = snapshot.blocks[ i ];
+					target.tx = source.tx;
+					target.baseTx = source.baseTx;
+					target.prevHash = source.prevHash;
+					target.hash = source.hash;
+					target.valid = source.valid;
+
+				}
+
+				chain.selectedIndex = snapshot.selectedIndex;
+				chain.firstBrokenIndex = snapshot.firstBrokenIndex;
+				chain.lastAction = snapshot.action;
+				metrics.tamperCount = snapshot.tamperCount ?? metrics.tamperCount;
+				metrics.breakStartedAt = 0;
+
+				validateChain();
+				ui.txInput.value = chain.blocks[ chain.selectedIndex ].tx;
+				syncVrTxPadLabel();
+				refreshUI();
+
+				history.suspendRecording = false;
+
+			}
+
+			function recordHistorySnapshot( reason ) {
+
+				if ( history.suspendRecording ) return;
+
+				const snapshot = createSnapshot( reason );
+				const signature = serializeSnapshotChain( snapshot );
+				const lastEntry = history.entries[ history.entries.length - 1 ];
+
+				if ( lastEntry && lastEntry.signature === signature ) {
+
+					syncTimelineControls();
+					return;
+
+				}
+
+				history.entries.push( {
+					snapshot,
+					signature,
+					reason,
+					timestamp: Date.now()
+				} );
+
+				if ( history.entries.length > history.maxEntries ) {
+
+					history.entries.shift();
+
+				}
+
+				chain.timelineIndex = - 1;
+				syncTimelineControls();
+
+			}
+
+			function onTimelineSliderInput() {
+
+				const index = Number( ui.timelineSlider.value );
+				scrubTimelineTo( index );
+
+			}
+
+			function scrubTimelineTo( index ) {
+
+				if ( history.entries.length === 0 ) return;
+
+				const maxIndex = history.entries.length - 1;
+				const clamped = THREE.MathUtils.clamp( index, 0, maxIndex );
+				const entry = history.entries[ clamped ];
+
+				chain.timelineIndex = clamped === maxIndex ? - 1 : clamped;
+				applySnapshot( entry.snapshot );
+				syncTimelineControls();
+
+			}
+
+			function jumpToLiveTimeline() {
+
+				if ( history.entries.length === 0 ) return;
+				scrubTimelineTo( history.entries.length - 1 );
+
+			}
+
+			function syncTimelineControls() {
+
+				const count = history.entries.length;
+
+				if ( count === 0 ) {
+
+					ui.timelineSlider.max = '0';
+					ui.timelineSlider.value = '0';
+					ui.timelineMeta.textContent = 'LIVE';
+					ui.timelineLiveButton.disabled = true;
+					if ( vr.timelineSlider ) vr.timelineSlider.setNormalized( 1, true );
+					return;
+
+				}
+
+				const maxIndex = count - 1;
+				const activeIndex = chain.timelineIndex === - 1 ? maxIndex : chain.timelineIndex;
+				ui.timelineSlider.max = String( maxIndex );
+				ui.timelineSlider.value = String( activeIndex );
+
+				if ( chain.timelineIndex === - 1 ) {
+
+					ui.timelineMeta.textContent = `LIVE | snapshot ${count}/${count}`;
+					ui.timelineLiveButton.disabled = true;
+
+				} else {
+
+					ui.timelineMeta.textContent = `Snapshot ${activeIndex + 1}/${count} | ${history.entries[ activeIndex ].reason}`;
+					ui.timelineLiveButton.disabled = false;
+
+				}
+
+				if ( vr.timelineSlider ) {
+
+					const normalized = maxIndex === 0 ? 1 : activeIndex / maxIndex;
+					vr.timelineSlider.setNormalized( normalized, chain.timelineIndex === - 1 );
+
+				}
+
+			}
+
+			function ensureLiveState() {
+
+				if ( chain.timelineIndex !== - 1 && history.entries.length > 0 ) {
+
+					const latest = history.entries[ history.entries.length - 1 ];
+					chain.timelineIndex = - 1;
+					applySnapshot( latest.snapshot );
+
+					if ( chain.firstBrokenIndex !== - 1 && metrics.breakStartedAt === 0 ) {
+
+						metrics.breakStartedAt = performance.now();
+
+					}
+
+					syncTimelineControls();
+
+				}
+
+			}
+
+			function refreshUI() {
+
+				const selected = chain.blocks[ chain.selectedIndex ];
+				const invalidCount = chain.blocks.filter( ( block ) => ! block.valid ).length;
+				const validCount = chain.blocks.length - invalidCount;
+				const chainValid = chain.firstBrokenIndex === - 1;
+				const brokenText = chain.firstBrokenIndex === - 1 ? 'none' : `#${chain.firstBrokenIndex}`;
+				const activeBreakMs = chain.firstBrokenIndex !== - 1 && metrics.breakStartedAt > 0
+					? performance.now() - metrics.breakStartedAt
+					: 0;
+				const activeBreakText = chain.firstBrokenIndex !== - 1 ? `${( activeBreakMs / 1000 ).toFixed( 1 )}s` : '0.0s';
+				const recoverText = metrics.lastRecoveryMs > 0 ? `${( metrics.lastRecoveryMs / 1000 ).toFixed( 1 )}s` : 'n/a';
+
+				ui.selectedValue.textContent = `Block #${selected.index}`;
+				ui.stateBadge.textContent = chainValid ? 'VALID' : 'INVALID';
+				ui.stateBadge.classList.toggle( 'valid', chainValid );
+				ui.stateBadge.classList.toggle( 'invalid', ! chainValid );
+				ui.eventValue.textContent = chain.lastAction;
+				ui.metricsValue.textContent = `Total: ${chain.blocks.length} | Valid: ${validCount} | Invalid: ${invalidCount} | First broken: ${brokenText} | Tamps: ${metrics.tamperCount} | Break timer: ${activeBreakText} | Last recover: ${recoverText}`;
+				ui.restoreTxButton.disabled = selected.tx === selected.baseTx;
+				ui.remintButton.disabled = chain.firstBrokenIndex === - 1;
+				ui.selectPrevButton.disabled = chain.blocks.length < 2;
+				ui.selectNextButton.disabled = chain.blocks.length < 2;
+
+				refreshInspector( selected );
+				refreshTutorialPanel();
+				syncVrTxPadLabel();
+				refreshVrButtonStates();
+				refreshVrStatus();
+
+			}
+
+			function refreshInspector( selected ) {
+
+				const expected = selected.index === 0 ? 'GENESIS' : chain.blocks[ selected.index - 1 ].hash;
+				const actual = selected.prevHash;
+				const mismatch = expected !== actual;
+
+				ui.expectedPrevValue.textContent = expected;
+				ui.actualPrevValue.textContent = actual;
+				ui.mismatchValue.textContent = mismatch ? 'Mismatch detected' : 'No mismatch';
+				ui.mismatchValue.classList.toggle( 'mismatch-bad', mismatch );
+				ui.mismatchValue.classList.toggle( 'mismatch-ok', ! mismatch );
+
+				if ( selected.index === 0 ) {
+
+					ui.mismatchReasonValue.textContent = 'Genesis block uses fixed prevHash = GENESIS.';
+					ui.inspectorStepHint.textContent = 'Genesis reference block';
+
+				} else if ( mismatch ) {
+
+					ui.mismatchReasonValue.textContent = `Expected block #${selected.index - 1} hash ${expected}, but found ${actual}.`;
+					ui.inspectorStepHint.textContent = `Mismatch at block #${selected.index}`;
+
+				} else {
+
+					ui.mismatchReasonValue.textContent = `Matches block #${selected.index - 1} hash ${expected}.`;
+					ui.inspectorStepHint.textContent = `Block #${selected.index} linkage OK`;
+
+				}
+
+			}
+
+			function updateTutorialProgress( eventType ) {
+
+				if ( tutorial.completed ) return;
+
+				if ( tutorial.step === 0 && eventType === 'select' && chain.selectedIndex > 0 ) {
+
+					tutorial.step = 1;
+
+				} else if ( tutorial.step === 1 && eventType === 'tamper' && chain.firstBrokenIndex !== - 1 ) {
+
+					tutorial.step = 2;
+
+				} else if ( tutorial.step === 2 && eventType === 'select' && chain.firstBrokenIndex !== - 1 && chain.selectedIndex === chain.firstBrokenIndex ) {
+
+					tutorial.step = 3;
+
+				} else if ( tutorial.step === 3 && eventType === 'recover' && chain.firstBrokenIndex === - 1 ) {
+
+					tutorial.completed = true;
+
+				}
+
+				refreshTutorialPanel();
+
+			}
+
+			function restartTutorial( announce = true ) {
+
+				tutorial.step = 0;
+				tutorial.completed = false;
+
+				if ( announce ) {
+
+					chain.lastAction = 'Tutorial restarted. Step 1: select a non-genesis block.';
+
+				}
+
+				refreshTutorialPanel();
+				if ( announce ) refreshUI();
+
+			}
+
+			function refreshTutorialPanel() {
+
+				if ( tutorial.completed ) {
+
+					ui.tutorialStepLabel.textContent = 'Complete';
+					ui.tutorialText.textContent = 'Tutorial done: you selected, tampered, inspected mismatch, and recovered chain integrity.';
+					return;
+
+				}
+
+				const stepNumber = tutorial.step + 1;
+				ui.tutorialStepLabel.textContent = `Step ${stepNumber}/${tutorial.total}`;
+
+				if ( tutorial.step === 2 && chain.firstBrokenIndex !== - 1 ) {
+
+					ui.tutorialText.textContent = `${tutorialSteps[ tutorial.step ]} First broken block: #${chain.firstBrokenIndex}.`;
+
+				} else {
+
+					ui.tutorialText.textContent = tutorialSteps[ tutorial.step ];
+
+				}
+
+			}
+
+			function setupVRControllers() {
+
+				const factory = new XRControllerModelFactory();
+				const rayGeometry = new THREE.BufferGeometry().setFromPoints( [
+					new THREE.Vector3( 0, 0, 0 ),
+					new THREE.Vector3( 0, 0, - 1 )
+				] );
+
+				for ( let i = 0; i < 2; i ++ ) {
+
+					const controller = renderer.xr.getController( i );
+					const ray = new THREE.Line(
+						rayGeometry,
+						new THREE.LineBasicMaterial( { color: 0xbceaff, transparent: true, opacity: 0.92 } )
+					);
+					ray.scale.z = vrRayLength;
+					ray.name = 'ray';
+					controller.add( ray );
+					controller.userData.ray = ray;
+					controller.userData.hoveredTarget = null;
+					controller.userData.hoveredIntersection = null;
+					controller.addEventListener( 'selectstart', onVrSelectStart );
+					scene.add( controller );
+					vr.controllers.push( controller );
+
+					const grip = renderer.xr.getControllerGrip( i );
+					grip.add( factory.createControllerModel( grip ) );
+					scene.add( grip );
+
+				}
+
+			}
+
+			function setupVRControlPanel() {
+
+				const panel = new THREE.Group();
+				panel.position.set( - 4.6, 2.45, - 6.1 );
+				panel.rotation.y = Math.PI / 9;
+
+				const body = new THREE.Mesh(
+					new THREE.BoxGeometry( 5.3, 8.25, 0.12 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x0d2738,
+						emissive: 0x092030,
+						emissiveIntensity: 0.6,
+						metalness: 0.24,
+						roughness: 0.4,
+						opacity: 0.9,
+						transparent: true
+					} )
+				);
+				panel.add( body );
+
+				const title = createWorldLabel( 'VR BLOCK INTEGRITY CONTROL', 1024, 190, 4.15, 0.5, '#dbf4ff', 'rgba(20, 67, 94, 0.88)' );
+				title.mesh.position.set( 0, 3.42, 0.08 );
+				panel.add( title.mesh );
+
+				vr.buttons.prev = createVrButton( 'Select Prev', 0x2f6f95, () => cycleSelection( - 1 ) );
+				vr.buttons.next = createVrButton( 'Select Next', 0x2f6f95, () => cycleSelection( 1 ) );
+				vr.buttons.tamper = createVrButton( 'Tamper Random', 0xa34b4b, tamperSelectedWithRandom );
+				vr.buttons.restore = createVrButton( 'Restore Tx', 0x5c7d9b, restoreSelectedTransaction );
+				vr.buttons.remint = createVrButton( 'Remint Chain', 0x2e8a5d, remintChain );
+				vr.buttons.reset = createVrButton( 'Reset Chain', 0x6b4fa4, resetChain );
+
+				vr.buttons.prev.group.position.set( - 1.2, 2.58, 0.12 );
+				vr.buttons.next.group.position.set( 1.2, 2.58, 0.12 );
+				vr.buttons.tamper.group.position.set( - 1.2, 1.96, 0.12 );
+				vr.buttons.restore.group.position.set( 1.2, 1.96, 0.12 );
+				vr.buttons.remint.group.position.set( - 1.2, 1.34, 0.12 );
+				vr.buttons.reset.group.position.set( 1.2, 1.34, 0.12 );
+
+				panel.add(
+					vr.buttons.prev.group,
+					vr.buttons.next.group,
+					vr.buttons.tamper.group,
+					vr.buttons.restore.group,
+					vr.buttons.remint.group,
+					vr.buttons.reset.group
+				);
+
+				vr.txPad = createVrTokenPad();
+				vr.txPad.group.position.set( 0, 0.15, 0.12 );
+				panel.add( vr.txPad.group );
+
+				vr.statusLabel = createVrStatusLabel();
+				vr.statusLabel.mesh.position.set( 0, - 1.72, 0.12 );
+				panel.add( vr.statusLabel.mesh );
+
+				vr.chainLabel = createWorldLabel( 'Block #0', 980, 140, 4, 0.3, '#d7f2ff', 'rgba(18, 57, 79, 0.9)' );
+				vr.chainLabel.mesh.position.set( 0, - 2.12, 0.12 );
+				panel.add( vr.chainLabel.mesh );
+
+				vr.timelineSlider = createVrTimelineSlider();
+				vr.timelineSlider.group.position.set( 0, - 2.95, 0.12 );
+				panel.add( vr.timelineSlider.group );
+
+				scene.add( panel );
+				vr.panel = panel;
+				syncVrTxPadLabel();
+
+			}
+
+			function createVrButton( text, baseColor, onActivate, options = {} ) {
+
+				const group = new THREE.Group();
+				const frameInlineSize = options.frameInlineSize ?? 1.95;
+				const frameBlockSize = options.frameBlockSize ?? 0.52;
+				const frameDepth = options.frameDepth ?? 0.1;
+				const hitInlineSize = options.hitInlineSize ?? ( frameInlineSize - 0.11 );
+				const hitBlockSize = options.hitBlockSize ?? ( frameBlockSize - 0.1 );
+				const hitDepth = options.hitDepth ?? 0.14;
+				const labelInlineSize = options.labelInlineSize ?? Math.max( 1.0, frameInlineSize - 0.17 );
+				const labelBlockSize = options.labelBlockSize ?? 0.28;
+				const labelCanvasInlineSize = options.labelCanvasInlineSize ?? 1024;
+				const labelCanvasBlockSize = options.labelCanvasBlockSize ?? 180;
+
+				const frame = new THREE.Mesh(
+					new THREE.BoxGeometry( frameInlineSize, frameBlockSize, frameDepth ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x1c3343,
+						emissive: 0x112332,
+						emissiveIntensity: 0.45,
+						metalness: 0.36,
+						roughness: 0.45
+					} )
+				);
+				group.add( frame );
+
+				const material = new THREE.MeshStandardMaterial( {
+					color: baseColor,
+					emissive: baseColor,
+					emissiveIntensity: 0.32,
+					metalness: 0.24,
+					roughness: 0.36,
+					transparent: true,
+					opacity: 0.96
+				} );
+				const hitMesh = new THREE.Mesh( new THREE.BoxGeometry( hitInlineSize, hitBlockSize, hitDepth ), material );
+				hitMesh.position.z = 0.03;
+				group.add( hitMesh );
+
+				const label = createWorldLabel( text, labelCanvasInlineSize, labelCanvasBlockSize, labelInlineSize, labelBlockSize, '#eef9ff', 'rgba(0,0,0,0)' );
+				label.mesh.position.set( 0, 0, 0.11 );
+				group.add( label.mesh );
+
+				const button = {
+					group,
+					hitMesh,
+					label,
+					material,
+					baseColor,
+					hoverColor: new THREE.Color( baseColor ).offsetHSL( 0, 0, 0.15 ).getHex(),
+					enabled: true,
+					hovered: false,
+					setText( nextText ) {
+
+						button.label.redraw( nextText );
+
+					},
+					setEnabled( enabled ) {
+
+						button.enabled = enabled;
+						refreshVrButtonVisual( button );
+
+					}
+				};
+
+				hitMesh.userData.button = button;
+				registerInteractiveTarget( hitMesh, 'button', () => {
+
+					if ( button.enabled ) onActivate();
+
+				} );
+
+				refreshVrButtonVisual( button );
+
+				return button;
+
+			}
+
+			function createVrTokenPad() {
+
+				const group = new THREE.Group();
+
+				const base = new THREE.Mesh(
+					new THREE.BoxGeometry( 4.65, 2.35, 0.1 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x153248,
+						emissive: 0x10283b,
+						emissiveIntensity: 0.5,
+						metalness: 0.22,
+						roughness: 0.46
+					} )
+				);
+				group.add( base );
+
+				const label = createWorldLabel( 'TX PAD: (empty)', 1180, 170, 4.15, 0.31, '#dff5ff', 'rgba(20, 57, 80, 0.9)' );
+				label.mesh.position.set( 0, 0.87, 0.08 );
+				group.add( label.mesh );
+
+				const tokenPad = {
+					group,
+					label,
+					buttons: []
+				};
+
+				const actions = [
+					{ key: 'plus', text: '+10 TOK', color: 0x2a7ea0, run: () => appendTokenToInput( '+10TOK' ) },
+					{ key: 'fee', text: 'FEE', color: 0x2a7ea0, run: () => appendTokenToInput( 'FEE' ) },
+					{ key: 'nft', text: 'NFT', color: 0x2a7ea0, run: () => appendTokenToInput( 'NFT' ) },
+					{ key: 'swap', text: 'SWAP', color: 0x2a7ea0, run: () => appendTokenToInput( 'SWAP' ) },
+					{ key: 'vote', text: 'VOTE', color: 0x2a7ea0, run: () => appendTokenToInput( 'VOTE' ) },
+					{ key: 'back', text: 'BACK', color: 0x755c9f, run: removeLastTokenFromInput },
+					{ key: 'clear', text: 'CLEAR', color: 0x8b4d57, run: clearTxInput },
+					{ key: 'base', text: 'BASE TX', color: 0x4a6c8f, run: () => setTxInputValue( chain.blocks[ chain.selectedIndex ].baseTx ) },
+					{ key: 'apply', text: 'APPLY', color: 0x2f8a5f, run: applyTamperFromInput }
+				];
+
+				const columns = 3;
+
+				for ( let i = 0; i < actions.length; i ++ ) {
+
+					const item = actions[ i ];
+					const button = createVrButton( item.text, item.color, item.run, {
+						frameInlineSize: 1.34,
+						frameBlockSize: 0.36,
+						labelInlineSize: 1.18,
+						labelBlockSize: 0.2,
+						labelCanvasBlockSize: 135
+					} );
+
+					const col = i % columns;
+					const row = Math.floor( i / columns );
+					button.group.position.set( ( col - 1 ) * 1.46, 0.35 - row * 0.53, 0.08 );
+					group.add( button.group );
+					tokenPad.buttons.push( button );
+					tokenPad[ item.key ] = button;
+
+				}
+
+				return tokenPad;
+
+			}
+
+			function createVrStatusLabel() {
+
+				const label = createWorldLabel( '', 1380, 220, 4.1, 0.5, '#d9f3ff', 'rgba(13, 46, 66, 0.9)' );
+
+				return {
+					mesh: label.mesh,
+					setText( text, valid ) {
+
+						const fg = valid ? '#bcffdb' : '#ffd2d2';
+						const bg = valid ? 'rgba(30, 92, 63, 0.92)' : 'rgba(109, 34, 41, 0.92)';
+						label.redraw( text, fg, bg );
+
+					}
+				};
+
+			}
+
+			function createVrTimelineSlider() {
+
+				const group = new THREE.Group();
+
+				const base = new THREE.Mesh(
+					new THREE.BoxGeometry( 4.5, 0.7, 0.1 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x16334a,
+						emissive: 0x10263a,
+						emissiveIntensity: 0.54,
+						metalness: 0.2,
+						roughness: 0.5
+					} )
+				);
+				group.add( base );
+
+				const trackWidth = 3.65;
+				const track = new THREE.Mesh(
+					new THREE.BoxGeometry( trackWidth, 0.14, 0.08 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x468cb3,
+						emissive: 0x2b6f94,
+						emissiveIntensity: 0.46,
+						metalness: 0.34,
+						roughness: 0.3
+					} )
+				);
+				track.position.set( 0, - 0.06, 0.02 );
+				group.add( track );
+
+				const knob = new THREE.Mesh(
+					new THREE.SphereGeometry( 0.16, 18, 12 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0xd4f5ff,
+						emissive: 0x67d4ff,
+						emissiveIntensity: 0.72,
+						metalness: 0.36,
+						roughness: 0.2
+					} )
+				);
+				knob.position.set( track.position.x + trackWidth * 0.5, track.position.y, 0.1 );
+				group.add( knob );
+
+				const label = createWorldLabel( 'Timeline: LIVE', 1024, 150, 3.9, 0.28, '#def5ff', 'rgba(18, 54, 77, 0.9)' );
+				label.mesh.position.set( 0, 0.28, 0.08 );
+				group.add( label.mesh );
+
+				const slider = {
+					group,
+					track,
+					knob,
+					label,
+					trackWidth,
+					value: 1,
+					setNormalized( value, isLive ) {
+
+						slider.value = THREE.MathUtils.clamp( value, 0, 1 );
+						slider.knob.position.x = slider.track.position.x + ( slider.value - 0.5 ) * slider.trackWidth;
+						label.redraw( isLive ? 'Timeline: LIVE' : `Timeline: ${Math.round( slider.value * 100 )}%` );
+
+					}
+				};
+
+				track.userData.slider = slider;
+				knob.userData.slider = slider;
+
+				registerInteractiveTarget( track, 'slider', ( intersection ) => onVrTimelineSelect( intersection, slider ) );
+				registerInteractiveTarget( knob, 'slider', ( intersection ) => onVrTimelineSelect( intersection, slider ) );
+
+				slider.setNormalized( 1, true );
+
+				return slider;
+
+			}
+
+			function onVrTimelineSelect( intersection, slider ) {
+
+				if ( ! intersection || history.entries.length === 0 ) return;
+
+				const point = slider.track.worldToLocal( intersection.point.clone() );
+				const normalized = THREE.MathUtils.clamp( point.x / slider.trackWidth + 0.5, 0, 1 );
+				const maxIndex = history.entries.length - 1;
+				const index = Math.round( normalized * maxIndex );
+				scrubTimelineTo( index );
+
+			}
+
+			function refreshVrButtonStates() {
+
+				if ( ! vr.buttons.prev ) return;
+
+				const selected = chain.blocks[ chain.selectedIndex ];
+				vr.buttons.restore.setEnabled( selected.tx !== selected.baseTx );
+				vr.buttons.remint.setEnabled( chain.firstBrokenIndex !== - 1 );
+				vr.buttons.prev.setText( `Select Prev (#${( chain.selectedIndex - 1 + chain.blocks.length ) % chain.blocks.length})` );
+				vr.buttons.next.setText( `Select Next (#${( chain.selectedIndex + 1 ) % chain.blocks.length})` );
+
+				if ( vr.txPad ) {
+
+					const hasTxInput = ui.txInput.value.trim().length > 0;
+					if ( vr.txPad.back ) vr.txPad.back.setEnabled( hasTxInput );
+					if ( vr.txPad.clear ) vr.txPad.clear.setEnabled( hasTxInput );
+					if ( vr.txPad.apply ) vr.txPad.apply.setEnabled( hasTxInput );
+
+				}
+
+			}
+
+			function refreshVrStatus() {
+
+				if ( ! vr.statusLabel ) return;
+
+				const valid = chain.firstBrokenIndex === - 1;
+				const selected = chain.blocks[ chain.selectedIndex ];
+				const statusText = valid
+					? `CHAIN VALID | selected #${selected.index}`
+					: `CHAIN INVALID | first broken #${chain.firstBrokenIndex}`;
+
+				vr.statusLabel.setText( statusText, valid );
+				vr.chainLabel.redraw( `Block #${selected.index} | TX: ${selected.tx}` );
+
+			}
+
+			function setTxInputValue( nextValue ) {
+
+				const trimmed = nextValue.trim().slice( 0, 48 );
+				ui.txInput.value = trimmed;
+				syncVrTxPadLabel();
+
+			}
+
+			function appendTokenToInput( token ) {
+
+				unlockAudioContext();
+				const current = ui.txInput.value.trim();
+				const merged = current.length === 0 ? token : `${current} ${token}`;
+				setTxInputValue( merged );
+
+			}
+
+			function removeLastTokenFromInput() {
+
+				unlockAudioContext();
+				const parts = ui.txInput.value.trim().split( /\s+/ ).filter( Boolean );
+				parts.pop();
+				setTxInputValue( parts.join( ' ' ) );
+
+			}
+
+			function clearTxInput() {
+
+				unlockAudioContext();
+				setTxInputValue( '' );
+
+			}
+
+			function syncVrTxPadLabel() {
+
+				if ( ! vr.txPad ) return;
+
+				const txValue = ui.txInput.value.trim();
+				const display = txValue.length === 0 ? '(empty)' : txValue;
+				vr.txPad.label.redraw( `TX PAD: ${truncateLabel( display, 40 )}` );
+
+			}
+
+			function registerInteractiveTarget( mesh, type, onActivate ) {
+
+				mesh.userData.interactiveType = type;
+				mesh.userData.onActivate = onActivate;
+				mesh.userData.hovered = false;
+				vr.interactiveTargets.push( mesh );
+
+			}
+
+			function onVrSelectStart( event ) {
+
+				const controller = event.target;
+				const target = controller.userData.hoveredTarget;
+				if ( ! target || ! target.userData.onActivate ) return;
+				unlockAudioContext();
+
+				const intersection = controller.userData.hoveredIntersection || null;
+				target.userData.onActivate( intersection );
+
+				const button = target.userData.button;
+				if ( button ) {
+
+					button.material.emissiveIntensity = 0.84;
+					setTimeout( () => refreshVrButtonVisual( button ), 95 );
+
+				}
+
+				pulseHaptics( 0.32, 40 );
+
+			}
+
+			function pulseHaptics( intensity, durationMs ) {
+
+				for ( const controller of vr.controllers ) {
+
+					const source = controller.userData.gamepad;
+
+					if ( ! source && controller.userData.inputSource ) {
+
+						controller.userData.gamepad = controller.userData.inputSource.gamepad;
+
+					}
+
+					const gamepad = controller.userData.gamepad || controller.gamepad;
+					if ( ! gamepad || ! gamepad.hapticActuators || gamepad.hapticActuators.length === 0 ) continue;
+					gamepad.hapticActuators[ 0 ].pulse( intensity, durationMs );
+
+				}
+
+			}
+
+			function refreshVrButtonVisual( button ) {
+
+				if ( ! button.enabled ) {
+
+					button.material.color.setHex( 0x44596a );
+					button.material.emissive.setHex( 0x2b3947 );
+					button.material.emissiveIntensity = 0.2;
+					button.material.opacity = 0.5;
+					return;
+
+				}
+
+				button.material.opacity = 0.96;
+				button.material.color.setHex( button.hovered ? button.hoverColor : button.baseColor );
+				button.material.emissive.setHex( button.hovered ? button.hoverColor : button.baseColor );
+				button.material.emissiveIntensity = button.hovered ? 0.72 : 0.32;
+
+			}
+
+			function updateVrInteractions() {
+
+				if ( ! renderer.xr.isPresenting ) {
+
+					clearVrHoverState();
+					return;
+
+				}
+
+				for ( const controller of vr.controllers ) {
+
+					tempMatrix.identity().extractRotation( controller.matrixWorld );
+					vr.raycaster.ray.origin.setFromMatrixPosition( controller.matrixWorld );
+					vr.raycaster.ray.direction.set( 0, 0, - 1 ).applyMatrix4( tempMatrix );
+
+					const intersections = vr.raycaster.intersectObjects( vr.interactiveTargets, false );
+					const hit = intersections.length > 0 ? intersections[ 0 ] : null;
+					controller.userData.hoveredIntersection = hit;
+
+					if ( hit ) {
+
+						if ( controller.userData.hoveredTarget && controller.userData.hoveredTarget !== hit.object ) {
+
+							setHoveredState( controller.userData.hoveredTarget, false );
+
+						}
+
+						controller.userData.hoveredTarget = hit.object;
+						controller.userData.ray.scale.z = hit.distance;
+						setHoveredState( hit.object, true );
+
+					} else {
+
+						controller.userData.ray.scale.z = vrRayLength;
+
+						if ( controller.userData.hoveredTarget ) {
+
+							setHoveredState( controller.userData.hoveredTarget, false );
+
+						}
+
+						controller.userData.hoveredTarget = null;
+
+					}
+
+				}
+
+			}
+
+			function clearVrHoverState() {
+
+				for ( const controller of vr.controllers ) {
+
+					if ( controller.userData.hoveredTarget ) {
+
+						setHoveredState( controller.userData.hoveredTarget, false );
+
+					}
+
+					controller.userData.hoveredTarget = null;
+					controller.userData.hoveredIntersection = null;
+					if ( controller.userData.ray ) controller.userData.ray.scale.z = vrRayLength;
+
+				}
+
+			}
+
+			function setHoveredState( mesh, hovered ) {
+
+				if ( ! mesh || mesh.userData.hovered === hovered ) return;
+				mesh.userData.hovered = hovered;
+
+				if ( mesh.userData.button ) {
+
+					mesh.userData.button.hovered = hovered;
+					refreshVrButtonVisual( mesh.userData.button );
+
+					return;
+
+				}
+
+				if ( mesh.userData.interactiveType === 'block' ) {
+
+					const index = mesh.userData.blockIndex;
+					const block = chain.blocks[ index ];
+					if ( block ) {
+
+						const selectedBase = block.index === chain.selectedIndex ? 0.34 : ( block.valid ? 0.15 : 0.2 );
+						block.materials.shell.emissiveIntensity = hovered ? 0.52 : selectedBase;
+
+					}
+
+				}
+
+			}
+
+			function updateCameraFocus( delta ) {
+
+				if ( renderer.xr.isPresenting ) return;
+
+				const targetLerp = 1 - Math.exp( - delta * 4.2 );
+				const positionLerp = 1 - Math.exp( - delta * 2.9 );
+				controls.target.lerp( cameraFocus.desiredTarget, targetLerp );
+				camera.position.lerp( cameraFocus.desiredPosition, positionLerp );
+
+			}
+
+			function animate( timestampMs ) {
+
+				const elapsed = clock.getElapsedTime();
+				const delta = clock.getDelta();
+
+				updateCameraFocus( delta );
+				controls.update();
+				updateVrInteractions();
+				animateVisuals( elapsed, delta, timestampMs );
+				renderer.render( scene, camera );
+
+			}
+
+			function animateVisuals( elapsed, delta, timestampMs ) {
+
+				const nextBreakOffset = THREE.MathUtils.damp( chainVisual.breakOffset, chainVisual.breakOffsetTarget, 5.4, delta );
+
+				if ( Math.abs( nextBreakOffset - chainVisual.breakOffset ) > 0.001 ) {
+
+					chainVisual.breakOffset = nextBreakOffset;
+					updateSegmentLayout();
+
+				}
+
+				for ( const item of animables.spin ) {
+
+					item.mesh.rotation.z += delta * item.speed;
+
+				}
+
+				for ( const packetData of animables.packets ) {
+
+					const speedFactor = packetData.active ? 1 : 0.45;
+					packetData.phase = ( packetData.phase + delta * packetData.speed * speedFactor ) % 1;
+					const t = packetData.phase;
+					packetData.packet.position.copy( packetData.curve.getPoint( t ) );
+					packetData.packet.scale.setScalar( packetData.active ? 1 : 0.8 + 0.2 * Math.sin( elapsed * 9 + t * 12 ) );
+
+				}
+
+				if ( animables.stars ) {
+
+					for ( const star of animables.stars.children ) {
+
+						star.material.opacity = 0.62 + 0.28 * Math.sin( elapsed * 1.7 + star.userData.phase );
+
+					}
+
+				}
+
+				if ( chain.firstBrokenIndex !== - 1 ) {
+
+					const wave = 0.25 + 0.18 * Math.sin( elapsed * 7.5 );
+					breakFx.ring.scale.setScalar( 1 + wave );
+					breakFx.ring.material.opacity = 0.55 + 0.35 * Math.sin( elapsed * 8.3 );
+					breakFx.beam.material.opacity = 0.36 + 0.2 * Math.sin( elapsed * 10.5 );
+					breakFx.glow.material.opacity = 0.22 + 0.17 * Math.sin( elapsed * 6.6 );
+
+				}
+
+				for ( const block of chain.blocks ) {
+
+					if ( block.valid ) {
+
+						block.userMeshes.group.position.y = 2 + Math.sin( elapsed * 1.7 + block.index ) * 0.03;
+						block.userMeshes.group.rotation.y *= 0.82;
+
+					} else {
+
+						const jitter = 0.04 + 0.01 * Math.sin( elapsed * 12 + block.index * 3 );
+						block.userMeshes.group.position.y = 2 + ( Math.random() - 0.5 ) * jitter;
+						block.userMeshes.group.rotation.y = Math.sin( elapsed * 9 + block.index ) * 0.03;
+
+					}
+
+				}
+
+				if ( timestampMs % 1600 < 16 ) {
+
+					for ( const block of chain.blocks ) {
+
+						if ( block.valid ) {
+
+							block.userMeshes.group.rotation.y *= 0.6;
+
+						}
+
+					}
+
+				}
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function toggleHudVisibility( forceVisible ) {
+
+				panelState.hudVisible = forceVisible === undefined ? ! panelState.hudVisible : forceVisible;
+				ui.hud.classList.toggle( 'is-hidden', ! panelState.hudVisible );
+				ui.hudToggleButton.textContent = panelState.hudVisible ? 'Hide Panel (H)' : 'Show Panel (H)';
+				ui.hudToggleButton.setAttribute( 'aria-pressed', String( ! panelState.hudVisible ) );
+
+			}
+
+			function isEditableTarget( target ) {
+
+				if ( ! target ) return false;
+				const tagName = target.tagName;
+				return tagName === 'INPUT' || tagName === 'TEXTAREA' || target.isContentEditable;
+
+			}
+
+			function onGlobalKeyDown( event ) {
+
+				if ( event.repeat ) return;
+				if ( event.key.toLowerCase() !== 'h' ) return;
+				if ( isEditableTarget( event.target ) ) return;
+
+				event.preventDefault();
+				toggleHudVisibility();
+
+			}
+
+		</script>
+	</body>
+</html>

@@ -1,5 +1,6 @@
 {
 	"webxr": [
-		"webxr_vr_blockchain_architecture"
+		"webxr_vr_blockchain_architecture",
+		"webxr_vr_block_structure_integrity"
 	]
 }

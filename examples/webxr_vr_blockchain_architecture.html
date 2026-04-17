@@ -16,9 +16,16 @@
 
 			#hud {
 				position: absolute;
-				top: 14px;
-				left: 14px;
-				width: min( 420px, calc( 100vw - 28px ) );
+				inset-block-start: 14px;
+				inset-inline-start: 14px;
+				inline-size: min( 420px, calc( 100vw - 28px ) );
+				max-block-size: calc( 100vh - 28px );
+				overflow-y: auto;
+				overflow-x: hidden;
+				scrollbar-gutter: stable;
+				overscroll-behavior: contain;
+				scrollbar-width: thin;
+				scrollbar-color: rgba( 137, 210, 255, 0.72 ) rgba( 16, 44, 63, 0.65 );
 				padding: 14px;
 				border-radius: 12px;
 				background: rgba( 5, 14, 22, 0.72 );
@@ -26,6 +33,53 @@
 				backdrop-filter: blur( 4px );
 				box-shadow: 0 8px 36px rgba( 0, 0, 0, 0.35 );
 				z-index: 4;
+			}
+
+			#hud.is-hidden {
+				display: none;
+			}
+
+			#hud::-webkit-scrollbar {
+				inline-size: 10px;
+				block-size: 10px;
+			}
+
+			#hud::-webkit-scrollbar-track {
+				background: rgba( 16, 44, 63, 0.65 );
+				border-radius: 999px;
+			}
+
+			#hud::-webkit-scrollbar-thumb {
+				background: linear-gradient( 180deg, rgba( 154, 223, 255, 0.9 ) 0%, rgba( 86, 167, 216, 0.88 ) 100% );
+				border-radius: 999px;
+				border: 2px solid rgba( 16, 44, 63, 0.9 );
+			}
+
+			#hud::-webkit-scrollbar-thumb:hover {
+				background: linear-gradient( 180deg, rgba( 176, 234, 255, 0.95 ) 0%, rgba( 104, 188, 237, 0.92 ) 100% );
+			}
+
+			.hud-toggle {
+				position: absolute;
+				inset-block-start: 14px;
+				inset-inline-end: 14px;
+				z-index: 5;
+				min-inline-size: 136px;
+				padding: 8px 12px;
+				border-radius: 999px;
+				border: 1px solid rgba( 123, 199, 255, 0.5 );
+				background: rgba( 12, 37, 54, 0.85 );
+				color: #eaf7ff;
+				font-size: 12px;
+				font-weight: 700;
+				letter-spacing: 0.02em;
+				cursor: pointer;
+				transition: background-color 0.2s ease, transform 0.2s ease;
+			}
+
+			.hud-toggle:hover {
+				background: rgba( 24, 60, 83, 0.95 );
+				transform: translateY( -1px );
 			}
 
 			#hud h2 {
@@ -46,11 +100,11 @@
 				display: grid;
 				grid-template-columns: 1fr 1fr;
 				gap: 8px;
-				margin-bottom: 10px;
+				margin-block-end: 10px;
 			}
 
 			.toolbar.secondary {
-				margin-top: 6px;
+				margin-block-start: 6px;
 			}
 
 			button {
@@ -113,14 +167,14 @@
 			}
 
 			.legend {
-				margin-top: 10px;
+				margin-block-start: 10px;
 				font-size: 11px;
 				color: #afcbde;
 				line-height: 1.4;
 			}
 
 			.timeline {
-				margin-top: 10px;
+				margin-block-start: 10px;
 				padding: 8px;
 				border-radius: 8px;
 				background: rgba( 9, 28, 43, 0.72 );
@@ -131,7 +185,7 @@
 				display: flex;
 				justify-content: space-between;
 				align-items: center;
-				margin-bottom: 6px;
+				margin-block-end: 6px;
 			}
 
 			.timeline-label {
@@ -146,19 +200,19 @@
 			}
 
 			#timelineSlider {
-				width: 100%;
+				inline-size: 100%;
 			}
 
 			#timelineLiveButton {
-				margin-top: 6px;
-				width: 100%;
+				margin-block-start: 6px;
+				inline-size: 100%;
 			}
 
 			.legend strong {
 				color: #d9f2ff;
 			}
 
-			@media ( max-width: 560px ) {
+			@media ( max-inline-size: 560px ) {
 				.toolbar {
 					grid-template-columns: 1fr;
 				}
@@ -206,6 +260,7 @@
 				<strong>VR:</strong> Use controller ray + trigger on 3D panel or directly on nodes.
 			</div>
 		</div>
+		<button id="hudToggleButton" class="hud-toggle" type="button" aria-controls="hud" aria-pressed="false">Hide Panel (H)</button>
 
 		<script type="importmap">
 			{
@@ -246,7 +301,8 @@
 				offlineDecentralizedNode: null,
 				incidentType: 'none',
 				fireTargetNode: null,
-				timelineIndex: - 1
+				timelineIndex: - 1,
+				hudVisible: true
 			};
 
 			const history = {
@@ -263,6 +319,8 @@
 			};
 
 			const ui = {
+				hud: document.getElementById( 'hud' ),
+				hudToggleButton: document.getElementById( 'hudToggleButton' ),
 				switchModeButton: document.getElementById( 'switchModeButton' ),
 				centralServerButton: document.getElementById( 'centralServerButton' ),
 				decentralizedNodeButton: document.getElementById( 'decentralizedNodeButton' ),
@@ -369,8 +427,12 @@
 				ui.recoverButton.addEventListener( 'click', recoverIncident );
 				ui.timelineSlider.addEventListener( 'input', onTimelineSliderInput );
 				ui.timelineLiveButton.addEventListener( 'click', jumpToLiveTimeline );
+				ui.hudToggleButton.addEventListener( 'click', () => toggleHudVisibility() );
 
 				window.addEventListener( 'resize', onWindowResize );
+				window.addEventListener( 'keydown', onGlobalKeyDown );
+
+				toggleHudVisibility( true );
 
 				updateNetworkState();
 				recordHistorySnapshot( 'initial' );
@@ -2246,6 +2308,34 @@
 				camera.aspect = window.innerWidth / window.innerHeight;
 				camera.updateProjectionMatrix();
 				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function toggleHudVisibility( forceVisible ) {
+
+				state.hudVisible = forceVisible === undefined ? ! state.hudVisible : forceVisible;
+				ui.hud.classList.toggle( 'is-hidden', ! state.hudVisible );
+				ui.hudToggleButton.textContent = state.hudVisible ? 'Hide Panel (H)' : 'Show Panel (H)';
+				ui.hudToggleButton.setAttribute( 'aria-pressed', String( ! state.hudVisible ) );
+
+			}
+
+			function isEditableTarget( target ) {
+
+				if ( ! target ) return false;
+				const tagName = target.tagName;
+				return tagName === 'INPUT' || tagName === 'TEXTAREA' || target.isContentEditable;
+
+			}
+
+			function onGlobalKeyDown( event ) {
+
+				if ( event.repeat ) return;
+				if ( event.key.toLowerCase() !== 'h' ) return;
+				if ( isEditableTarget( event.target ) ) return;
+
+				event.preventDefault();
+				toggleHudVisibility();
 
 			}
 
