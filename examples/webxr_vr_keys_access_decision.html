@@ -1,0 +1,1736 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webxr - cryptographic keys scene 3</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+		<link type="text/css" rel="stylesheet" href="main.css">
+		<style>
+			body {
+				margin: 0;
+				overflow: hidden;
+				font-family: "Segoe UI", Tahoma, sans-serif;
+				background: radial-gradient( circle at 18% 12%, #1f3346 0%, #0c1723 58%, #05070d 100% );
+				color: #e8f7ff;
+			}
+
+			#hud {
+				position: absolute;
+				inset-block-start: 14px;
+				inset-inline-start: 14px;
+				inline-size: min( 470px, calc( 100vw - 28px ) );
+				max-block-size: calc( 100vh - 28px );
+				overflow-y: auto;
+				overflow-x: hidden;
+				scrollbar-gutter: stable;
+				overscroll-behavior: contain;
+				scrollbar-width: thin;
+				scrollbar-color: rgba( 151, 219, 255, 0.78 ) rgba( 20, 47, 67, 0.68 );
+				padding: 14px;
+				border-radius: 12px;
+				background: rgba( 7, 19, 31, 0.78 );
+				border: 1px solid rgba( 122, 199, 255, 0.34 );
+				backdrop-filter: blur( 4px );
+				box-shadow: 0 8px 36px rgba( 0, 0, 0, 0.35 );
+				z-index: 4;
+			}
+
+			#hud.is-hidden {
+				display: none;
+			}
+
+			#hud::-webkit-scrollbar {
+				inline-size: 10px;
+				block-size: 10px;
+			}
+
+			#hud::-webkit-scrollbar-track {
+				background: rgba( 20, 47, 67, 0.68 );
+				border-radius: 999px;
+			}
+
+			#hud::-webkit-scrollbar-thumb {
+				background: linear-gradient( 180deg, rgba( 177, 233, 255, 0.94 ) 0%, rgba( 98, 183, 231, 0.92 ) 100% );
+				border-radius: 999px;
+				border: 2px solid rgba( 20, 47, 67, 0.95 );
+			}
+
+			#hud::-webkit-scrollbar-thumb:hover {
+				background: linear-gradient( 180deg, rgba( 198, 241, 255, 0.96 ) 0%, rgba( 117, 199, 245, 0.93 ) 100% );
+			}
+
+			.hud-toggle {
+				position: absolute;
+				inset-block-start: 14px;
+				inset-inline-end: 14px;
+				z-index: 5;
+				inline-size: 146px;
+				padding: 8px 12px;
+				border-radius: 999px;
+				border: 1px solid rgba( 123, 199, 255, 0.5 );
+				background: rgba( 12, 37, 54, 0.86 );
+				color: #eaf7ff;
+				font-size: 12px;
+				font-weight: 700;
+				letter-spacing: 0.02em;
+				cursor: pointer;
+				transition: background-color 0.2s ease, transform 0.2s ease;
+			}
+
+			.hud-toggle:hover {
+				background: rgba( 24, 60, 83, 0.95 );
+				transform: translateY( -1px );
+			}
+
+			#hud h2 {
+				margin: 0 0 10px;
+				font-size: 18px;
+				font-weight: 700;
+				letter-spacing: 0.02em;
+			}
+
+			#hud p {
+				margin: 0 0 10px;
+				font-size: 13px;
+				line-height: 1.35;
+				color: #cce4f6;
+			}
+
+			.toolbar {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 8px;
+				margin-block-end: 8px;
+			}
+
+			.toolbar.triple {
+				grid-template-columns: 1fr 1fr 1fr;
+			}
+
+			.editor-row {
+				display: grid;
+				grid-template-columns: 1fr auto;
+				gap: 8px;
+				margin-block-end: 8px;
+			}
+
+			#privateKeyInput {
+				border: 1px solid rgba( 132, 208, 255, 0.4 );
+				border-radius: 8px;
+				padding: 8px 10px;
+				background: rgba( 16, 40, 57, 0.84 );
+				color: #eef9ff;
+				font-size: 13px;
+				font-family: "Roboto Mono", Consolas, monospace;
+			}
+
+			button {
+				border: 1px solid rgba( 123, 199, 255, 0.46 );
+				border-radius: 8px;
+				padding: 8px 10px;
+				background: rgba( 35, 71, 96, 0.76 );
+				color: #eef9ff;
+				font-size: 13px;
+				font-weight: 600;
+				cursor: pointer;
+				transition: background-color 0.2s ease, transform 0.2s ease;
+			}
+
+			button:hover {
+				background: rgba( 49, 94, 124, 0.94 );
+				transform: translateY( -1px );
+			}
+
+			button:disabled {
+				cursor: not-allowed;
+				opacity: 0.42;
+				transform: none;
+			}
+
+			.indicators {
+				display: grid;
+				grid-template-columns: auto 1fr;
+				gap: 6px 10px;
+				font-size: 12px;
+				margin-block-start: 2px;
+			}
+
+			.indicators span {
+				color: #9ec4df;
+			}
+
+			.value {
+				color: #edf8ff;
+				font-weight: 600;
+			}
+
+			.badge {
+				display: inline-block;
+				padding: 2px 10px;
+				border-radius: 999px;
+				font-weight: 700;
+				letter-spacing: 0.02em;
+			}
+
+			.badge.valid {
+				background: rgba( 51, 189, 116, 0.25 );
+				color: #a8ffcc;
+				border: 1px solid rgba( 108, 247, 167, 0.45 );
+			}
+
+			.badge.invalid {
+				background: rgba( 228, 68, 68, 0.24 );
+				color: #ffbec2;
+				border: 1px solid rgba( 255, 136, 136, 0.47 );
+			}
+
+			.panel {
+				margin-block-start: 10px;
+				padding: 8px;
+				border-radius: 8px;
+				background: rgba( 10, 30, 45, 0.72 );
+				border: 1px solid rgba( 100, 176, 233, 0.33 );
+			}
+
+			.panel-title {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				font-size: 12px;
+				font-weight: 700;
+				color: #d9f2ff;
+				margin-block-end: 6px;
+			}
+
+			.audit-log {
+				margin: 0;
+				padding: 0;
+				list-style: none;
+				display: grid;
+				gap: 6px;
+				font-size: 11px;
+			}
+
+			.audit-log li {
+				padding: 6px 8px;
+				border-radius: 6px;
+				background: rgba( 11, 33, 49, 0.75 );
+				border: 1px solid rgba( 93, 161, 214, 0.22 );
+				color: #d7ebf9;
+			}
+
+			.audit-log li.approved {
+				border-color: rgba( 102, 244, 162, 0.4 );
+				background: rgba( 20, 74, 51, 0.55 );
+			}
+
+			.audit-log li.denied {
+				border-color: rgba( 255, 137, 145, 0.45 );
+				background: rgba( 86, 27, 35, 0.62 );
+			}
+
+			.legend {
+				margin-block-start: 10px;
+				font-size: 11px;
+				line-height: 1.4;
+				color: #a8c7dd;
+			}
+
+			.legend strong {
+				color: #d9f2ff;
+			}
+
+			@media ( max-inline-size: 620px ) {
+				.toolbar {
+					grid-template-columns: 1fr;
+				}
+
+				.toolbar.triple {
+					grid-template-columns: 1fr;
+				}
+
+				.editor-row {
+					grid-template-columns: 1fr;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div id="hud">
+			<h2>Scene 3: Cryptographic Keys</h2>
+			<p>
+				Three-step verification: key format, ownership, signature.<br>
+				Challenge-response uses a rotating nonce and derived signature.
+			</p>
+			<div class="toolbar triple">
+				<button id="ownerAliceButton">Owner: Alice</button>
+				<button id="ownerBobButton">Owner: Bob</button>
+				<button id="ownerEveButton">Actor: Eve</button>
+			</div>
+			<div class="panel">
+				<div class="panel-title">
+					<span>Key Console</span>
+					<span id="publicKeyValue">PUB: -</span>
+				</div>
+				<div class="editor-row">
+					<input id="privateKeyInput" type="text" value="" maxlength="64" autocomplete="off" spellcheck="false" placeholder="Enter private key token">
+					<button id="verifyButton">Verify</button>
+				</div>
+				<div class="toolbar">
+					<button id="useCorrectKeyButton">Use Correct Key</button>
+					<button id="useWrongKeyButton">Use Wrong Key</button>
+					<button id="clearKeyButton">Clear Input</button>
+					<button id="resetVaultButton">Reset Vault</button>
+				</div>
+			</div>
+			<div class="indicators">
+				<span>Actor</span>
+				<span class="value" id="actorValue">Alice</span>
+				<span>Challenge Nonce</span>
+				<span class="value" id="challengeValue">-</span>
+				<span>Derived Signature</span>
+				<span class="value" id="signatureValue">-</span>
+				<span>Pipeline</span>
+				<span class="value" id="pipelineValue">0/3 passed</span>
+				<span>Decision</span>
+				<span><span class="badge invalid" id="decisionBadge">PENDING</span></span>
+				<span>Reason</span>
+				<span class="value" id="reasonValue">Provide private key and run verification.</span>
+				<span>Metrics</span>
+				<span class="value" id="metricsValue">Attempts: 0 | Approved: 0 | Denied: 0</span>
+			</div>
+			<div class="panel">
+				<div class="panel-title">
+					<span>Audit Log</span>
+					<span id="auditMeta">0 events</span>
+				</div>
+				<ul class="audit-log" id="auditLog"></ul>
+			</div>
+			<div class="legend">
+				<strong>Legend:</strong> Green means transaction approved and vault unlocks.<br>
+				Red means access denied due to invalid private key.<br>
+				<strong>VR:</strong> Use controller ray + trigger on panel buttons and actor terminals.
+			</div>
+		</div>
+		<button id="hudToggleButton" class="hud-toggle" type="button" aria-controls="hud" aria-pressed="false">Hide Panel (H)</button>
+
+		<script type="importmap">
+			{
+				"imports": {
+					"three": "../build/three.module.js",
+					"three/addons/": "./jsm/"
+				}
+			}
+		</script>
+
+		<script type="module">
+
+			import * as THREE from 'three';
+			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+			import { VRButton } from 'three/addons/webxr/VRButton.js';
+			import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
+
+			let camera, scene, renderer, controls;
+
+			const clock = new THREE.Clock();
+			const vrRayLength = 13;
+			const tempMatrix = new THREE.Matrix4();
+
+			const state = {
+				actorId: 'alice',
+				decision: 'pending',
+				reason: 'Provide private key and run verification.',
+				attempts: 0,
+				approved: 0,
+				denied: 0,
+				challengeNonce: '',
+				lastSignature: '-',
+				pipelinePassed: 0,
+				pipelineTotal: 3,
+				hudVisible: true
+			};
+
+			const vaultState = {
+				doorOpen: false,
+				doorTarget: 0,
+				pulse: 0,
+				lastDecisionTime: 0
+			};
+
+			const audit = {
+				entries: [],
+				maxEntries: 8
+			};
+
+			const actors = {
+				alice: { label: 'Alice', publicKey: 'PUB-ALICE-4A8F-22C1', privateKey: 'ALICE-KEY-7FA9-OWN' },
+				bob: { label: 'Bob', publicKey: 'PUB-BOB-99C2-01ED', privateKey: 'BOB-KEY-3CC1-OWN' },
+				eve: { label: 'Eve', publicKey: 'PUB-EVE-1BAD-C0DE', privateKey: 'EVE-KEY-UNKNOWN' }
+			};
+
+			const panelState = {
+				statusMesh: null,
+				reasonLabel: null,
+				actorLabel: null,
+				privateLabel: null,
+				publicLabel: null,
+				challengeLabel: null,
+				pipelineLabel: null,
+				auditLabel: null,
+				buttons: {}
+			};
+
+			const sceneRefs = {
+				vaultDoor: null,
+				vaultRing: null,
+				vaultBarrier: null,
+				vaultBeam: null,
+				actorTerminals: [],
+				floatingGlyphs: []
+			};
+
+			const audioFx = {
+				listener: null,
+				deny: null,
+				approve: null,
+				initialized: false
+			};
+
+			const vr = {
+				raycaster: new THREE.Raycaster(),
+				controllers: [],
+				interactiveTargets: []
+			};
+
+			const ui = {
+				hud: document.getElementById( 'hud' ),
+				hudToggleButton: document.getElementById( 'hudToggleButton' ),
+				ownerAliceButton: document.getElementById( 'ownerAliceButton' ),
+				ownerBobButton: document.getElementById( 'ownerBobButton' ),
+				ownerEveButton: document.getElementById( 'ownerEveButton' ),
+				privateKeyInput: document.getElementById( 'privateKeyInput' ),
+				verifyButton: document.getElementById( 'verifyButton' ),
+				useCorrectKeyButton: document.getElementById( 'useCorrectKeyButton' ),
+				useWrongKeyButton: document.getElementById( 'useWrongKeyButton' ),
+				clearKeyButton: document.getElementById( 'clearKeyButton' ),
+				resetVaultButton: document.getElementById( 'resetVaultButton' ),
+				publicKeyValue: document.getElementById( 'publicKeyValue' ),
+				actorValue: document.getElementById( 'actorValue' ),
+				challengeValue: document.getElementById( 'challengeValue' ),
+				signatureValue: document.getElementById( 'signatureValue' ),
+				pipelineValue: document.getElementById( 'pipelineValue' ),
+				decisionBadge: document.getElementById( 'decisionBadge' ),
+				reasonValue: document.getElementById( 'reasonValue' ),
+				metricsValue: document.getElementById( 'metricsValue' ),
+				auditMeta: document.getElementById( 'auditMeta' ),
+				auditLog: document.getElementById( 'auditLog' )
+			};
+
+			init();
+
+			function init() {
+
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0x07101a );
+				scene.fog = new THREE.Fog( 0x07101a, 28, 86 );
+
+				camera = new THREE.PerspectiveCamera( 54, window.innerWidth / window.innerHeight, 0.1, 180 );
+				camera.position.set( 0, 10, 25 );
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.outputColorSpace = THREE.SRGBColorSpace;
+				renderer.xr.enabled = true;
+				renderer.setAnimationLoop( animate );
+				document.body.appendChild( renderer.domElement );
+				document.body.appendChild( VRButton.createButton( renderer ) );
+
+				controls = new OrbitControls( camera, renderer.domElement );
+				controls.target.set( 0, 2.2, 0 );
+				controls.enableDamping = true;
+				controls.minDistance = 12;
+				controls.maxDistance = 54;
+				controls.maxPolarAngle = Math.PI * 0.48;
+
+				const hemi = new THREE.HemisphereLight( 0xaedfff, 0x1a2737, 0.98 );
+				scene.add( hemi );
+
+				const key = new THREE.DirectionalLight( 0xffffff, 1.25 );
+				key.position.set( 14, 20, 8 );
+				scene.add( key );
+
+				const fill = new THREE.PointLight( 0x68d9ff, 16, 64 );
+				fill.position.set( - 12, 6, - 10 );
+				scene.add( fill );
+
+				const floor = new THREE.Mesh(
+					new THREE.CircleGeometry( 34, 70 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x0f2435,
+						emissive: 0x081520,
+						emissiveIntensity: 0.42,
+						metalness: 0.2,
+						roughness: 0.84
+					} )
+				);
+				floor.rotation.x = - Math.PI / 2;
+				floor.position.y = - 0.05;
+				scene.add( floor );
+
+				const grid = new THREE.GridHelper( 58, 28, 0x1e5078, 0x14324d );
+				grid.position.y = 0.01;
+				scene.add( grid );
+
+				addAtmosphereDetails();
+				buildVaultZone();
+				buildActorTerminals();
+				setupVRControllers();
+				setupVRPanel();
+				initAudio();
+				bindEvents();
+				state.challengeNonce = generateNonce();
+				setActor( 'alice', false );
+				recordAudit( 'System ready. Awaiting key verification.', 'info' );
+				refreshUI();
+				toggleHudVisibility( true );
+
+			}
+
+			function bindEvents() {
+
+				ui.ownerAliceButton.addEventListener( 'click', () => setActor( 'alice' ) );
+				ui.ownerBobButton.addEventListener( 'click', () => setActor( 'bob' ) );
+				ui.ownerEveButton.addEventListener( 'click', () => setActor( 'eve' ) );
+				ui.verifyButton.addEventListener( 'click', verifyAccess );
+				ui.useCorrectKeyButton.addEventListener( 'click', useCorrectKey );
+				ui.useWrongKeyButton.addEventListener( 'click', useWrongKey );
+				ui.clearKeyButton.addEventListener( 'click', clearInput );
+				ui.resetVaultButton.addEventListener( 'click', resetVault );
+				ui.hudToggleButton.addEventListener( 'click', () => toggleHudVisibility() );
+
+				ui.privateKeyInput.addEventListener( 'keydown', ( event ) => {
+
+					if ( event.key === 'Enter' ) verifyAccess();
+
+				} );
+
+				ui.privateKeyInput.addEventListener( 'input', () => {
+
+					refreshUI();
+
+				} );
+
+				window.addEventListener( 'resize', onWindowResize );
+				window.addEventListener( 'keydown', onGlobalKeyDown );
+
+			}
+
+			function buildVaultZone() {
+
+				const zone = new THREE.Group();
+
+				const pedestal = new THREE.Mesh(
+					new THREE.CylinderGeometry( 4.5, 5.2, 1.5, 40 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x2a3a4a,
+						emissive: 0x122230,
+						emissiveIntensity: 0.42,
+						metalness: 0.32,
+						roughness: 0.66
+					} )
+				);
+				pedestal.position.set( 0, 0.75, - 2.6 );
+				zone.add( pedestal );
+
+				const vaultBody = new THREE.Mesh(
+					new THREE.BoxGeometry( 6, 4, 3.8 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x294056,
+						emissive: 0x112132,
+						emissiveIntensity: 0.45,
+						metalness: 0.42,
+						roughness: 0.48
+					} )
+				);
+				vaultBody.position.set( 0, 3.1, - 2.6 );
+				zone.add( vaultBody );
+
+				const frame = new THREE.Mesh(
+					new THREE.BoxGeometry( 2.65, 3.2, 0.46 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x172736,
+						emissive: 0x0d1c2a,
+						emissiveIntensity: 0.52,
+						metalness: 0.4,
+						roughness: 0.38
+					} )
+				);
+				frame.position.set( 0, 3.1, - 0.56 );
+				zone.add( frame );
+
+				const doorPivot = new THREE.Group();
+				doorPivot.position.set( - 1.22, 3.1, - 0.32 );
+				zone.add( doorPivot );
+
+				const door = new THREE.Mesh(
+					new THREE.BoxGeometry( 2.2, 2.92, 0.28 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x20364a,
+						emissive: 0x143149,
+						emissiveIntensity: 0.42,
+						metalness: 0.5,
+						roughness: 0.35
+					} )
+				);
+				door.position.set( 1.1, 0, 0 );
+				doorPivot.add( door );
+
+				const ring = new THREE.Mesh(
+					new THREE.TorusGeometry( 0.56, 0.07, 12, 42 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x67c2ff,
+						emissive: 0x49b4ff,
+						emissiveIntensity: 0.9,
+						metalness: 0.45,
+						roughness: 0.22
+					} )
+				);
+				ring.position.set( 0.5, 3.1, - 0.17 );
+				ring.rotation.y = Math.PI / 2;
+				zone.add( ring );
+
+				const barrier = new THREE.Mesh(
+					new THREE.PlaneGeometry( 2.15, 2.82 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0xff7c88,
+						emissive: 0xff4b5f,
+						emissiveIntensity: 0.82,
+						opacity: 0.22,
+						transparent: true,
+						side: THREE.DoubleSide
+					} )
+				);
+				barrier.position.set( 0, 3.1, - 0.42 );
+				barrier.visible = true;
+				zone.add( barrier );
+
+				const beam = new THREE.Mesh(
+					new THREE.CylinderGeometry( 0.12, 0.12, 2.95, 16, 1, true ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x7dffbf,
+						emissive: 0x49ffac,
+						emissiveIntensity: 1.2,
+						opacity: 0.3,
+						transparent: true,
+						side: THREE.DoubleSide
+					} )
+				);
+				beam.position.set( 0, 3.1, - 0.42 );
+				beam.visible = false;
+				zone.add( beam );
+
+				const label = createWorldLabel( 'CRYPTO VAULT', 1024, 180, 3.9, 0.48, '#dff4ff', 'rgba(17, 58, 81, 0.9)' );
+				label.mesh.position.set( 0, 5.7, - 2.6 );
+				zone.add( label.mesh );
+
+				scene.add( zone );
+
+				sceneRefs.vaultDoor = doorPivot;
+				sceneRefs.vaultRing = ring;
+				sceneRefs.vaultBarrier = barrier;
+				sceneRefs.vaultBeam = beam;
+
+			}
+
+			function buildActorTerminals() {
+
+				const actorsGroup = new THREE.Group();
+				const actorList = [ 'alice', 'bob', 'eve' ];
+
+				for ( let i = 0; i < actorList.length; i ++ ) {
+
+					const actorId = actorList[ i ];
+					const actor = actors[ actorId ];
+					const x = ( i - 1 ) * 4.7;
+
+					const terminal = new THREE.Group();
+					terminal.position.set( x, 1.2, 4.2 );
+
+					const base = new THREE.Mesh(
+						new THREE.CylinderGeometry( 0.88, 1.1, 0.55, 16 ),
+						new THREE.MeshStandardMaterial( {
+							color: 0x26394b,
+							emissive: 0x122434,
+							emissiveIntensity: 0.45,
+							metalness: 0.32,
+							roughness: 0.64
+						} )
+					);
+					terminal.add( base );
+
+					const orbMaterial = new THREE.MeshStandardMaterial( {
+						color: 0x7ec9ff,
+						emissive: 0x63bdff,
+						emissiveIntensity: 0.5,
+						metalness: 0.2,
+						roughness: 0.24
+					} );
+					const orb = new THREE.Mesh( new THREE.IcosahedronGeometry( 0.68, 1 ), orbMaterial );
+					orb.position.y = 1;
+					terminal.add( orb );
+
+					const ring = new THREE.Mesh(
+						new THREE.TorusGeometry( 0.94, 0.06, 12, 38 ),
+						new THREE.MeshStandardMaterial( {
+							color: 0x9adfff,
+							emissive: 0x66c8ff,
+							emissiveIntensity: 0.52,
+							metalness: 0.5,
+							roughness: 0.26
+						} )
+					);
+					ring.position.y = 1;
+					ring.rotation.x = Math.PI / 2;
+					terminal.add( ring );
+
+					const label = createWorldLabel( `${actor.label}\n${actor.publicKey}`, 940, 240, 2.9, 0.8, '#dcf4ff', 'rgba(16, 58, 82, 0.88)' );
+					label.mesh.position.set( 0, 2.22, 0 );
+					terminal.add( label.mesh );
+
+					const hit = new THREE.Mesh(
+						new THREE.BoxGeometry( 1.9, 2.6, 1.6 ),
+						new THREE.MeshBasicMaterial( { transparent: true, opacity: 0 } )
+					);
+					hit.position.y = 1;
+					terminal.add( hit );
+
+					registerInteractiveTarget( hit, 'actor', () => setActor( actorId ) );
+
+					actorsGroup.add( terminal );
+					sceneRefs.actorTerminals.push( { id: actorId, group: terminal, orb, ring, label, hit } );
+					sceneRefs.floatingGlyphs.push( { mesh: ring, speed: 0.55 + i * 0.08 } );
+
+				}
+
+				scene.add( actorsGroup );
+
+			}
+
+			function setupVRControllers() {
+
+				const factory = new XRControllerModelFactory();
+				const rayGeometry = new THREE.BufferGeometry().setFromPoints( [
+					new THREE.Vector3( 0, 0, 0 ),
+					new THREE.Vector3( 0, 0, - 1 )
+				] );
+
+				for ( let i = 0; i < 2; i ++ ) {
+
+					const controller = renderer.xr.getController( i );
+					const ray = new THREE.Line(
+						rayGeometry,
+						new THREE.LineBasicMaterial( { color: 0xb9e8ff, transparent: true, opacity: 0.93 } )
+					);
+					ray.scale.z = vrRayLength;
+					ray.name = 'ray';
+					controller.add( ray );
+					controller.userData.ray = ray;
+					controller.userData.hoveredTarget = null;
+					controller.userData.hoveredIntersection = null;
+					controller.addEventListener( 'selectstart', onVrSelectStart );
+					scene.add( controller );
+					vr.controllers.push( controller );
+
+					const grip = renderer.xr.getControllerGrip( i );
+					grip.add( factory.createControllerModel( grip ) );
+					scene.add( grip );
+
+				}
+
+			}
+
+			function setupVRPanel() {
+
+				const panel = new THREE.Group();
+				panel.position.set( - 5.4, 2.6, - 5.5 );
+				panel.rotation.y = Math.PI / 8;
+
+				const body = new THREE.Mesh(
+					new THREE.BoxGeometry( 5.2, 7.1, 0.12 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x0f2839,
+						emissive: 0x092031,
+						emissiveIntensity: 0.62,
+						metalness: 0.24,
+						roughness: 0.42,
+						opacity: 0.9,
+						transparent: true
+					} )
+				);
+				panel.add( body );
+
+				const title = createWorldLabel( 'VR KEY AUTH CONTROL', 1024, 180, 4.2, 0.46, '#dff4ff', 'rgba(20, 64, 91, 0.9)' );
+				title.mesh.position.set( 0, 2.8, 0.08 );
+				panel.add( title.mesh );
+
+				panelState.buttons.actorAlice = createVrButton( 'Actor Alice', 0x2d77a2, () => setActor( 'alice' ) );
+				panelState.buttons.actorBob = createVrButton( 'Actor Bob', 0x2d77a2, () => setActor( 'bob' ) );
+				panelState.buttons.actorEve = createVrButton( 'Actor Eve', 0x8a4f5a, () => setActor( 'eve' ) );
+				panelState.buttons.correct = createVrButton( 'Use Correct Key', 0x2f8a5f, useCorrectKey );
+				panelState.buttons.wrong = createVrButton( 'Use Wrong Key', 0xa34b4b, useWrongKey );
+				panelState.buttons.verify = createVrButton( 'Verify Access', 0x357bb0, verifyAccess );
+				panelState.buttons.clear = createVrButton( 'Clear Input', 0x6a5a89, clearInput );
+				panelState.buttons.reset = createVrButton( 'Reset Vault', 0x47658a, resetVault );
+
+				panelState.buttons.actorAlice.group.position.set( - 1.25, 1.48, 0.1 );
+				panelState.buttons.actorBob.group.position.set( 1.25, 1.48, 0.1 );
+				panelState.buttons.actorEve.group.position.set( 0, 0.96, 0.1 );
+				panelState.buttons.correct.group.position.set( - 1.25, 0.42, 0.1 );
+				panelState.buttons.wrong.group.position.set( 1.25, 0.42, 0.1 );
+				panelState.buttons.verify.group.position.set( 0, - 0.12, 0.1 );
+				panelState.buttons.clear.group.position.set( - 1.25, - 0.66, 0.1 );
+				panelState.buttons.reset.group.position.set( 1.25, - 0.66, 0.1 );
+
+				panel.add(
+					panelState.buttons.actorAlice.group,
+					panelState.buttons.actorBob.group,
+					panelState.buttons.actorEve.group,
+					panelState.buttons.correct.group,
+					panelState.buttons.wrong.group,
+					panelState.buttons.verify.group,
+					panelState.buttons.clear.group,
+					panelState.buttons.reset.group
+				);
+
+				panelState.actorLabel = createWorldLabel( 'Actor: Alice', 1024, 150, 4, 0.28, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
+				panelState.actorLabel.mesh.position.set( 0, - 1.15, 0.1 );
+				panel.add( panelState.actorLabel.mesh );
+
+				panelState.publicLabel = createWorldLabel( 'Public: -', 1140, 150, 4.5, 0.28, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
+				panelState.publicLabel.mesh.position.set( 0, - 1.52, 0.1 );
+				panel.add( panelState.publicLabel.mesh );
+
+				panelState.privateLabel = createWorldLabel( 'Input: (empty)', 1140, 150, 4.5, 0.28, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
+				panelState.privateLabel.mesh.position.set( 0, - 1.89, 0.1 );
+				panel.add( panelState.privateLabel.mesh );
+
+				panelState.challengeLabel = createWorldLabel( 'Nonce: -', 1140, 150, 4.5, 0.28, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
+				panelState.challengeLabel.mesh.position.set( 0, - 2.26, 0.1 );
+				panel.add( panelState.challengeLabel.mesh );
+
+				panelState.pipelineLabel = createWorldLabel( 'Pipeline: 0/3 passed', 1140, 150, 4.5, 0.28, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
+				panelState.pipelineLabel.mesh.position.set( 0, - 2.63, 0.1 );
+				panel.add( panelState.pipelineLabel.mesh );
+
+				panelState.reasonLabel = createWorldLabel( 'Decision pending', 1140, 180, 4.5, 0.36, '#d8f2ff', 'rgba(20, 66, 90, 0.9)' );
+				panelState.reasonLabel.mesh.position.set( 0, - 3.07, 0.1 );
+				panel.add( panelState.reasonLabel.mesh );
+
+				panelState.auditLabel = createWorldLabel( 'Audit: 0 events', 1024, 140, 4, 0.26, '#d8f2ff', 'rgba(16, 49, 70, 0.88)' );
+				panelState.auditLabel.mesh.position.set( 0, - 3.5, 0.1 );
+				panel.add( panelState.auditLabel.mesh );
+
+				scene.add( panel );
+
+			}
+
+			function createVrButton( text, baseColor, onActivate ) {
+
+				const group = new THREE.Group();
+
+				const frame = new THREE.Mesh(
+					new THREE.BoxGeometry( 2.02, 0.46, 0.09 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x1b3242,
+						emissive: 0x112332,
+						emissiveIntensity: 0.45,
+						metalness: 0.35,
+						roughness: 0.46
+					} )
+				);
+				group.add( frame );
+
+				const material = new THREE.MeshStandardMaterial( {
+					color: baseColor,
+					emissive: baseColor,
+					emissiveIntensity: 0.32,
+					metalness: 0.26,
+					roughness: 0.38,
+					transparent: true,
+					opacity: 0.95
+				} );
+				const hit = new THREE.Mesh( new THREE.BoxGeometry( 1.9, 0.37, 0.12 ), material );
+				hit.position.z = 0.03;
+				group.add( hit );
+
+				const label = createWorldLabel( text, 1024, 160, 1.78, 0.25, '#eef9ff', 'rgba(0,0,0,0)' );
+				label.mesh.position.set( 0, 0, 0.11 );
+				group.add( label.mesh );
+
+				const button = {
+					group,
+					hit,
+					label,
+					material,
+					baseColor,
+					hoverColor: new THREE.Color( baseColor ).offsetHSL( 0, 0, 0.14 ).getHex(),
+					hovered: false,
+					enabled: true,
+					setText( next ) {
+
+						label.redraw( next );
+
+					},
+					setEnabled( enabled ) {
+
+						button.enabled = enabled;
+						refreshVrButtonVisual( button );
+
+					}
+				};
+
+				hit.userData.button = button;
+				registerInteractiveTarget( hit, 'button', () => {
+
+					if ( button.enabled ) onActivate();
+
+				} );
+
+				refreshVrButtonVisual( button );
+
+				return button;
+
+			}
+
+			function createWorldLabel( text, width, height, worldWidth, worldHeight, color, background ) {
+
+				const canvas = document.createElement( 'canvas' );
+				canvas.width = width;
+				canvas.height = height;
+				const ctx = canvas.getContext( '2d' );
+				const texture = new THREE.CanvasTexture( canvas );
+				texture.colorSpace = THREE.SRGBColorSpace;
+				texture.needsUpdate = true;
+
+				const material = new THREE.MeshBasicMaterial( {
+					map: texture,
+					transparent: true,
+					opacity: 0.98,
+					depthWrite: false
+				} );
+
+				const mesh = new THREE.Mesh( new THREE.PlaneGeometry( worldWidth, worldHeight ), material );
+
+				const redraw = ( value, nextColor = color, nextBackground = background ) => {
+
+					ctx.clearRect( 0, 0, width, height );
+					ctx.fillStyle = nextBackground;
+					ctx.fillRect( 0, 0, width, height );
+					ctx.strokeStyle = 'rgba(165, 224, 255, 0.85)';
+					ctx.lineWidth = Math.max( 2, Math.floor( width * 0.004 ) );
+					ctx.strokeRect( 2, 2, width - 4, height - 4 );
+					ctx.fillStyle = nextColor;
+					ctx.font = `600 ${Math.floor( height * 0.36 )}px "Segoe UI", sans-serif`;
+					ctx.textAlign = 'center';
+					ctx.textBaseline = 'middle';
+
+					const rows = String( value ).split( '\n' );
+					const lineHeight = height * 0.3;
+					const startY = height * 0.5 - ( rows.length - 1 ) * lineHeight * 0.5;
+
+					for ( let i = 0; i < rows.length; i ++ ) {
+
+						ctx.fillText( truncateLabel( rows[ i ], 38 ), width * 0.5, startY + i * lineHeight );
+
+					}
+
+					texture.needsUpdate = true;
+
+				};
+
+				redraw( text );
+
+				return { mesh, redraw, texture };
+
+			}
+
+			function truncateLabel( value, max ) {
+
+				if ( value.length <= max ) return value;
+				return `${value.slice( 0, max - 1 )}...`;
+
+			}
+
+			function generateNonce() {
+
+				const timePart = Date.now().toString( 36 ).toUpperCase();
+				const randomPart = Math.random().toString( 36 ).slice( 2, 8 ).toUpperCase();
+				return `N-${timePart}-${randomPart}`;
+
+			}
+
+			function pseudoHash( source ) {
+
+				let hash = 2166136261;
+
+				for ( let i = 0; i < source.length; i ++ ) {
+
+					hash ^= source.charCodeAt( i );
+					hash = Math.imul( hash, 16777619 );
+
+				}
+
+				return ( hash >>> 0 ).toString( 16 ).toUpperCase().padStart( 8, '0' );
+
+			}
+
+			function buildSignature( keyToken, nonce ) {
+
+				const hashA = pseudoHash( `${keyToken}|${nonce}|KEYAUTH` );
+				const hashB = pseudoHash( `${nonce}|${keyToken}|SIGN` );
+				return `SIG-${hashA.slice( 0, 4 )}-${hashA.slice( 4, 8 )}-${hashB.slice( 0, 4 )}-${hashB.slice( 4, 8 )}`;
+
+			}
+
+			function getExpectedSignature( actor, nonce ) {
+
+				return buildSignature( actor.privateKey, nonce );
+
+			}
+
+			function runVerificationPipeline( actorId, input, expectedSignature, inputSignature ) {
+
+				const formatOk = /^[A-Z0-9-]{12,64}$/.test( input );
+				if ( ! formatOk ) {
+
+					return {
+						approved: false,
+						passedSteps: 0,
+						reason: 'Step 1/3 failed: private key format is invalid (A-Z, 0-9, dash, 12-64 chars).'
+					};
+
+				}
+
+				if ( actorId === 'eve' ) {
+
+					return {
+						approved: false,
+						passedSteps: 1,
+						reason: 'Step 2/3 failed: ownership check failed (Eve is not the vault owner).'
+					};
+
+				}
+
+				if ( inputSignature !== expectedSignature ) {
+
+					return {
+						approved: false,
+						passedSteps: 2,
+						reason: 'Step 3/3 failed: challenge signature mismatch.'
+					};
+
+				}
+
+				return {
+					approved: true,
+					passedSteps: 3,
+					reason: 'Transaction approved: all 3 verification steps passed.'
+				};
+
+			}
+
+			function addAtmosphereDetails() {
+
+				const skyline = new THREE.Group();
+
+				for ( let i = 0; i < 52; i ++ ) {
+
+					const angle = Math.random() * Math.PI * 2;
+					const radius = 14 + Math.random() * 14;
+					const height = 1.4 + Math.random() * 5;
+
+					const tower = new THREE.Mesh(
+						new THREE.BoxGeometry( 0.62 + Math.random() * 0.92, height, 0.62 + Math.random() * 0.92 ),
+						new THREE.MeshStandardMaterial( {
+							color: 0x1f425b,
+							emissive: 0x0e2738,
+							emissiveIntensity: 0.34,
+							metalness: 0.16,
+							roughness: 0.8
+						} )
+					);
+
+					tower.position.set( Math.cos( angle ) * radius, height * 0.5, Math.sin( angle ) * radius );
+					skyline.add( tower );
+
+				}
+
+				scene.add( skyline );
+
+				const stars = new THREE.Group();
+
+				for ( let i = 0; i < 85; i ++ ) {
+
+					const dot = new THREE.Mesh(
+						new THREE.SphereGeometry( 0.05 + Math.random() * 0.02, 8, 6 ),
+						new THREE.MeshBasicMaterial( {
+							color: 0xa8e2ff,
+							transparent: true,
+							opacity: 0.55 + Math.random() * 0.25
+						} )
+					);
+					dot.position.set( ( Math.random() - 0.5 ) * 84, 14 + Math.random() * 22, ( Math.random() - 0.5 ) * 84 );
+					dot.userData.phase = Math.random() * Math.PI * 2;
+					stars.add( dot );
+
+				}
+
+				scene.add( stars );
+				sceneRefs.stars = stars;
+
+			}
+
+			function registerInteractiveTarget( mesh, type, onActivate ) {
+
+				mesh.userData.interactiveType = type;
+				mesh.userData.onActivate = onActivate;
+				mesh.userData.hovered = false;
+				vr.interactiveTargets.push( mesh );
+
+			}
+
+			function setActor( actorId, log = true ) {
+
+				state.actorId = actorId;
+				ui.privateKeyInput.value = '';
+				state.decision = 'pending';
+				state.reason = 'Provide private key and run verification.';
+				state.pipelinePassed = 0;
+				state.lastSignature = '-';
+				state.challengeNonce = generateNonce();
+
+				if ( log ) {
+
+					recordAudit( `Actor switched to ${actors[ actorId ].label}.`, 'info' );
+
+				}
+
+				refreshUI();
+
+			}
+
+			function useCorrectKey() {
+
+				ui.privateKeyInput.value = actors[ state.actorId ].privateKey;
+				refreshUI();
+
+			}
+
+			function useWrongKey() {
+
+				const wrongSamples = [
+					'WRONG-KEY-0001',
+					'EVE-OVERRIDE-FAIL',
+					'PRIVATE-KEY-NOT-MATCH',
+					'BAD-SIGNATURE-TOKEN'
+				];
+
+				ui.privateKeyInput.value = wrongSamples[ Math.floor( Math.random() * wrongSamples.length ) ];
+				refreshUI();
+
+			}
+
+			function clearInput() {
+
+				ui.privateKeyInput.value = '';
+				refreshUI();
+
+			}
+
+			function verifyAccess() {
+
+				unlockAudio();
+
+				const actor = actors[ state.actorId ];
+				const input = ui.privateKeyInput.value.trim();
+				const nonce = state.challengeNonce;
+
+				state.attempts ++;
+				vaultState.lastDecisionTime = performance.now();
+				state.lastSignature = input.length > 0 ? buildSignature( input, nonce ) : '-';
+
+				const expectedSignature = getExpectedSignature( actor, nonce );
+				const result = runVerificationPipeline( state.actorId, input, expectedSignature, state.lastSignature );
+				state.pipelinePassed = result.passedSteps;
+				state.reason = result.reason;
+
+				if ( result.approved ) {
+
+					state.decision = 'approved';
+					state.approved ++;
+					recordAudit( `${actor.label}: approved (3/3 passed, nonce ${truncateLabel( nonce, 18 )}).`, 'approved' );
+					applyApprovedVisuals();
+
+				} else {
+
+					state.decision = 'denied';
+					state.denied ++;
+					recordAudit( `${actor.label}: denied (${result.passedSteps}/3 passed, nonce ${truncateLabel( nonce, 18 )}).`, 'denied' );
+					applyDeniedVisuals();
+
+				}
+
+				state.challengeNonce = generateNonce();
+
+				refreshUI();
+
+			}
+
+			function applyApprovedVisuals() {
+
+				vaultState.doorOpen = true;
+				vaultState.doorTarget = - Math.PI * 0.48;
+				vaultState.pulse = 1;
+
+				sceneRefs.vaultBarrier.visible = false;
+				sceneRefs.vaultBeam.visible = true;
+				sceneRefs.vaultRing.material.color.setHex( 0x62ffb5 );
+				sceneRefs.vaultRing.material.emissive.setHex( 0x4dffae );
+
+				for ( const terminal of sceneRefs.actorTerminals ) {
+
+					const isActive = terminal.id === state.actorId;
+					terminal.orb.material.color.setHex( isActive ? 0x7dffbe : 0x79c8ff );
+					terminal.orb.material.emissive.setHex( isActive ? 0x56ffb0 : 0x62bcff );
+					terminal.orb.material.emissiveIntensity = isActive ? 1.05 : 0.5;
+
+				}
+
+				playApprove();
+				pulseHaptics( 0.55, 100 );
+
+			}
+
+			function applyDeniedVisuals() {
+
+				vaultState.doorOpen = false;
+				vaultState.doorTarget = 0;
+				vaultState.pulse = 1;
+
+				sceneRefs.vaultBarrier.visible = true;
+				sceneRefs.vaultBeam.visible = false;
+				sceneRefs.vaultRing.material.color.setHex( 0xff6f7a );
+				sceneRefs.vaultRing.material.emissive.setHex( 0xff4f60 );
+
+				for ( const terminal of sceneRefs.actorTerminals ) {
+
+					const isActive = terminal.id === state.actorId;
+					terminal.orb.material.color.setHex( isActive ? 0xff8794 : 0x79c8ff );
+					terminal.orb.material.emissive.setHex( isActive ? 0xff6778 : 0x62bcff );
+					terminal.orb.material.emissiveIntensity = isActive ? 1.02 : 0.5;
+
+				}
+
+				playDeny();
+				pulseHaptics( 0.36, 80 );
+
+			}
+
+			function resetVault() {
+
+				state.decision = 'pending';
+				state.reason = 'Vault reset. Provide private key and verify again.';
+				state.pipelinePassed = 0;
+				state.lastSignature = '-';
+				state.challengeNonce = generateNonce();
+				ui.privateKeyInput.value = '';
+
+				vaultState.doorOpen = false;
+				vaultState.doorTarget = 0;
+				vaultState.pulse = 0;
+
+				sceneRefs.vaultBarrier.visible = true;
+				sceneRefs.vaultBeam.visible = false;
+				sceneRefs.vaultRing.material.color.setHex( 0x67c2ff );
+				sceneRefs.vaultRing.material.emissive.setHex( 0x49b4ff );
+				sceneRefs.vaultRing.material.emissiveIntensity = 0.9;
+
+				for ( const terminal of sceneRefs.actorTerminals ) {
+
+					terminal.orb.material.color.setHex( 0x7ec9ff );
+					terminal.orb.material.emissive.setHex( 0x63bdff );
+					terminal.orb.material.emissiveIntensity = 0.5;
+
+				}
+
+				recordAudit( 'Vault reset to secure standby mode.', 'info' );
+				refreshUI();
+
+			}
+
+			function recordAudit( message, kind ) {
+
+				audit.entries.unshift( {
+					message,
+					kind,
+					time: new Date().toLocaleTimeString( [], { hour: '2-digit', minute: '2-digit', second: '2-digit' } )
+				} );
+
+				if ( audit.entries.length > audit.maxEntries ) {
+
+					audit.entries.length = audit.maxEntries;
+
+				}
+
+			}
+
+			function refreshUI() {
+
+				const actor = actors[ state.actorId ];
+				ui.actorValue.textContent = actor.label;
+				ui.publicKeyValue.textContent = `PUB: ${actor.publicKey}`;
+				ui.challengeValue.textContent = state.challengeNonce;
+				ui.signatureValue.textContent = state.lastSignature;
+				ui.pipelineValue.textContent = `${state.pipelinePassed}/${state.pipelineTotal} passed`;
+				ui.reasonValue.textContent = state.reason;
+				ui.metricsValue.textContent = `Attempts: ${state.attempts} | Approved: ${state.approved} | Denied: ${state.denied}`;
+
+				if ( state.decision === 'approved' ) {
+
+					ui.decisionBadge.textContent = 'APPROVED';
+					ui.decisionBadge.className = 'badge valid';
+
+				} else if ( state.decision === 'denied' ) {
+
+					ui.decisionBadge.textContent = 'DENIED';
+					ui.decisionBadge.className = 'badge invalid';
+
+				} else {
+
+					ui.decisionBadge.textContent = 'PENDING';
+					ui.decisionBadge.className = 'badge invalid';
+
+				}
+
+				ui.ownerAliceButton.disabled = state.actorId === 'alice';
+				ui.ownerBobButton.disabled = state.actorId === 'bob';
+				ui.ownerEveButton.disabled = state.actorId === 'eve';
+				ui.useCorrectKeyButton.disabled = state.actorId === 'eve';
+
+				refreshAuditList();
+				refreshWorldPanelLabels();
+				refreshVrButtonState();
+
+			}
+
+			function refreshAuditList() {
+
+				ui.auditMeta.textContent = `${audit.entries.length} events`;
+				ui.auditLog.innerHTML = '';
+
+				for ( const entry of audit.entries ) {
+
+					const item = document.createElement( 'li' );
+					item.classList.toggle( 'approved', entry.kind === 'approved' );
+					item.classList.toggle( 'denied', entry.kind === 'denied' );
+					item.textContent = `[${entry.time}] ${entry.message}`;
+					ui.auditLog.appendChild( item );
+
+				}
+
+			}
+
+			function refreshWorldPanelLabels() {
+
+				const actor = actors[ state.actorId ];
+				if ( panelState.actorLabel ) panelState.actorLabel.redraw( `Actor: ${actor.label}` );
+				if ( panelState.publicLabel ) panelState.publicLabel.redraw( `Public: ${actor.publicKey}` );
+
+				const inputText = ui.privateKeyInput.value.trim();
+				if ( panelState.privateLabel ) panelState.privateLabel.redraw( `Input: ${inputText.length === 0 ? '(empty)' : truncateLabel( inputText, 42 )}` );
+				if ( panelState.challengeLabel ) panelState.challengeLabel.redraw( `Nonce: ${truncateLabel( state.challengeNonce, 34 )}` );
+				if ( panelState.pipelineLabel ) panelState.pipelineLabel.redraw( `Pipeline: ${state.pipelinePassed}/${state.pipelineTotal} | Sig ${truncateLabel( state.lastSignature, 20 )}` );
+
+				if ( panelState.reasonLabel ) {
+
+					const isApproved = state.decision === 'approved';
+					const isDenied = state.decision === 'denied';
+					const bg = isApproved ? 'rgba(24, 88, 60, 0.92)' : ( isDenied ? 'rgba(88, 35, 44, 0.92)' : 'rgba(20, 66, 90, 0.9)' );
+					const fg = isApproved ? '#b6ffd8' : ( isDenied ? '#ffd0d2' : '#d8f2ff' );
+					panelState.reasonLabel.redraw( truncateLabel( state.reason, 54 ), fg, bg );
+
+				}
+
+				if ( panelState.auditLabel ) {
+
+					panelState.auditLabel.redraw( `Audit: ${audit.entries.length} events | ${state.approved} approved / ${state.denied} denied` );
+
+				}
+
+			}
+
+			function refreshVrButtonState() {
+
+				if ( ! panelState.buttons.actorAlice ) return;
+
+				panelState.buttons.actorAlice.setEnabled( state.actorId !== 'alice' );
+				panelState.buttons.actorBob.setEnabled( state.actorId !== 'bob' );
+				panelState.buttons.actorEve.setEnabled( state.actorId !== 'eve' );
+				panelState.buttons.correct.setEnabled( state.actorId !== 'eve' );
+				panelState.buttons.verify.setEnabled( ui.privateKeyInput.value.trim().length > 0 );
+				panelState.buttons.clear.setEnabled( ui.privateKeyInput.value.trim().length > 0 );
+
+			}
+
+			function initAudio() {
+
+				try {
+
+					const listener = new THREE.AudioListener();
+					camera.add( listener );
+					audioFx.listener = listener;
+
+					const context = listener.context;
+					const denyBuffer = createDenyBuffer( context, 0.34 );
+					const approveBuffer = createApproveBuffer( context, 0.36 );
+
+					audioFx.deny = new THREE.PositionalAudio( listener );
+					audioFx.deny.setBuffer( denyBuffer );
+					audioFx.deny.setRefDistance( 5 );
+					audioFx.deny.setVolume( 0.5 );
+					sceneRefs.vaultRing.add( audioFx.deny );
+
+					audioFx.approve = new THREE.PositionalAudio( listener );
+					audioFx.approve.setBuffer( approveBuffer );
+					audioFx.approve.setRefDistance( 5 );
+					audioFx.approve.setVolume( 0.48 );
+					sceneRefs.vaultRing.add( audioFx.approve );
+
+					audioFx.initialized = true;
+
+				} catch ( error ) {
+
+					console.warn( 'Audio init failed:', error );
+
+				}
+
+			}
+
+			function unlockAudio() {
+
+				if ( ! audioFx.listener ) return;
+				const context = audioFx.listener.context;
+				if ( context.state === 'suspended' ) context.resume();
+
+			}
+
+			function createDenyBuffer( context, duration ) {
+
+				const frameCount = Math.floor( context.sampleRate * duration );
+				const buffer = context.createBuffer( 1, frameCount, context.sampleRate );
+				const data = buffer.getChannelData( 0 );
+
+				for ( let i = 0; i < frameCount; i ++ ) {
+
+					const t = i / frameCount;
+					const f = 260 - 120 * t;
+					const env = Math.pow( 1 - t, 1.4 );
+					data[ i ] = Math.sin( 2 * Math.PI * f * t ) * 0.4 * env;
+
+				}
+
+				return buffer;
+
+			}
+
+			function createApproveBuffer( context, duration ) {
+
+				const frameCount = Math.floor( context.sampleRate * duration );
+				const buffer = context.createBuffer( 1, frameCount, context.sampleRate );
+				const data = buffer.getChannelData( 0 );
+
+				for ( let i = 0; i < frameCount; i ++ ) {
+
+					const t = i / frameCount;
+					const f = 420 + 280 * t;
+					const env = Math.pow( 1 - t, 1.5 );
+					data[ i ] = Math.sin( 2 * Math.PI * f * t ) * 0.35 * env;
+
+				}
+
+				return buffer;
+
+			}
+
+			function playDeny() {
+
+				if ( ! audioFx.initialized ) return;
+				if ( audioFx.deny.isPlaying ) audioFx.deny.stop();
+				audioFx.deny.play();
+
+			}
+
+			function playApprove() {
+
+				if ( ! audioFx.initialized ) return;
+				if ( audioFx.approve.isPlaying ) audioFx.approve.stop();
+				audioFx.approve.play();
+
+			}
+
+			function refreshVrButtonVisual( button ) {
+
+				if ( ! button.enabled ) {
+
+					button.material.color.setHex( 0x44596a );
+					button.material.emissive.setHex( 0x2b3947 );
+					button.material.emissiveIntensity = 0.2;
+					button.material.opacity = 0.5;
+					return;
+
+				}
+
+				button.material.opacity = 0.95;
+				button.material.color.setHex( button.hovered ? button.hoverColor : button.baseColor );
+				button.material.emissive.setHex( button.hovered ? button.hoverColor : button.baseColor );
+				button.material.emissiveIntensity = button.hovered ? 0.7 : 0.32;
+
+			}
+
+			function onVrSelectStart( event ) {
+
+				unlockAudio();
+
+				const controller = event.target;
+				const target = controller.userData.hoveredTarget;
+				if ( ! target || ! target.userData.onActivate ) return;
+
+				const intersection = controller.userData.hoveredIntersection || null;
+				target.userData.onActivate( intersection );
+
+				const button = target.userData.button;
+				if ( button ) {
+
+					button.material.emissiveIntensity = 0.86;
+					setTimeout( () => refreshVrButtonVisual( button ), 95 );
+
+				}
+
+				pulseHaptics( 0.3, 40 );
+
+			}
+
+			function pulseHaptics( intensity, durationMs ) {
+
+				for ( const controller of vr.controllers ) {
+
+					const gamepad = controller.userData.gamepad || controller.gamepad;
+					if ( ! gamepad || ! gamepad.hapticActuators || gamepad.hapticActuators.length === 0 ) continue;
+					gamepad.hapticActuators[ 0 ].pulse( intensity, durationMs );
+
+				}
+
+			}
+
+			function updateVrInteractions() {
+
+				if ( ! renderer.xr.isPresenting ) {
+
+					clearVrHover();
+					return;
+
+				}
+
+				for ( const controller of vr.controllers ) {
+
+					tempMatrix.identity().extractRotation( controller.matrixWorld );
+					vr.raycaster.ray.origin.setFromMatrixPosition( controller.matrixWorld );
+					vr.raycaster.ray.direction.set( 0, 0, - 1 ).applyMatrix4( tempMatrix );
+
+					const intersections = vr.raycaster.intersectObjects( vr.interactiveTargets, false );
+					const hit = intersections.length > 0 ? intersections[ 0 ] : null;
+					controller.userData.hoveredIntersection = hit;
+
+					if ( hit ) {
+
+						if ( controller.userData.hoveredTarget && controller.userData.hoveredTarget !== hit.object ) {
+
+							setHoveredState( controller.userData.hoveredTarget, false );
+
+						}
+
+						controller.userData.hoveredTarget = hit.object;
+						controller.userData.ray.scale.z = hit.distance;
+						setHoveredState( hit.object, true );
+
+					} else {
+
+						controller.userData.ray.scale.z = vrRayLength;
+						if ( controller.userData.hoveredTarget ) setHoveredState( controller.userData.hoveredTarget, false );
+						controller.userData.hoveredTarget = null;
+
+					}
+
+				}
+
+			}
+
+			function setHoveredState( mesh, hovered ) {
+
+				if ( ! mesh || mesh.userData.hovered === hovered ) return;
+				mesh.userData.hovered = hovered;
+
+				if ( mesh.userData.button ) {
+
+					mesh.userData.button.hovered = hovered;
+					refreshVrButtonVisual( mesh.userData.button );
+					return;
+
+				}
+
+				if ( mesh.userData.interactiveType === 'actor' ) {
+
+					const terminal = sceneRefs.actorTerminals.find( ( item ) => item.hit === mesh );
+					if ( terminal ) {
+
+						terminal.orb.material.emissiveIntensity = hovered ? 0.9 : 0.5;
+
+					}
+
+				}
+
+			}
+
+			function clearVrHover() {
+
+				for ( const controller of vr.controllers ) {
+
+					if ( controller.userData.hoveredTarget ) setHoveredState( controller.userData.hoveredTarget, false );
+					controller.userData.hoveredTarget = null;
+					controller.userData.hoveredIntersection = null;
+					if ( controller.userData.ray ) controller.userData.ray.scale.z = vrRayLength;
+
+				}
+
+			}
+
+			function toggleHudVisibility( forceVisible ) {
+
+				state.hudVisible = forceVisible === undefined ? ! state.hudVisible : forceVisible;
+				ui.hud.classList.toggle( 'is-hidden', ! state.hudVisible );
+				ui.hudToggleButton.textContent = state.hudVisible ? 'Hide Panel (H)' : 'Show Panel (H)';
+				ui.hudToggleButton.setAttribute( 'aria-pressed', String( ! state.hudVisible ) );
+
+			}
+
+			function isEditableTarget( target ) {
+
+				if ( ! target ) return false;
+				const tag = target.tagName;
+				return tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable;
+
+			}
+
+			function onGlobalKeyDown( event ) {
+
+				if ( event.repeat ) return;
+				if ( event.key.toLowerCase() !== 'h' ) return;
+				if ( isEditableTarget( event.target ) ) return;
+
+				event.preventDefault();
+				toggleHudVisibility();
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function animate() {
+
+				const delta = clock.getDelta();
+				const elapsed = clock.elapsedTime;
+
+				if ( renderer.xr.isPresenting === false ) {
+
+					controls.update();
+
+				}
+
+				animateVault( delta, elapsed );
+				animateTerminals( delta, elapsed );
+				animateStars( elapsed );
+				updateVrInteractions();
+				renderer.render( scene, camera );
+
+			}
+
+			function animateVault( delta, elapsed ) {
+
+				sceneRefs.vaultDoor.rotation.y = THREE.MathUtils.damp( sceneRefs.vaultDoor.rotation.y, vaultState.doorTarget, 5.1, delta );
+
+				if ( sceneRefs.vaultBeam.visible ) {
+
+					sceneRefs.vaultBeam.material.opacity = 0.26 + 0.2 * Math.sin( elapsed * 6.2 );
+					sceneRefs.vaultBeam.scale.y = 0.9 + 0.25 * Math.sin( elapsed * 3.1 );
+
+				}
+
+				if ( sceneRefs.vaultBarrier.visible ) {
+
+					sceneRefs.vaultBarrier.material.opacity = 0.16 + 0.1 * Math.sin( elapsed * 8.4 );
+					sceneRefs.vaultBarrier.material.emissiveIntensity = 0.74 + 0.22 * Math.sin( elapsed * 9.2 );
+
+				}
+
+				if ( vaultState.pulse > 0.001 ) {
+
+					vaultState.pulse = Math.max( 0, vaultState.pulse - delta * 1.6 );
+					sceneRefs.vaultRing.scale.setScalar( 1 + vaultState.pulse * 0.35 );
+					sceneRefs.vaultRing.material.emissiveIntensity = 0.9 + vaultState.pulse * 0.8;
+
+				} else {
+
+					sceneRefs.vaultRing.scale.setScalar( 1 );
+
+				}
+
+			}
+
+			function animateTerminals( delta, elapsed ) {
+
+				for ( const glyph of sceneRefs.floatingGlyphs ) {
+
+					glyph.mesh.rotation.z += delta * glyph.speed;
+
+				}
+
+				for ( let i = 0; i < sceneRefs.actorTerminals.length; i ++ ) {
+
+					const terminal = sceneRefs.actorTerminals[ i ];
+					terminal.group.position.y = 1.2 + Math.sin( elapsed * 1.6 + i * 0.9 ) * 0.03;
+
+				}
+
+			}
+
+			function animateStars( elapsed ) {
+
+				if ( ! sceneRefs.stars ) return;
+
+				for ( const star of sceneRefs.stars.children ) {
+
+					star.material.opacity = 0.56 + 0.26 * Math.sin( elapsed * 1.6 + star.userData.phase );
+
+				}
+
+			}
+
+		</script>
+	</body>
+</html>
