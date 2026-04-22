@@ -107,6 +107,10 @@
 				grid-template-columns: 1fr 1fr 1fr;
 			}
 
+			.toolbar.sextet {
+				grid-template-columns: 1fr 1fr 1fr;
+			}
+
 			button {
 				border: 1px solid rgba( 123, 199, 255, 0.46 );
 				border-radius: 8px;
@@ -193,7 +197,7 @@
 
 			.metrics-board {
 				display: grid;
-				grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr;
+				grid-template-columns: 1.2fr 1fr 1fr 1fr 0.9fr 1fr 1fr;
 				gap: 6px;
 				font-size: 11px;
 			}
@@ -261,6 +265,52 @@
 				background: rgba( 20, 74, 51, 0.55 );
 			}
 
+			.pipeline-grid {
+				display: grid;
+				grid-template-columns: 1fr 1fr 1fr;
+				gap: 6px;
+				margin-block-end: 6px;
+			}
+
+			.pipeline-step {
+				padding: 6px 8px;
+				border-radius: 6px;
+				text-align: center;
+				font-size: 11px;
+				font-weight: 700;
+				color: #d4ebfb;
+				background: rgba( 12, 37, 55, 0.78 );
+				border: 1px solid rgba( 88, 156, 206, 0.3 );
+			}
+
+			.pipeline-step.active {
+				background: rgba( 39, 92, 124, 0.85 );
+				border-color: rgba( 140, 218, 255, 0.62 );
+			}
+
+			.pipeline-step.done {
+				background: rgba( 24, 83, 55, 0.76 );
+				border-color: rgba( 123, 242, 176, 0.52 );
+			}
+
+			#pipelineProgressBar {
+				position: relative;
+				block-size: 8px;
+				border-radius: 999px;
+				overflow: hidden;
+				background: rgba( 14, 39, 58, 0.84 );
+				border: 1px solid rgba( 86, 156, 206, 0.4 );
+			}
+
+			#pipelineProgressFill {
+				position: absolute;
+				inset-block: 0;
+				inset-inline-start: 0;
+				inline-size: 0%;
+				background: linear-gradient( 90deg, rgba( 114, 203, 255, 0.95 ) 0%, rgba( 93, 242, 187, 0.95 ) 100% );
+				transition: inline-size 0.2s linear;
+			}
+
 			.legend {
 				margin-block-start: 10px;
 				font-size: 11px;
@@ -274,6 +324,7 @@
 
 			@media ( max-inline-size: 720px ) {
 				.toolbar.triple,
+				.toolbar.sextet,
 				.toolbar {
 					grid-template-columns: 1fr;
 				}
@@ -305,6 +356,8 @@
 				<button id="startRoundButton">Start Round</button>
 			</div>
 			<div class="toolbar">
+				<button id="profileButton">Profile: Learning</button>
+				<button id="partitionButton">Partition: Off</button>
 				<button id="autoRunButton">Auto Run: Off</button>
 				<button id="randomizeStakeButton">Randomize Stakes</button>
 				<button id="rebalancePowerButton">Rebalance Hash Power</button>
@@ -314,18 +367,39 @@
 			<div class="indicators">
 				<span>Mode</span>
 				<span class="value" id="modeValue">Proof of Work</span>
+				<span>Profile</span>
+				<span class="value" id="profileValue">Learning</span>
+				<span>Network</span>
+				<span class="value" id="networkValue">Connected</span>
 				<span>Status</span>
 				<span><span class="badge pending" id="stateBadge">PENDING</span></span>
 				<span>Round</span>
 				<span class="value" id="roundValue">#0</span>
+				<span>Pipeline Stage</span>
+				<span class="value" id="stageValue">Idle (0%)</span>
 				<span>Validator</span>
 				<span class="value" id="validatorValue">none</span>
 				<span>Round Metrics</span>
 				<span class="value" id="roundTimerValue">Latency 0.0s | Energy 0.0 | Compute 0.0</span>
+				<span>Economy</span>
+				<span class="value" id="economyValue">Rewards 0.00 | Slashed 0.00</span>
 				<span>Summary</span>
 				<span class="value" id="metricsValue">Rounds: 0 | Accepted: 0 | Rejected: 0</span>
 				<span>Event</span>
 				<span class="value" id="eventValue">Select mode and start consensus round.</span>
+			</div>
+
+			<div class="panel">
+				<div class="panel-title">
+					<span>Consensus Pipeline</span>
+					<span id="pipelineMeta">Stage 0/3</span>
+				</div>
+				<div class="pipeline-grid">
+					<div class="pipeline-step" id="pipelineStep0">1 Proposer</div>
+					<div class="pipeline-step" id="pipelineStep1">2 Gossip/Vote</div>
+					<div class="pipeline-step" id="pipelineStep2">3 Finalization</div>
+				</div>
+				<div id="pipelineProgressBar"><div id="pipelineProgressFill"></div></div>
 			</div>
 
 			<div class="panel">
@@ -338,18 +412,24 @@
 					<div class="metrics-head">Avg Energy</div>
 					<div class="metrics-head">Throughput</div>
 					<div class="metrics-head">Rounds</div>
+					<div class="metrics-head">Rewards</div>
+					<div class="metrics-head">Slashed</div>
 
 					<div class="metrics-cell mode">Proof of Work</div>
 					<div class="metrics-cell" id="powLatencyValue">0.0s</div>
 					<div class="metrics-cell" id="powEnergyValue">0.0</div>
 					<div class="metrics-cell" id="powThroughputValue">0.0 blk/min</div>
 					<div class="metrics-cell" id="powRoundsValue">0</div>
+					<div class="metrics-cell" id="powRewardValue">0.00</div>
+					<div class="metrics-cell" id="powSlashValue">0.00</div>
 
 					<div class="metrics-cell mode">Proof of Stake</div>
 					<div class="metrics-cell" id="posLatencyValue">0.0s</div>
 					<div class="metrics-cell" id="posEnergyValue">0.0</div>
 					<div class="metrics-cell" id="posThroughputValue">0.0 blk/min</div>
 					<div class="metrics-cell" id="posRoundsValue">0</div>
+					<div class="metrics-cell" id="posRewardValue">0.00</div>
+					<div class="metrics-cell" id="posSlashValue">0.00</div>
 				</div>
 			</div>
 
@@ -371,7 +451,8 @@
 
 			<div class="legend">
 				<strong>Legend:</strong> Green means block accepted, red means consensus failed.<br>
-				In PoW winner is weighted by hash power; in PoS by validator stake.<br>
+				In PoW winner is weighted by hash power; in PoS by validator stake and can be slashed.<br>
+				Partition mode can create fork pressure and quorum failures.<br>
 				<strong>VR:</strong> Use controller ray + trigger on panel buttons or validator nodes.
 			</div>
 		</div>
@@ -406,6 +487,7 @@
 					energyRange: [ 84, 126 ],
 					computeRange: [ 96, 146 ],
 					failureChance: 0.22,
+					rewardBase: 6.25,
 					accentColor: 0xff8d4f,
 					beamColor: 0xffb15f
 				},
@@ -415,24 +497,55 @@
 					energyRange: [ 12, 30 ],
 					computeRange: [ 20, 44 ],
 					failureChance: 0.1,
+					rewardBase: 2.8,
 					accentColor: 0x55e2b5,
 					beamColor: 0x8df6c7
 				}
 			};
 
 			const validators = [
-				{ id: 'node_a', label: 'Node A', stake: 28, power: 45 },
-				{ id: 'node_b', label: 'Node B', stake: 22, power: 52 },
-				{ id: 'node_c', label: 'Node C', stake: 18, power: 34 },
-				{ id: 'node_d', label: 'Node D', stake: 34, power: 28 },
-				{ id: 'node_e', label: 'Node E', stake: 16, power: 62 },
-				{ id: 'node_f', label: 'Node F', stake: 26, power: 38 }
+				{ id: 'node_a', label: 'Node A', stake: 28, power: 45, rewards: 0 },
+				{ id: 'node_b', label: 'Node B', stake: 22, power: 52, rewards: 0 },
+				{ id: 'node_c', label: 'Node C', stake: 18, power: 34, rewards: 0 },
+				{ id: 'node_d', label: 'Node D', stake: 34, power: 28, rewards: 0 },
+				{ id: 'node_e', label: 'Node E', stake: 16, power: 62, rewards: 0 },
+				{ id: 'node_f', label: 'Node F', stake: 26, power: 38, rewards: 0 }
+			];
+
+			const profileConfigs = {
+				learning: {
+					label: 'Learning',
+					durationScale: 1.18,
+					energyScale: 0.88,
+					computeScale: 0.9,
+					failureDelta: - 0.07,
+					autoDelay: 1800,
+					turbulenceScale: 0.75
+				},
+				stress: {
+					label: 'Stress-Test',
+					durationScale: 0.72,
+					energyScale: 1.22,
+					computeScale: 1.28,
+					failureDelta: 0.16,
+					autoDelay: 640,
+					turbulenceScale: 1.45
+				}
+			};
+
+			const pipelineBase = [
+				{ key: 'proposer', label: 'Proposer Selected', weight: 0.24 },
+				{ key: 'vote', label: 'Gossip/Vote', weight: 0.43 },
+				{ key: 'finalize', label: 'Finalization', weight: 0.33 }
 			];
 
 			const state = {
 				mode: 'pow',
+				profile: 'learning',
 				roundInProgress: false,
 				autoRun: false,
+				partitionActive: false,
+				forkActive: false,
 				hudVisible: true,
 				decision: 'pending',
 				event: 'Select mode and start consensus round.',
@@ -440,17 +553,27 @@
 				roundStartMs: 0,
 				roundDuration: 0,
 				roundProgress: 0,
+				stageIndex: - 1,
+				stageProgress: 0,
+				stageLabel: 'Idle',
+				stageBreakpoints: [ 0.24, 0.67, 1 ],
 				roundTargetEnergy: 0,
 				roundTargetCompute: 0,
 				roundEnergy: 0,
 				roundCompute: 0,
 				currentValidatorId: null,
 				selectedValidatorId: null,
+				currentRoundReward: 0,
+				currentRoundSlash: 0,
+				totalRewards: 0,
+				totalSlashed: 0,
 				resultPulse: 0,
 				autoRunReadyAt: 0,
 				lastRoundLatency: 0,
 				lastRoundEnergy: 0,
-				lastRoundCompute: 0
+				lastRoundCompute: 0,
+				lastRoundReward: 0,
+				lastRoundSlash: 0
 			};
 
 			const modeMetrics = {
@@ -460,7 +583,9 @@
 					rejected: 0,
 					totalLatency: 0,
 					totalEnergy: 0,
-					acceptedBlocks: 0
+					acceptedBlocks: 0,
+					rewards: 0,
+					slashed: 0
 				},
 				pos: {
 					rounds: 0,
@@ -468,7 +593,9 @@
 					rejected: 0,
 					totalLatency: 0,
 					totalEnergy: 0,
-					acceptedBlocks: 0
+					acceptedBlocks: 0,
+					rewards: 0,
+					slashed: 0
 				}
 			};
 
@@ -492,9 +619,11 @@
 				statusHalo: null,
 				progressBeam: null,
 				resultShield: null,
+				partitionWall: null,
 				validators: [],
 				floatingGlyphs: [],
-				stars: null
+				stars: null,
+				flowArtifacts: []
 			};
 
 			const audioFx = {
@@ -517,26 +646,43 @@
 				modePowButton: document.getElementById( 'modePowButton' ),
 				modePosButton: document.getElementById( 'modePosButton' ),
 				startRoundButton: document.getElementById( 'startRoundButton' ),
+				profileButton: document.getElementById( 'profileButton' ),
+				partitionButton: document.getElementById( 'partitionButton' ),
 				autoRunButton: document.getElementById( 'autoRunButton' ),
 				randomizeStakeButton: document.getElementById( 'randomizeStakeButton' ),
 				rebalancePowerButton: document.getElementById( 'rebalancePowerButton' ),
 				boostStakeButton: document.getElementById( 'boostStakeButton' ),
 				resetStatsButton: document.getElementById( 'resetStatsButton' ),
 				modeValue: document.getElementById( 'modeValue' ),
+				profileValue: document.getElementById( 'profileValue' ),
+				networkValue: document.getElementById( 'networkValue' ),
 				stateBadge: document.getElementById( 'stateBadge' ),
 				roundValue: document.getElementById( 'roundValue' ),
+				stageValue: document.getElementById( 'stageValue' ),
 				validatorValue: document.getElementById( 'validatorValue' ),
 				roundTimerValue: document.getElementById( 'roundTimerValue' ),
+				economyValue: document.getElementById( 'economyValue' ),
 				metricsValue: document.getElementById( 'metricsValue' ),
 				eventValue: document.getElementById( 'eventValue' ),
+				pipelineMeta: document.getElementById( 'pipelineMeta' ),
+				pipelineProgressFill: document.getElementById( 'pipelineProgressFill' ),
+				pipelineSteps: [
+					document.getElementById( 'pipelineStep0' ),
+					document.getElementById( 'pipelineStep1' ),
+					document.getElementById( 'pipelineStep2' )
+				],
 				powLatencyValue: document.getElementById( 'powLatencyValue' ),
 				powEnergyValue: document.getElementById( 'powEnergyValue' ),
 				powThroughputValue: document.getElementById( 'powThroughputValue' ),
 				powRoundsValue: document.getElementById( 'powRoundsValue' ),
+				powRewardValue: document.getElementById( 'powRewardValue' ),
+				powSlashValue: document.getElementById( 'powSlashValue' ),
 				posLatencyValue: document.getElementById( 'posLatencyValue' ),
 				posEnergyValue: document.getElementById( 'posEnergyValue' ),
 				posThroughputValue: document.getElementById( 'posThroughputValue' ),
 				posRoundsValue: document.getElementById( 'posRoundsValue' ),
+				posRewardValue: document.getElementById( 'posRewardValue' ),
+				posSlashValue: document.getElementById( 'posSlashValue' ),
 				stakeMeta: document.getElementById( 'stakeMeta' ),
 				stakeList: document.getElementById( 'stakeList' ),
 				auditMeta: document.getElementById( 'auditMeta' ),
@@ -620,6 +766,8 @@
 				ui.modePowButton.addEventListener( 'click', () => setMode( 'pow' ) );
 				ui.modePosButton.addEventListener( 'click', () => setMode( 'pos' ) );
 				ui.startRoundButton.addEventListener( 'click', () => startRound( true ) );
+				ui.profileButton.addEventListener( 'click', toggleProfile );
+				ui.partitionButton.addEventListener( 'click', togglePartition );
 				ui.autoRunButton.addEventListener( 'click', toggleAutoRun );
 				ui.randomizeStakeButton.addEventListener( 'click', randomizeStakes );
 				ui.rebalancePowerButton.addEventListener( 'click', rebalanceHashPower );
@@ -725,6 +873,21 @@
 				resultShield.visible = false;
 				group.add( resultShield );
 
+				const partitionWall = new THREE.Mesh(
+					new THREE.BoxGeometry( 0.22, 3.8, 15.8 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0xff8891,
+						emissive: 0xff5d69,
+						emissiveIntensity: 0.76,
+						opacity: 0.26,
+						transparent: true,
+						side: THREE.DoubleSide
+					} )
+				);
+				partitionWall.position.set( 0, 1.95, 0 );
+				partitionWall.visible = false;
+				group.add( partitionWall );
+
 				const title = createWorldLabel( 'CONSENSUS ARENA', 1024, 180, 4.3, 0.5, '#e7f6ff', 'rgba(18, 61, 86, 0.9)' );
 				title.mesh.position.set( 0, 4.85, 0 );
 				group.add( title.mesh );
@@ -736,6 +899,7 @@
 				sceneRefs.statusHalo = statusHalo;
 				sceneRefs.progressBeam = progressBeam;
 				sceneRefs.resultShield = resultShield;
+				sceneRefs.partitionWall = partitionWall;
 
 			}
 
@@ -750,6 +914,7 @@
 					const angle = ( i / validators.length ) * Math.PI * 2;
 					const x = Math.cos( angle ) * radius;
 					const z = Math.sin( angle ) * radius;
+					const side = x >= 0 ? 'east' : 'west';
 
 					const holder = new THREE.Group();
 					holder.position.set( x, 0.8, z );
@@ -794,7 +959,7 @@
 					holder.add( ring );
 
 					const label = createWorldLabel( validatorLabelText( data ), 1024, 220, 2.7, 0.7, '#dcf3ff', 'rgba(18, 58, 82, 0.9)' );
-					label.mesh.position.set( 0, 2.05, 0 );
+					label.mesh.position.set( 0, 2.58, 0 );
 					holder.add( label.mesh );
 
 					const lineGeometry = new THREE.BufferGeometry().setFromPoints( [
@@ -819,6 +984,7 @@
 					group.add( holder );
 					sceneRefs.validators.push( {
 						id: data.id,
+						side,
 						holder,
 						orb,
 						ring,
@@ -875,7 +1041,7 @@
 				panel.rotation.y = Math.PI / 8;
 
 				const body = new THREE.Mesh(
-					new THREE.BoxGeometry( 5.6, 7.2, 0.12 ),
+					new THREE.BoxGeometry( 5.6, 8.2, 0.12 ),
 					new THREE.MeshStandardMaterial( {
 						color: 0x0f2839,
 						emissive: 0x092031,
@@ -889,31 +1055,37 @@
 				panel.add( body );
 
 				const title = createWorldLabel( 'VR CONSENSUS CONTROL', 1024, 180, 4.45, 0.48, '#dff4ff', 'rgba(20, 64, 91, 0.9)' );
-				title.mesh.position.set( 0, 3.05, 0.08 );
+				title.mesh.position.set( 0, 3.48, 0.08 );
 				panel.add( title.mesh );
 
 				panelState.buttons.pow = createVrButton( 'Mode PoW', 0xae6a3c, () => setMode( 'pow' ) );
 				panelState.buttons.pos = createVrButton( 'Mode PoS', 0x2f8a5f, () => setMode( 'pos' ) );
 				panelState.buttons.start = createVrButton( 'Start Round', 0x357bb0, () => startRound( true ) );
+				panelState.buttons.profile = createVrButton( 'Profile Learning', 0x5e6ea1, toggleProfile );
+				panelState.buttons.partition = createVrButton( 'Partition Off', 0x8d4f5a, togglePartition );
 				panelState.buttons.auto = createVrButton( 'Auto: Off', 0x66608f, toggleAutoRun );
 				panelState.buttons.randomStake = createVrButton( 'Random Stakes', 0x4f6f92, randomizeStakes );
 				panelState.buttons.rebalance = createVrButton( 'Rebalance Hash', 0x5d668f, rebalanceHashPower );
 				panelState.buttons.boost = createVrButton( 'Boost Stake', 0x2f7c8d, boostSelectedStake );
 				panelState.buttons.reset = createVrButton( 'Reset Stats', 0x516285, resetStats );
 
-				panelState.buttons.pow.group.position.set( - 1.38, 2.35, 0.1 );
-				panelState.buttons.pos.group.position.set( 1.38, 2.35, 0.1 );
-				panelState.buttons.start.group.position.set( 0, 1.75, 0.1 );
-				panelState.buttons.auto.group.position.set( - 1.38, 1.1, 0.1 );
-				panelState.buttons.randomStake.group.position.set( 1.38, 1.1, 0.1 );
-				panelState.buttons.rebalance.group.position.set( - 1.38, 0.48, 0.1 );
-				panelState.buttons.boost.group.position.set( 1.38, 0.48, 0.1 );
-				panelState.buttons.reset.group.position.set( 0, - 0.12, 0.1 );
+				panelState.buttons.pow.group.position.set( - 1.38, 2.78, 0.1 );
+				panelState.buttons.pos.group.position.set( 1.38, 2.78, 0.1 );
+				panelState.buttons.start.group.position.set( 0, 2.2, 0.1 );
+				panelState.buttons.profile.group.position.set( - 1.38, 1.58, 0.1 );
+				panelState.buttons.partition.group.position.set( 1.38, 1.58, 0.1 );
+				panelState.buttons.auto.group.position.set( - 1.38, 0.96, 0.1 );
+				panelState.buttons.randomStake.group.position.set( 1.38, 0.96, 0.1 );
+				panelState.buttons.rebalance.group.position.set( - 1.38, 0.35, 0.1 );
+				panelState.buttons.boost.group.position.set( 1.38, 0.35, 0.1 );
+				panelState.buttons.reset.group.position.set( 0, - 0.26, 0.1 );
 
 				panel.add(
 					panelState.buttons.pow.group,
 					panelState.buttons.pos.group,
 					panelState.buttons.start.group,
+					panelState.buttons.profile.group,
+					panelState.buttons.partition.group,
 					panelState.buttons.auto.group,
 					panelState.buttons.randomStake.group,
 					panelState.buttons.rebalance.group,
@@ -922,23 +1094,23 @@
 				);
 
 				panelState.statusLabel = createWorldLabel( 'Status: pending', 1140, 160, 4.75, 0.3, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
-				panelState.statusLabel.mesh.position.set( 0, - 0.78, 0.1 );
+				panelState.statusLabel.mesh.position.set( 0, - 0.95, 0.1 );
 				panel.add( panelState.statusLabel.mesh );
 
 				panelState.roundLabel = createWorldLabel( 'Round #0', 1140, 160, 4.75, 0.3, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
-				panelState.roundLabel.mesh.position.set( 0, - 1.18, 0.1 );
+				panelState.roundLabel.mesh.position.set( 0, - 1.35, 0.1 );
 				panel.add( panelState.roundLabel.mesh );
 
 				panelState.selectedLabel = createWorldLabel( 'Selected: Node A', 1140, 160, 4.75, 0.3, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
-				panelState.selectedLabel.mesh.position.set( 0, - 1.58, 0.1 );
+				panelState.selectedLabel.mesh.position.set( 0, - 1.74, 0.1 );
 				panel.add( panelState.selectedLabel.mesh );
 
 				panelState.metricsLabel = createWorldLabel( 'PoW 0.0 blk/min | PoS 0.0 blk/min', 1140, 160, 4.75, 0.3, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
-				panelState.metricsLabel.mesh.position.set( 0, - 1.98, 0.1 );
+				panelState.metricsLabel.mesh.position.set( 0, - 2.13, 0.1 );
 				panel.add( panelState.metricsLabel.mesh );
 
 				panelState.auditLabel = createWorldLabel( 'Log: 0 events', 1024, 140, 4.3, 0.28, '#d8f2ff', 'rgba(16, 49, 70, 0.88)' );
-				panelState.auditLabel.mesh.position.set( 0, - 2.38, 0.1 );
+				panelState.auditLabel.mesh.position.set( 0, - 2.52, 0.1 );
 				panel.add( panelState.auditLabel.mesh );
 
 				scene.add( panel );
@@ -1124,7 +1296,7 @@
 
 			function validatorLabelText( validator ) {
 
-				return `${validator.label}\nStake ${Math.round( validator.stake )} | Hash ${Math.round( validator.power )}`;
+				return `${validator.label}\nStake ${Math.round( validator.stake )} | Hash ${Math.round( validator.power )} | R ${validator.rewards.toFixed( 1 )}`;
 
 			}
 
@@ -1137,6 +1309,109 @@
 			function clamp( value, min, max ) {
 
 				return Math.min( max, Math.max( min, value ) );
+
+			}
+
+			function getActiveProfileConfig() {
+
+				return profileConfigs[ state.profile ];
+
+			}
+
+			function buildStageBreakpoints( mode, profileKey ) {
+
+				const weights = pipelineBase.map( ( stage ) => stage.weight );
+
+				if ( mode === 'pow' ) {
+
+					weights[ 1 ] += 0.08;
+					weights[ 2 ] -= 0.04;
+
+				}
+
+				if ( profileKey === 'stress' ) {
+
+					weights[ 2 ] += 0.08;
+					weights[ 0 ] -= 0.03;
+
+				}
+
+				if ( state.partitionActive ) {
+
+					weights[ 1 ] += 0.06;
+					weights[ 2 ] += 0.03;
+
+				}
+
+				const sum = weights.reduce( ( total, value ) => total + value, 0 );
+				const breakpoints = [];
+				let acc = 0;
+
+				for ( const weight of weights ) {
+
+					acc += weight / sum;
+					breakpoints.push( acc );
+
+				}
+
+				breakpoints[ breakpoints.length - 1 ] = 1;
+
+				return breakpoints;
+
+			}
+
+			function updateStageFromProgress() {
+
+				const progress = clamp( state.roundProgress, 0, 1 );
+				const breakpoints = state.stageBreakpoints;
+				let index = 0;
+
+				while ( index < breakpoints.length - 1 && progress > breakpoints[ index ] ) {
+
+					index ++;
+
+				}
+
+				const prev = index === 0 ? 0 : breakpoints[ index - 1 ];
+				const next = breakpoints[ index ];
+				state.stageIndex = index;
+				state.stageProgress = next === prev ? 1 : clamp( ( progress - prev ) / ( next - prev ), 0, 1 );
+				state.stageLabel = pipelineBase[ index ].label;
+
+			}
+
+			function toggleProfile() {
+
+				if ( state.roundInProgress ) {
+
+					state.event = 'Cannot switch profile during active round.';
+					refreshUI();
+					return;
+
+				}
+
+				state.profile = state.profile === 'learning' ? 'stress' : 'learning';
+				state.event = `Profile switched to ${getActiveProfileConfig().label}.`;
+				recordAudit( `Run profile changed to ${getActiveProfileConfig().label}.`, 'info' );
+				refreshUI();
+
+			}
+
+			function togglePartition() {
+
+				if ( state.roundInProgress ) {
+
+					state.event = 'Cannot change network partition during active round.';
+					refreshUI();
+					return;
+
+				}
+
+				state.partitionActive = ! state.partitionActive;
+				sceneRefs.partitionWall.visible = state.partitionActive;
+				state.event = state.partitionActive ? 'Network partition enabled. Fork risk increased.' : 'Network restored. Full connectivity.';
+				recordAudit( `Network partition ${state.partitionActive ? 'enabled' : 'disabled'}.`, 'info' );
+				refreshUI();
 
 			}
 
@@ -1200,6 +1475,11 @@
 
 				state.mode = nextMode;
 				state.decision = 'pending';
+				state.roundProgress = 0;
+				state.stageIndex = - 1;
+				state.stageProgress = 0;
+				state.stageLabel = 'Idle';
+				state.forkActive = false;
 				state.event = `${modeConfigs[ nextMode ].label} selected.`;
 				state.resultPulse = 0;
 				sceneRefs.resultShield.visible = false;
@@ -1321,7 +1601,7 @@
 			function toggleAutoRun() {
 
 				state.autoRun = ! state.autoRun;
-				state.autoRunReadyAt = performance.now() + 300;
+				state.autoRunReadyAt = performance.now() + getActiveProfileConfig().autoDelay * 0.35;
 				state.event = state.autoRun ? 'Auto run enabled.' : 'Auto run stopped.';
 				recordAudit( `Auto run ${state.autoRun ? 'enabled' : 'disabled'}.`, 'info' );
 				refreshUI();
@@ -1336,24 +1616,61 @@
 
 				const mode = state.mode;
 				const config = modeConfigs[ mode ];
+				const profile = getActiveProfileConfig();
 				const validator = pickValidatorForMode( mode );
+				const partitionPenalty = state.partitionActive ? randomBetween( 0.7, 1.8 ) : 0;
+				state.forkActive = state.partitionActive && mode === 'pow' && Math.random() < 0.58;
+
+				let duration = randomBetween( config.durationRange[ 0 ], config.durationRange[ 1 ] );
+				duration *= profile.durationScale;
+				duration += partitionPenalty;
+
+				if ( state.forkActive ) duration += randomBetween( 1, 2.6 );
+
+				let targetEnergy = randomBetween( config.energyRange[ 0 ], config.energyRange[ 1 ] );
+				targetEnergy *= profile.energyScale;
+				if ( state.partitionActive ) targetEnergy *= 1.1;
+
+				let targetCompute = randomBetween( config.computeRange[ 0 ], config.computeRange[ 1 ] );
+				targetCompute *= profile.computeScale;
+				if ( state.partitionActive && mode === 'pow' ) targetCompute *= 1.14;
 
 				state.roundInProgress = true;
 				state.roundIndex ++;
 				state.decision = 'pending';
 				state.roundStartMs = performance.now();
-				state.roundDuration = randomBetween( config.durationRange[ 0 ], config.durationRange[ 1 ] );
+				state.roundDuration = duration;
 				state.roundProgress = 0;
-				state.roundTargetEnergy = randomBetween( config.energyRange[ 0 ], config.energyRange[ 1 ] );
-				state.roundTargetCompute = randomBetween( config.computeRange[ 0 ], config.computeRange[ 1 ] );
+				state.stageBreakpoints = buildStageBreakpoints( mode, state.profile );
+				state.stageIndex = 0;
+				state.stageProgress = 0;
+				state.stageLabel = pipelineBase[ 0 ].label;
+				state.roundTargetEnergy = targetEnergy;
+				state.roundTargetCompute = targetCompute;
 				state.roundEnergy = 0;
 				state.roundCompute = 0;
+				state.currentRoundReward = 0;
+				state.currentRoundSlash = 0;
 				state.currentValidatorId = validator.id;
-				state.event = `${config.label} round #${state.roundIndex} started by ${validator.label}.`;
+				state.event = `${config.label} round #${state.roundIndex} started by ${validator.label} (${profile.label}).`;
 				state.resultPulse = 0;
 				sceneRefs.resultShield.visible = false;
 
-				recordAudit( `Round #${state.roundIndex} started in ${mode.toUpperCase()} with ${validator.label}.`, 'info' );
+				recordAudit( `Round #${state.roundIndex} started in ${mode.toUpperCase()} with ${validator.label} (${profile.label}).`, 'info' );
+
+				if ( state.partitionActive ) {
+
+					recordAudit( `Round #${state.roundIndex}: network is partitioned.`, 'info' );
+
+				}
+
+				if ( state.forkActive ) {
+
+					recordAudit( `Round #${state.roundIndex}: PoW fork detected, extra resolution stage latency.`, 'invalid' );
+
+				}
+
+				spawnConsensusArtifacts();
 				playStart();
 				pulseHaptics( 0.24, 40 );
 
@@ -1373,22 +1690,31 @@
 
 				const mode = state.mode;
 				const config = modeConfigs[ mode ];
+				const profile = getActiveProfileConfig();
 				const modeStat = modeMetrics[ mode ];
 				const validator = getValidatorById( state.currentValidatorId );
 				if ( ! validator ) return;
 
-				let failureChance = config.failureChance;
+				let failureChance = config.failureChance + profile.failureDelta;
 				if ( mode === 'pow' && validator.power < 24 ) failureChance += 0.08;
 				if ( mode === 'pos' && validator.stake < 18 ) failureChance += 0.12;
+				if ( state.partitionActive ) failureChance += mode === 'pow' ? 0.12 : 0.2;
+				if ( state.forkActive ) failureChance += 0.18;
+				failureChance = clamp( failureChance, 0.02, 0.95 );
 
 				const accepted = Math.random() > failureChance;
 				state.decision = accepted ? 'valid' : 'invalid';
 				state.roundProgress = 1;
+				state.stageIndex = 2;
+				state.stageProgress = 1;
+				state.stageLabel = pipelineBase[ 2 ].label;
 				state.roundEnergy = state.roundTargetEnergy;
 				state.roundCompute = state.roundTargetCompute;
 				state.lastRoundLatency = state.roundDuration;
 				state.lastRoundEnergy = state.roundTargetEnergy;
 				state.lastRoundCompute = state.roundTargetCompute;
+				state.lastRoundReward = 0;
+				state.lastRoundSlash = 0;
 				state.resultPulse = 1;
 
 				modeStat.rounds ++;
@@ -1397,28 +1723,131 @@
 
 				if ( accepted ) {
 
+					const reward = config.rewardBase + randomBetween( 0.25, 1.32 ) + ( state.profile === 'stress' ? randomBetween( 0.18, 0.7 ) : 0 );
+					validator.rewards += reward;
+					state.currentRoundReward = reward;
+					state.lastRoundReward = reward;
+					state.totalRewards += reward;
+					modeStat.rewards += reward;
+
 					modeStat.approved ++;
 					modeStat.acceptedBlocks ++;
-					state.event = `Block accepted: ${validator.label} finalized in ${state.roundDuration.toFixed( 1 )}s.`;
-					recordAudit( `Round #${state.roundIndex}: accepted by ${validator.label}.`, 'valid' );
+					state.event = `Block accepted: ${validator.label} finalized in ${state.roundDuration.toFixed( 1 )}s, reward ${reward.toFixed( 2 )}.`;
+					recordAudit( `Round #${state.roundIndex}: accepted by ${validator.label}, reward ${reward.toFixed( 2 )}.`, 'valid' );
 					applyApprovedVisuals();
 
 				} else {
 
+					let slashAmount = 0;
+
+					if ( mode === 'pos' ) {
+
+						const slashRate = ( state.profile === 'stress' ? 0.18 : 0.12 ) + ( state.partitionActive ? 0.04 : 0 );
+						slashAmount = Math.max( 1, validator.stake * slashRate );
+						validator.stake = clamp( validator.stake - slashAmount, 4, 150 );
+						state.currentRoundSlash = slashAmount;
+						state.lastRoundSlash = slashAmount;
+						state.totalSlashed += slashAmount;
+						modeStat.slashed += slashAmount;
+
+					}
+
 					modeStat.rejected ++;
-					state.event = `Consensus failed: ${validator.label} produced invalid block.`;
-					recordAudit( `Round #${state.roundIndex}: rejected, ${validator.label} failed consensus.`, 'invalid' );
+					state.event = `Consensus failed: ${validator.label} produced invalid block${slashAmount > 0 ? `, slashed ${slashAmount.toFixed( 2 )}` : ''}.`;
+					recordAudit( `Round #${state.roundIndex}: rejected, ${validator.label} failed consensus${slashAmount > 0 ? `, slash ${slashAmount.toFixed( 2 )}` : ''}.`, 'invalid' );
+
+					if ( state.forkActive ) {
+
+						recordAudit( `Round #${state.roundIndex}: fork resolved with invalid branch discard.`, 'invalid' );
+
+					}
+
 					applyRejectedVisuals();
 
 				}
 
+				state.forkActive = false;
+
 				if ( state.autoRun ) {
 
-					state.autoRunReadyAt = performance.now() + 1200;
+					state.autoRunReadyAt = performance.now() + profile.autoDelay;
 
 				}
 
 				refreshUI();
+
+			}
+
+			function spawnConsensusArtifacts() {
+
+				clearConsensusArtifacts();
+
+				const targetBase = new THREE.Vector3( 0, 2.2, 0 );
+				const isPow = state.mode === 'pow';
+				const countPerValidator = isPow ? 3 : 2;
+
+				for ( const entry of sceneRefs.validators ) {
+
+					for ( let i = 0; i < countPerValidator; i ++ ) {
+
+						const geometry = isPow
+							? new THREE.TetrahedronGeometry( 0.08 + Math.random() * 0.04 )
+							: new THREE.SphereGeometry( 0.07 + Math.random() * 0.03, 10, 8 );
+
+						const color = isPow ? 0xffb15f : 0x8df6c7;
+						const material = new THREE.MeshStandardMaterial( {
+							color,
+							emissive: color,
+							emissiveIntensity: 0.82,
+							metalness: 0.25,
+							roughness: 0.35,
+							transparent: true,
+							opacity: 0.94
+						} );
+
+						const mesh = new THREE.Mesh( geometry, material );
+
+						const start = new THREE.Vector3();
+						entry.holder.getWorldPosition( start );
+						start.y += 1 + Math.random() * 0.8;
+						start.x += ( Math.random() - 0.5 ) * 0.46;
+						start.z += ( Math.random() - 0.5 ) * 0.46;
+
+						const target = targetBase.clone();
+						if ( state.partitionActive && entry.side === 'east' ) target.x += 0.6;
+						if ( state.partitionActive && entry.side === 'west' ) target.x -= 0.6;
+
+						const velocity = target.clone().sub( start ).multiplyScalar( randomBetween( 0.85, 1.22 ) );
+						const drift = new THREE.Vector3( ( Math.random() - 0.5 ) * 0.8, randomBetween( 0.2, 0.7 ), ( Math.random() - 0.5 ) * 0.8 );
+
+						mesh.position.copy( start );
+						mesh.userData.age = 0;
+						mesh.userData.life = randomBetween( 1.1, 1.9 );
+						mesh.userData.velocity = velocity;
+						mesh.userData.drift = drift;
+						mesh.userData.spin = randomBetween( - 5, 5 );
+						mesh.userData.type = isPow ? 'hash' : 'vote';
+
+						scene.add( mesh );
+						sceneRefs.flowArtifacts.push( mesh );
+
+					}
+
+				}
+
+			}
+
+			function clearConsensusArtifacts() {
+
+				for ( const mesh of sceneRefs.flowArtifacts ) {
+
+					scene.remove( mesh );
+					if ( mesh.geometry ) mesh.geometry.dispose();
+					if ( mesh.material ) mesh.material.dispose();
+
+				}
+
+				sceneRefs.flowArtifacts.length = 0;
 
 			}
 
@@ -1453,16 +1882,29 @@
 				state.roundInProgress = false;
 				state.autoRun = false;
 				state.autoRunReadyAt = 0;
+				state.partitionActive = false;
 				state.roundIndex = 0;
 				state.roundProgress = 0;
+				state.stageIndex = - 1;
+				state.stageProgress = 0;
+				state.stageLabel = 'Idle';
 				state.roundDuration = 0;
 				state.roundEnergy = 0;
 				state.roundCompute = 0;
+				state.currentRoundReward = 0;
+				state.currentRoundSlash = 0;
+				state.totalRewards = 0;
+				state.totalSlashed = 0;
 				state.currentValidatorId = null;
+				state.forkActive = false;
 				state.decision = 'pending';
 				state.event = 'Stats reset. Ready for new consensus rounds.';
 				state.resultPulse = 0;
+				state.lastRoundReward = 0;
+				state.lastRoundSlash = 0;
 				sceneRefs.resultShield.visible = false;
+				sceneRefs.partitionWall.visible = false;
+				clearConsensusArtifacts();
 
 				for ( const key of [ 'pow', 'pos' ] ) {
 
@@ -1472,6 +1914,14 @@
 					modeMetrics[ key ].totalLatency = 0;
 					modeMetrics[ key ].totalEnergy = 0;
 					modeMetrics[ key ].acceptedBlocks = 0;
+					modeMetrics[ key ].rewards = 0;
+					modeMetrics[ key ].slashed = 0;
+
+				}
+
+				for ( const validator of validators ) {
+
+					validator.rewards = 0;
 
 				}
 
@@ -1518,12 +1968,21 @@
 				const selected = getValidatorById( state.selectedValidatorId );
 				const current = getValidatorById( state.currentValidatorId );
 				const totals = getTotals();
+				const profile = getActiveProfileConfig();
 
 				ui.modeValue.textContent = modeConfigs[ state.mode ].label;
+				ui.profileValue.textContent = profile.label;
+				ui.networkValue.textContent = state.partitionActive ? 'Partitioned / Fork Risk' : 'Connected';
+				ui.stageValue.textContent = state.roundInProgress
+					? `${state.stageLabel} (${Math.floor( state.stageProgress * 100 )}%)`
+					: `${state.stageLabel} (${Math.floor( state.stageProgress * 100 )}%)`;
+				ui.economyValue.textContent = `Rewards ${state.totalRewards.toFixed( 2 )} | Slashed ${state.totalSlashed.toFixed( 2 )}`;
 				ui.eventValue.textContent = state.event;
 				ui.metricsValue.textContent = `Rounds: ${totals.rounds} | Accepted: ${totals.approved} | Rejected: ${totals.rejected}`;
 				ui.roundValue.textContent = state.roundInProgress ? `#${state.roundIndex} (${Math.floor( state.roundProgress * 100 )}%)` : `#${state.roundIndex}`;
 				ui.validatorValue.textContent = current ? current.label : 'none';
+				ui.pipelineMeta.textContent = state.roundInProgress ? `Stage ${state.stageIndex + 1}/3` : `Stage ${Math.max( state.stageIndex + 1, 0 )}/3`;
+				ui.pipelineProgressFill.style.inlineSize = `${Math.floor( state.roundProgress * 100 )}%`;
 
 				if ( state.roundInProgress ) {
 
@@ -1532,7 +1991,7 @@
 
 				} else {
 
-					ui.roundTimerValue.textContent = `Latency ${state.lastRoundLatency.toFixed( 1 )}s | Energy ${state.lastRoundEnergy.toFixed( 1 )} | Compute ${state.lastRoundCompute.toFixed( 1 )}`;
+					ui.roundTimerValue.textContent = `Latency ${state.lastRoundLatency.toFixed( 1 )}s | Energy ${state.lastRoundEnergy.toFixed( 1 )} | Compute ${state.lastRoundCompute.toFixed( 1 )} | Reward ${state.lastRoundReward.toFixed( 2 )} | Slash ${state.lastRoundSlash.toFixed( 2 )}`;
 
 				}
 
@@ -1561,11 +2020,21 @@
 				ui.modePowButton.disabled = state.mode === 'pow' || state.roundInProgress;
 				ui.modePosButton.disabled = state.mode === 'pos' || state.roundInProgress;
 				ui.startRoundButton.disabled = state.roundInProgress;
+				ui.profileButton.disabled = state.roundInProgress;
+				ui.partitionButton.disabled = state.roundInProgress;
 				autoRunButtonText();
 				ui.randomizeStakeButton.disabled = state.roundInProgress;
 				ui.rebalancePowerButton.disabled = state.roundInProgress;
 				ui.boostStakeButton.disabled = state.roundInProgress || ! selected;
 				ui.resetStatsButton.disabled = false;
+
+				for ( let i = 0; i < ui.pipelineSteps.length; i ++ ) {
+
+					const element = ui.pipelineSteps[ i ];
+					element.classList.toggle( 'active', state.roundInProgress && i === state.stageIndex );
+					element.classList.toggle( 'done', i < state.stageIndex || ( ! state.roundInProgress && state.stageIndex >= 2 && state.roundProgress >= 1 ) );
+
+				}
 
 				refreshSideBySideMetrics();
 				refreshStakeList();
@@ -1579,6 +2048,8 @@
 			function autoRunButtonText() {
 
 				ui.autoRunButton.textContent = state.autoRun ? 'Auto Run: On' : 'Auto Run: Off';
+				ui.profileButton.textContent = `Profile: ${getActiveProfileConfig().label}`;
+				ui.partitionButton.textContent = `Partition: ${state.partitionActive ? 'On' : 'Off'}`;
 
 			}
 
@@ -1597,11 +2068,15 @@
 				ui.powEnergyValue.textContent = powAvgEnergy.toFixed( 1 );
 				ui.powThroughputValue.textContent = `${calculateThroughput( 'pow' ).toFixed( 1 )} blk/min`;
 				ui.powRoundsValue.textContent = String( powRounds );
+				ui.powRewardValue.textContent = modeMetrics.pow.rewards.toFixed( 2 );
+				ui.powSlashValue.textContent = modeMetrics.pow.slashed.toFixed( 2 );
 
 				ui.posLatencyValue.textContent = `${posAvgLatency.toFixed( 1 )}s`;
 				ui.posEnergyValue.textContent = posAvgEnergy.toFixed( 1 );
 				ui.posThroughputValue.textContent = `${calculateThroughput( 'pos' ).toFixed( 1 )} blk/min`;
 				ui.posRoundsValue.textContent = String( posRounds );
+				ui.posRewardValue.textContent = modeMetrics.pos.rewards.toFixed( 2 );
+				ui.posSlashValue.textContent = modeMetrics.pos.slashed.toFixed( 2 );
 
 			}
 
@@ -1615,7 +2090,7 @@
 					const item = document.createElement( 'li' );
 					item.classList.toggle( 'selected', validator.id === state.selectedValidatorId );
 					item.classList.toggle( 'winner', validator.id === state.currentValidatorId );
-					item.textContent = `${validator.label} | stake ${validator.stake.toFixed( 1 )} | hash ${validator.power.toFixed( 1 )}`;
+					item.textContent = `${validator.label} | stake ${validator.stake.toFixed( 1 )} | hash ${validator.power.toFixed( 1 )} | reward ${validator.rewards.toFixed( 2 )}`;
 					ui.stakeList.appendChild( item );
 
 				}
@@ -1649,17 +2124,20 @@
 			function refreshWorldPanelLabels() {
 
 				const selected = getValidatorById( state.selectedValidatorId );
+				const profile = getActiveProfileConfig();
 
 				if ( panelState.statusLabel ) {
 
 					const statusText = state.roundInProgress ? 'RUNNING' : state.decision.toUpperCase();
-					panelState.statusLabel.redraw( `${modeConfigs[ state.mode ].label} | ${statusText}` );
+					panelState.statusLabel.redraw( `${modeConfigs[ state.mode ].label} ${profile.label} | ${statusText}` );
 
 				}
 
 				if ( panelState.roundLabel ) {
 
-					const roundText = state.roundInProgress ? `Round #${state.roundIndex}: ${Math.floor( state.roundProgress * 100 )}%` : `Round #${state.roundIndex}`;
+					const roundText = state.roundInProgress
+						? `Round #${state.roundIndex}: ${state.stageLabel} ${Math.floor( state.stageProgress * 100 )}%`
+						: `Round #${state.roundIndex}`;
 					panelState.roundLabel.redraw( roundText );
 
 				}
@@ -1672,7 +2150,7 @@
 
 				if ( panelState.metricsLabel ) {
 
-					panelState.metricsLabel.redraw( `PoW ${calculateThroughput( 'pow' ).toFixed( 1 )} blk/min | PoS ${calculateThroughput( 'pos' ).toFixed( 1 )} blk/min` );
+					panelState.metricsLabel.redraw( `PoW ${calculateThroughput( 'pow' ).toFixed( 1 )} blk/min | PoS ${calculateThroughput( 'pos' ).toFixed( 1 )} blk/min | R ${state.totalRewards.toFixed( 1 )} S ${state.totalSlashed.toFixed( 1 )}` );
 
 				}
 
@@ -1691,6 +2169,8 @@
 				panelState.buttons.pow.setEnabled( state.mode !== 'pow' && ! state.roundInProgress );
 				panelState.buttons.pos.setEnabled( state.mode !== 'pos' && ! state.roundInProgress );
 				panelState.buttons.start.setEnabled( ! state.roundInProgress );
+				panelState.buttons.profile.setEnabled( ! state.roundInProgress );
+				panelState.buttons.partition.setEnabled( ! state.roundInProgress );
 				panelState.buttons.auto.setEnabled( true );
 				panelState.buttons.randomStake.setEnabled( ! state.roundInProgress );
 				panelState.buttons.rebalance.setEnabled( ! state.roundInProgress );
@@ -1698,6 +2178,8 @@
 				panelState.buttons.reset.setEnabled( true );
 
 				panelState.buttons.auto.setText( state.autoRun ? 'Auto: On' : 'Auto: Off' );
+				panelState.buttons.profile.setText( `Profile ${getActiveProfileConfig().label}` );
+				panelState.buttons.partition.setText( `Partition ${state.partitionActive ? 'On' : 'Off'}` );
 
 			}
 
@@ -1742,6 +2224,22 @@
 
 					if ( entry.hovered ) intensity += 0.25;
 
+					if ( state.partitionActive ) {
+
+						if ( entry.side === 'east' ) {
+
+							entry.line.material.color.setHex( 0xff8a93 );
+							entry.line.material.opacity = isCurrent ? 0.95 : 0.44;
+
+						} else {
+
+							entry.line.material.color.setHex( 0x77d5ff );
+							entry.line.material.opacity = isCurrent ? 0.95 : 0.44;
+
+						}
+
+					}
+
 					entry.orb.material.color.setHex( color );
 					entry.orb.material.emissive.setHex( emissive );
 					entry.orb.material.emissiveIntensity = intensity;
@@ -1750,8 +2248,12 @@
 					entry.ring.material.emissive.setHex( emissive );
 					entry.ring.material.emissiveIntensity = intensity;
 
-					entry.line.material.color.setHex( isCurrent ? color : 0x4e84ab );
-					entry.line.material.opacity = isCurrent ? 0.95 : 0.5;
+					if ( ! state.partitionActive ) {
+
+						entry.line.material.color.setHex( isCurrent ? color : 0x4e84ab );
+						entry.line.material.opacity = isCurrent ? 0.95 : 0.5;
+
+					}
 
 				}
 
@@ -2032,14 +2534,24 @@
 
 					const now = performance.now();
 					const elapsed = ( now - state.roundStartMs ) / 1000;
+					const profile = getActiveProfileConfig();
+					const previousStage = state.stageIndex;
 					state.roundProgress = Math.min( 1, elapsed / state.roundDuration );
 					state.roundEnergy = state.roundTargetEnergy * state.roundProgress;
+					updateStageFromProgress();
 
 					const turbulence = state.mode === 'pow'
-						? 0.84 + 0.22 * Math.abs( Math.sin( elapsed * 4.5 ) )
-						: 0.92 + 0.08 * Math.abs( Math.sin( elapsed * 2.5 ) );
+						? 0.84 + 0.22 * profile.turbulenceScale * Math.abs( Math.sin( elapsed * 4.5 ) )
+						: 0.92 + 0.08 * profile.turbulenceScale * Math.abs( Math.sin( elapsed * 2.5 ) );
 
 					state.roundCompute = state.roundTargetCompute * turbulence;
+
+					if ( previousStage !== state.stageIndex ) {
+
+						state.event = `Round #${state.roundIndex}: ${state.stageLabel}`;
+						recordAudit( `Round #${state.roundIndex} stage -> ${state.stageLabel}.`, 'info' );
+
+					}
 
 					refreshRoundLiveUI();
 
@@ -2068,8 +2580,19 @@
 				const elapsed = ( performance.now() - state.roundStartMs ) / 1000;
 				ui.roundValue.textContent = `#${state.roundIndex} (${Math.floor( state.roundProgress * 100 )}%)`;
 				ui.roundTimerValue.textContent = `Target ${state.roundDuration.toFixed( 1 )}s | Elapsed ${elapsed.toFixed( 1 )}s | Energy ${state.roundEnergy.toFixed( 1 )} | Compute ${state.roundCompute.toFixed( 1 )}`;
+				ui.stageValue.textContent = `${state.stageLabel} (${Math.floor( state.stageProgress * 100 )}%)`;
+				ui.pipelineMeta.textContent = `Stage ${state.stageIndex + 1}/3`;
+				ui.pipelineProgressFill.style.inlineSize = `${Math.floor( state.roundProgress * 100 )}%`;
 
-				if ( panelState.roundLabel ) panelState.roundLabel.redraw( `Round #${state.roundIndex}: ${Math.floor( state.roundProgress * 100 )}%` );
+				for ( let i = 0; i < ui.pipelineSteps.length; i ++ ) {
+
+					const element = ui.pipelineSteps[ i ];
+					element.classList.toggle( 'active', i === state.stageIndex );
+					element.classList.toggle( 'done', i < state.stageIndex );
+
+				}
+
+				if ( panelState.roundLabel ) panelState.roundLabel.redraw( `Round #${state.roundIndex}: ${state.stageLabel} ${Math.floor( state.stageProgress * 100 )}%` );
 				if ( panelState.statusLabel ) panelState.statusLabel.redraw( `${modeConfigs[ state.mode ].label} | RUNNING` );
 
 			}
@@ -2097,6 +2620,19 @@
 					}
 
 					sceneRefs.resultShield.material.opacity = 0.14 + 0.2 * Math.sin( elapsed * 7.1 ) + state.resultPulse * 0.22;
+
+				}
+
+				if ( sceneRefs.partitionWall ) {
+
+					sceneRefs.partitionWall.visible = state.partitionActive;
+
+					if ( state.partitionActive ) {
+
+						sceneRefs.partitionWall.material.opacity = 0.2 + 0.12 * Math.sin( elapsed * 5.4 );
+						sceneRefs.partitionWall.material.emissiveIntensity = 0.68 + 0.2 * Math.sin( elapsed * 4.6 );
+
+					}
 
 				}
 
@@ -2131,6 +2667,45 @@
 
 			}
 
+			function animateFlowArtifacts( delta, elapsed ) {
+
+				for ( let i = sceneRefs.flowArtifacts.length - 1; i >= 0; i -- ) {
+
+					const mesh = sceneRefs.flowArtifacts[ i ];
+					mesh.userData.age += delta;
+
+					const life = mesh.userData.life;
+					const t = clamp( mesh.userData.age / life, 0, 1 );
+					const speedScale = 1 - 0.3 * t;
+
+					mesh.position.addScaledVector( mesh.userData.velocity, delta * speedScale );
+					mesh.position.addScaledVector( mesh.userData.drift, delta * 0.2 );
+
+					mesh.rotation.y += delta * mesh.userData.spin;
+					mesh.rotation.x += delta * mesh.userData.spin * 0.6;
+
+					if ( mesh.userData.type === 'hash' ) {
+
+						mesh.position.y += Math.sin( elapsed * 6 + i ) * 0.004;
+
+					}
+
+					mesh.material.opacity = 0.92 - t * 0.9;
+					mesh.scale.setScalar( 1 - t * 0.28 );
+
+					if ( t >= 1 ) {
+
+						scene.remove( mesh );
+						if ( mesh.geometry ) mesh.geometry.dispose();
+						if ( mesh.material ) mesh.material.dispose();
+						sceneRefs.flowArtifacts.splice( i, 1 );
+
+					}
+
+				}
+
+			}
+
 			function animate() {
 
 				const delta = clock.getDelta();
@@ -2146,6 +2721,7 @@
 				animateArena( delta, elapsed );
 				animateValidators( delta, elapsed );
 				animateStars( elapsed );
+				animateFlowArtifacts( delta, elapsed );
 				updateVrInteractions();
 				renderer.render( scene, camera );
 
