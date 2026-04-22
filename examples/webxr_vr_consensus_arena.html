@@ -1,0 +1,2156 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webxr - blockchain consensus arena scene 4</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+		<link type="text/css" rel="stylesheet" href="main.css">
+		<style>
+			body {
+				margin: 0;
+				overflow: hidden;
+				font-family: "Segoe UI", Tahoma, sans-serif;
+				background: radial-gradient( circle at 14% 10%, #2e2a1a 0%, #101729 52%, #04070d 100% );
+				color: #e9f7ff;
+			}
+
+			#hud {
+				position: absolute;
+				inset-block-start: 14px;
+				inset-inline-start: 14px;
+				inline-size: min( 500px, calc( 100vw - 28px ) );
+				max-block-size: calc( 100vh - 28px );
+				overflow-y: auto;
+				overflow-x: hidden;
+				scrollbar-gutter: stable;
+				overscroll-behavior: contain;
+				scrollbar-width: thin;
+				scrollbar-color: rgba( 150, 220, 255, 0.76 ) rgba( 20, 42, 64, 0.7 );
+				padding: 14px;
+				border-radius: 12px;
+				background: rgba( 8, 19, 33, 0.78 );
+				border: 1px solid rgba( 126, 201, 255, 0.35 );
+				backdrop-filter: blur( 4px );
+				box-shadow: 0 8px 36px rgba( 0, 0, 0, 0.35 );
+				z-index: 4;
+			}
+
+			#hud.is-hidden {
+				display: none;
+			}
+
+			#hud::-webkit-scrollbar {
+				inline-size: 10px;
+				block-size: 10px;
+			}
+
+			#hud::-webkit-scrollbar-track {
+				background: rgba( 20, 42, 64, 0.7 );
+				border-radius: 999px;
+			}
+
+			#hud::-webkit-scrollbar-thumb {
+				background: linear-gradient( 180deg, rgba( 178, 233, 255, 0.93 ) 0%, rgba( 99, 185, 233, 0.9 ) 100% );
+				border-radius: 999px;
+				border: 2px solid rgba( 20, 42, 64, 0.95 );
+			}
+
+			#hud::-webkit-scrollbar-thumb:hover {
+				background: linear-gradient( 180deg, rgba( 198, 241, 255, 0.96 ) 0%, rgba( 118, 200, 246, 0.93 ) 100% );
+			}
+
+			.hud-toggle {
+				position: absolute;
+				inset-block-start: 14px;
+				inset-inline-end: 14px;
+				z-index: 5;
+				inline-size: 146px;
+				padding: 8px 12px;
+				border-radius: 999px;
+				border: 1px solid rgba( 123, 199, 255, 0.5 );
+				background: rgba( 12, 37, 54, 0.86 );
+				color: #eef9ff;
+				font-size: 12px;
+				font-weight: 700;
+				letter-spacing: 0.02em;
+				cursor: pointer;
+				transition: background-color 0.2s ease, transform 0.2s ease;
+			}
+
+			.hud-toggle:hover {
+				background: rgba( 24, 60, 83, 0.95 );
+				transform: translateY( -1px );
+			}
+
+			#hud h2 {
+				margin: 0 0 10px;
+				font-size: 18px;
+				font-weight: 700;
+				letter-spacing: 0.02em;
+			}
+
+			#hud p {
+				margin: 0 0 10px;
+				font-size: 13px;
+				line-height: 1.35;
+				color: #cfe6f8;
+			}
+
+			.toolbar {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 8px;
+				margin-block-end: 8px;
+			}
+
+			.toolbar.triple {
+				grid-template-columns: 1fr 1fr 1fr;
+			}
+
+			button {
+				border: 1px solid rgba( 123, 199, 255, 0.46 );
+				border-radius: 8px;
+				padding: 8px 10px;
+				background: rgba( 33, 68, 92, 0.74 );
+				color: #eef9ff;
+				font-size: 13px;
+				font-weight: 600;
+				cursor: pointer;
+				transition: background-color 0.2s ease, transform 0.2s ease;
+			}
+
+			button:hover {
+				background: rgba( 47, 92, 122, 0.92 );
+				transform: translateY( -1px );
+			}
+
+			button:disabled {
+				cursor: not-allowed;
+				opacity: 0.42;
+				transform: none;
+			}
+
+			.indicators {
+				display: grid;
+				grid-template-columns: auto 1fr;
+				gap: 6px 10px;
+				font-size: 12px;
+				margin-block-start: 2px;
+			}
+
+			.indicators span {
+				color: #9ec4df;
+			}
+
+			.value {
+				color: #edf8ff;
+				font-weight: 600;
+			}
+
+			.badge {
+				display: inline-block;
+				padding: 2px 10px;
+				border-radius: 999px;
+				font-weight: 700;
+				letter-spacing: 0.02em;
+			}
+
+			.badge.valid {
+				background: rgba( 51, 189, 116, 0.25 );
+				color: #a8ffcc;
+				border: 1px solid rgba( 108, 247, 167, 0.45 );
+			}
+
+			.badge.invalid {
+				background: rgba( 228, 68, 68, 0.24 );
+				color: #ffbec2;
+				border: 1px solid rgba( 255, 136, 136, 0.47 );
+			}
+
+			.badge.pending {
+				background: rgba( 235, 169, 58, 0.28 );
+				color: #ffe2a8;
+				border: 1px solid rgba( 255, 205, 118, 0.48 );
+			}
+
+			.panel {
+				margin-block-start: 10px;
+				padding: 8px;
+				border-radius: 8px;
+				background: rgba( 10, 30, 45, 0.72 );
+				border: 1px solid rgba( 100, 176, 233, 0.33 );
+			}
+
+			.panel-title {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				font-size: 12px;
+				font-weight: 700;
+				color: #d9f2ff;
+				margin-block-end: 6px;
+			}
+
+			.metrics-board {
+				display: grid;
+				grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr;
+				gap: 6px;
+				font-size: 11px;
+			}
+
+			.metrics-head {
+				font-weight: 700;
+				color: #c7e8ff;
+				padding: 4px 6px;
+				border-radius: 6px;
+				background: rgba( 16, 50, 74, 0.7 );
+				text-align: center;
+			}
+
+			.metrics-cell {
+				padding: 4px 6px;
+				border-radius: 6px;
+				background: rgba( 12, 37, 55, 0.78 );
+				border: 1px solid rgba( 88, 156, 206, 0.3 );
+				color: #e7f5ff;
+				text-align: center;
+			}
+
+			.metrics-cell.mode {
+				font-weight: 700;
+				color: #d6f0ff;
+				text-align: start;
+			}
+
+			.stake-list,
+			.audit-log {
+				margin: 0;
+				padding: 0;
+				list-style: none;
+				display: grid;
+				gap: 6px;
+				font-size: 11px;
+			}
+
+			.stake-list li,
+			.audit-log li {
+				padding: 6px 8px;
+				border-radius: 6px;
+				background: rgba( 11, 33, 49, 0.75 );
+				border: 1px solid rgba( 93, 161, 214, 0.22 );
+				color: #d7ebf9;
+			}
+
+			.stake-list li.selected {
+				border-color: rgba( 122, 230, 255, 0.5 );
+				background: rgba( 22, 66, 88, 0.62 );
+			}
+
+			.stake-list li.winner {
+				border-color: rgba( 117, 255, 170, 0.5 );
+				background: rgba( 20, 74, 52, 0.56 );
+			}
+
+			.audit-log li.invalid {
+				border-color: rgba( 255, 137, 145, 0.45 );
+				background: rgba( 86, 27, 35, 0.62 );
+			}
+
+			.audit-log li.valid {
+				border-color: rgba( 102, 244, 162, 0.4 );
+				background: rgba( 20, 74, 51, 0.55 );
+			}
+
+			.legend {
+				margin-block-start: 10px;
+				font-size: 11px;
+				line-height: 1.4;
+				color: #a8c7dd;
+			}
+
+			.legend strong {
+				color: #d9f2ff;
+			}
+
+			@media ( max-inline-size: 720px ) {
+				.toolbar.triple,
+				.toolbar {
+					grid-template-columns: 1fr;
+				}
+
+				.metrics-board {
+					grid-template-columns: 1fr 1fr;
+				}
+
+				.metrics-head {
+					display: none;
+				}
+
+				.metrics-cell.mode {
+					text-align: center;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div id="hud">
+			<h2>Scene 4: Consensus Arena</h2>
+			<p>
+				Compare Proof of Work and Proof of Stake in one arena.<br>
+				PoW is slower and energy-heavy, PoS picks validators by stake and finalizes faster.
+			</p>
+			<div class="toolbar triple">
+				<button id="modePowButton">Mode: PoW</button>
+				<button id="modePosButton">Mode: PoS</button>
+				<button id="startRoundButton">Start Round</button>
+			</div>
+			<div class="toolbar">
+				<button id="autoRunButton">Auto Run: Off</button>
+				<button id="randomizeStakeButton">Randomize Stakes</button>
+				<button id="rebalancePowerButton">Rebalance Hash Power</button>
+				<button id="boostStakeButton">Boost Selected Stake</button>
+				<button id="resetStatsButton">Reset Stats</button>
+			</div>
+			<div class="indicators">
+				<span>Mode</span>
+				<span class="value" id="modeValue">Proof of Work</span>
+				<span>Status</span>
+				<span><span class="badge pending" id="stateBadge">PENDING</span></span>
+				<span>Round</span>
+				<span class="value" id="roundValue">#0</span>
+				<span>Validator</span>
+				<span class="value" id="validatorValue">none</span>
+				<span>Round Metrics</span>
+				<span class="value" id="roundTimerValue">Latency 0.0s | Energy 0.0 | Compute 0.0</span>
+				<span>Summary</span>
+				<span class="value" id="metricsValue">Rounds: 0 | Accepted: 0 | Rejected: 0</span>
+				<span>Event</span>
+				<span class="value" id="eventValue">Select mode and start consensus round.</span>
+			</div>
+
+			<div class="panel">
+				<div class="panel-title">
+					<span>PoW vs PoS Side-by-Side</span>
+				</div>
+				<div class="metrics-board">
+					<div class="metrics-head">Mode</div>
+					<div class="metrics-head">Avg Latency</div>
+					<div class="metrics-head">Avg Energy</div>
+					<div class="metrics-head">Throughput</div>
+					<div class="metrics-head">Rounds</div>
+
+					<div class="metrics-cell mode">Proof of Work</div>
+					<div class="metrics-cell" id="powLatencyValue">0.0s</div>
+					<div class="metrics-cell" id="powEnergyValue">0.0</div>
+					<div class="metrics-cell" id="powThroughputValue">0.0 blk/min</div>
+					<div class="metrics-cell" id="powRoundsValue">0</div>
+
+					<div class="metrics-cell mode">Proof of Stake</div>
+					<div class="metrics-cell" id="posLatencyValue">0.0s</div>
+					<div class="metrics-cell" id="posEnergyValue">0.0</div>
+					<div class="metrics-cell" id="posThroughputValue">0.0 blk/min</div>
+					<div class="metrics-cell" id="posRoundsValue">0</div>
+				</div>
+			</div>
+
+			<div class="panel">
+				<div class="panel-title">
+					<span>Validator Stakes and Hash Power</span>
+					<span id="stakeMeta">6 nodes</span>
+				</div>
+				<ul class="stake-list" id="stakeList"></ul>
+			</div>
+
+			<div class="panel">
+				<div class="panel-title">
+					<span>Consensus Log</span>
+					<span id="auditMeta">0 events</span>
+				</div>
+				<ul class="audit-log" id="auditLog"></ul>
+			</div>
+
+			<div class="legend">
+				<strong>Legend:</strong> Green means block accepted, red means consensus failed.<br>
+				In PoW winner is weighted by hash power; in PoS by validator stake.<br>
+				<strong>VR:</strong> Use controller ray + trigger on panel buttons or validator nodes.
+			</div>
+		</div>
+		<button id="hudToggleButton" class="hud-toggle" type="button" aria-controls="hud" aria-pressed="false">Hide Panel (H)</button>
+
+		<script type="importmap">
+			{
+				"imports": {
+					"three": "../build/three.module.js",
+					"three/addons/": "./jsm/"
+				}
+			}
+		</script>
+
+		<script type="module">
+
+			import * as THREE from 'three';
+			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+			import { VRButton } from 'three/addons/webxr/VRButton.js';
+			import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
+
+			let camera, scene, renderer, controls;
+
+			const clock = new THREE.Clock();
+			const vrRayLength = 14;
+			const tempMatrix = new THREE.Matrix4();
+
+			const modeConfigs = {
+				pow: {
+					label: 'Proof of Work',
+					durationRange: [ 7.2, 11.4 ],
+					energyRange: [ 84, 126 ],
+					computeRange: [ 96, 146 ],
+					failureChance: 0.22,
+					accentColor: 0xff8d4f,
+					beamColor: 0xffb15f
+				},
+				pos: {
+					label: 'Proof of Stake',
+					durationRange: [ 2.4, 4.6 ],
+					energyRange: [ 12, 30 ],
+					computeRange: [ 20, 44 ],
+					failureChance: 0.1,
+					accentColor: 0x55e2b5,
+					beamColor: 0x8df6c7
+				}
+			};
+
+			const validators = [
+				{ id: 'node_a', label: 'Node A', stake: 28, power: 45 },
+				{ id: 'node_b', label: 'Node B', stake: 22, power: 52 },
+				{ id: 'node_c', label: 'Node C', stake: 18, power: 34 },
+				{ id: 'node_d', label: 'Node D', stake: 34, power: 28 },
+				{ id: 'node_e', label: 'Node E', stake: 16, power: 62 },
+				{ id: 'node_f', label: 'Node F', stake: 26, power: 38 }
+			];
+
+			const state = {
+				mode: 'pow',
+				roundInProgress: false,
+				autoRun: false,
+				hudVisible: true,
+				decision: 'pending',
+				event: 'Select mode and start consensus round.',
+				roundIndex: 0,
+				roundStartMs: 0,
+				roundDuration: 0,
+				roundProgress: 0,
+				roundTargetEnergy: 0,
+				roundTargetCompute: 0,
+				roundEnergy: 0,
+				roundCompute: 0,
+				currentValidatorId: null,
+				selectedValidatorId: null,
+				resultPulse: 0,
+				autoRunReadyAt: 0,
+				lastRoundLatency: 0,
+				lastRoundEnergy: 0,
+				lastRoundCompute: 0
+			};
+
+			const modeMetrics = {
+				pow: {
+					rounds: 0,
+					approved: 0,
+					rejected: 0,
+					totalLatency: 0,
+					totalEnergy: 0,
+					acceptedBlocks: 0
+				},
+				pos: {
+					rounds: 0,
+					approved: 0,
+					rejected: 0,
+					totalLatency: 0,
+					totalEnergy: 0,
+					acceptedBlocks: 0
+				}
+			};
+
+			const audit = {
+				entries: [],
+				maxEntries: 10
+			};
+
+			const panelState = {
+				statusLabel: null,
+				roundLabel: null,
+				selectedLabel: null,
+				metricsLabel: null,
+				auditLabel: null,
+				buttons: {}
+			};
+
+			const sceneRefs = {
+				arenaGroup: null,
+				modeRing: null,
+				statusHalo: null,
+				progressBeam: null,
+				resultShield: null,
+				validators: [],
+				floatingGlyphs: [],
+				stars: null
+			};
+
+			const audioFx = {
+				listener: null,
+				start: null,
+				approve: null,
+				reject: null,
+				initialized: false
+			};
+
+			const vr = {
+				raycaster: new THREE.Raycaster(),
+				controllers: [],
+				interactiveTargets: []
+			};
+
+			const ui = {
+				hud: document.getElementById( 'hud' ),
+				hudToggleButton: document.getElementById( 'hudToggleButton' ),
+				modePowButton: document.getElementById( 'modePowButton' ),
+				modePosButton: document.getElementById( 'modePosButton' ),
+				startRoundButton: document.getElementById( 'startRoundButton' ),
+				autoRunButton: document.getElementById( 'autoRunButton' ),
+				randomizeStakeButton: document.getElementById( 'randomizeStakeButton' ),
+				rebalancePowerButton: document.getElementById( 'rebalancePowerButton' ),
+				boostStakeButton: document.getElementById( 'boostStakeButton' ),
+				resetStatsButton: document.getElementById( 'resetStatsButton' ),
+				modeValue: document.getElementById( 'modeValue' ),
+				stateBadge: document.getElementById( 'stateBadge' ),
+				roundValue: document.getElementById( 'roundValue' ),
+				validatorValue: document.getElementById( 'validatorValue' ),
+				roundTimerValue: document.getElementById( 'roundTimerValue' ),
+				metricsValue: document.getElementById( 'metricsValue' ),
+				eventValue: document.getElementById( 'eventValue' ),
+				powLatencyValue: document.getElementById( 'powLatencyValue' ),
+				powEnergyValue: document.getElementById( 'powEnergyValue' ),
+				powThroughputValue: document.getElementById( 'powThroughputValue' ),
+				powRoundsValue: document.getElementById( 'powRoundsValue' ),
+				posLatencyValue: document.getElementById( 'posLatencyValue' ),
+				posEnergyValue: document.getElementById( 'posEnergyValue' ),
+				posThroughputValue: document.getElementById( 'posThroughputValue' ),
+				posRoundsValue: document.getElementById( 'posRoundsValue' ),
+				stakeMeta: document.getElementById( 'stakeMeta' ),
+				stakeList: document.getElementById( 'stakeList' ),
+				auditMeta: document.getElementById( 'auditMeta' ),
+				auditLog: document.getElementById( 'auditLog' )
+			};
+
+			init();
+
+			function init() {
+
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0x08101b );
+				scene.fog = new THREE.Fog( 0x08101b, 30, 88 );
+
+				camera = new THREE.PerspectiveCamera( 54, window.innerWidth / window.innerHeight, 0.1, 190 );
+				camera.position.set( 0, 11, 27 );
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.outputColorSpace = THREE.SRGBColorSpace;
+				renderer.xr.enabled = true;
+				renderer.setAnimationLoop( animate );
+				document.body.appendChild( renderer.domElement );
+				document.body.appendChild( VRButton.createButton( renderer ) );
+
+				controls = new OrbitControls( camera, renderer.domElement );
+				controls.target.set( 0, 2.4, 0 );
+				controls.enableDamping = true;
+				controls.minDistance = 13;
+				controls.maxDistance = 58;
+				controls.maxPolarAngle = Math.PI * 0.48;
+
+				const hemi = new THREE.HemisphereLight( 0xb0deff, 0x1b2738, 1.02 );
+				scene.add( hemi );
+
+				const key = new THREE.DirectionalLight( 0xffffff, 1.3 );
+				key.position.set( 14, 21, 9 );
+				scene.add( key );
+
+				const fill = new THREE.PointLight( 0x7ad4ff, 15, 64 );
+				fill.position.set( - 13, 6, - 12 );
+				scene.add( fill );
+
+				const floor = new THREE.Mesh(
+					new THREE.CircleGeometry( 35, 80 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x10263a,
+						emissive: 0x081724,
+						emissiveIntensity: 0.44,
+						metalness: 0.2,
+						roughness: 0.82
+					} )
+				);
+				floor.rotation.x = - Math.PI / 2;
+				floor.position.y = - 0.05;
+				scene.add( floor );
+
+				const grid = new THREE.GridHelper( 60, 30, 0x1d5078, 0x13314b );
+				grid.position.y = 0.01;
+				scene.add( grid );
+
+				addAtmosphereDetails();
+				buildArena();
+				buildValidators();
+				setupVRControllers();
+				setupVRPanel();
+				initAudio();
+				bindEvents();
+
+				setSelectedValidator( validators[ 0 ].id, false );
+				setMode( 'pow', false );
+				recordAudit( 'Consensus arena initialized. Ready for simulation.', 'info' );
+				refreshUI();
+				toggleHudVisibility( true );
+
+			}
+
+			function bindEvents() {
+
+				ui.modePowButton.addEventListener( 'click', () => setMode( 'pow' ) );
+				ui.modePosButton.addEventListener( 'click', () => setMode( 'pos' ) );
+				ui.startRoundButton.addEventListener( 'click', () => startRound( true ) );
+				ui.autoRunButton.addEventListener( 'click', toggleAutoRun );
+				ui.randomizeStakeButton.addEventListener( 'click', randomizeStakes );
+				ui.rebalancePowerButton.addEventListener( 'click', rebalanceHashPower );
+				ui.boostStakeButton.addEventListener( 'click', boostSelectedStake );
+				ui.resetStatsButton.addEventListener( 'click', resetStats );
+				ui.hudToggleButton.addEventListener( 'click', () => toggleHudVisibility() );
+
+				window.addEventListener( 'resize', onWindowResize );
+				window.addEventListener( 'keydown', onGlobalKeyDown );
+
+			}
+
+			function buildArena() {
+
+				const group = new THREE.Group();
+
+				const platform = new THREE.Mesh(
+					new THREE.CylinderGeometry( 6.4, 7.2, 1.5, 54 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x32465d,
+						emissive: 0x12293e,
+						emissiveIntensity: 0.44,
+						metalness: 0.34,
+						roughness: 0.62
+					} )
+				);
+				platform.position.y = 0.75;
+				group.add( platform );
+
+				const core = new THREE.Mesh(
+					new THREE.CylinderGeometry( 2.1, 2.5, 2.1, 48 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x1f3447,
+						emissive: 0x15334b,
+						emissiveIntensity: 0.64,
+						metalness: 0.42,
+						roughness: 0.4
+					} )
+				);
+				core.position.y = 1.9;
+				group.add( core );
+
+				const modeRing = new THREE.Mesh(
+					new THREE.TorusGeometry( 3.8, 0.14, 16, 90 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0xff8d4f,
+						emissive: 0xff8d4f,
+						emissiveIntensity: 0.86,
+						metalness: 0.45,
+						roughness: 0.25,
+						transparent: true,
+						opacity: 0.96
+					} )
+				);
+				modeRing.rotation.x = Math.PI / 2;
+				modeRing.position.y = 1.25;
+				group.add( modeRing );
+
+				const statusHalo = new THREE.Mesh(
+					new THREE.TorusGeometry( 4.8, 0.09, 12, 84 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x78c8ff,
+						emissive: 0x58bcff,
+						emissiveIntensity: 0.62,
+						metalness: 0.38,
+						roughness: 0.25,
+						transparent: true,
+						opacity: 0.88
+					} )
+				);
+				statusHalo.rotation.x = Math.PI / 2;
+				statusHalo.position.y = 0.96;
+				group.add( statusHalo );
+
+				const progressBeam = new THREE.Mesh(
+					new THREE.CylinderGeometry( 0.2, 0.25, 1, 24, 1, true ),
+					new THREE.MeshStandardMaterial( {
+						color: 0xffb15f,
+						emissive: 0xffb15f,
+						emissiveIntensity: 0.82,
+						opacity: 0.35,
+						transparent: true,
+						side: THREE.DoubleSide
+					} )
+				);
+				progressBeam.position.set( 0, 0.58, 0 );
+				progressBeam.scale.y = 0.06;
+				group.add( progressBeam );
+
+				const resultShield = new THREE.Mesh(
+					new THREE.RingGeometry( 4.2, 5.6, 80 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x5cf0b5,
+						emissive: 0x41dca0,
+						emissiveIntensity: 0.75,
+						opacity: 0.2,
+						transparent: true,
+						side: THREE.DoubleSide
+					} )
+				);
+				resultShield.rotation.x = - Math.PI / 2;
+				resultShield.position.y = 0.2;
+				resultShield.visible = false;
+				group.add( resultShield );
+
+				const title = createWorldLabel( 'CONSENSUS ARENA', 1024, 180, 4.3, 0.5, '#e7f6ff', 'rgba(18, 61, 86, 0.9)' );
+				title.mesh.position.set( 0, 4.85, 0 );
+				group.add( title.mesh );
+
+				scene.add( group );
+
+				sceneRefs.arenaGroup = group;
+				sceneRefs.modeRing = modeRing;
+				sceneRefs.statusHalo = statusHalo;
+				sceneRefs.progressBeam = progressBeam;
+				sceneRefs.resultShield = resultShield;
+
+			}
+
+			function buildValidators() {
+
+				const group = new THREE.Group();
+				const radius = 10.2;
+
+				for ( let i = 0; i < validators.length; i ++ ) {
+
+					const data = validators[ i ];
+					const angle = ( i / validators.length ) * Math.PI * 2;
+					const x = Math.cos( angle ) * radius;
+					const z = Math.sin( angle ) * radius;
+
+					const holder = new THREE.Group();
+					holder.position.set( x, 0.8, z );
+
+					const base = new THREE.Mesh(
+						new THREE.CylinderGeometry( 0.9, 1.16, 0.54, 18 ),
+						new THREE.MeshStandardMaterial( {
+							color: 0x294055,
+							emissive: 0x13273a,
+							emissiveIntensity: 0.48,
+							metalness: 0.32,
+							roughness: 0.6
+						} )
+					);
+					holder.add( base );
+
+					const orb = new THREE.Mesh(
+						new THREE.IcosahedronGeometry( 0.62, 1 ),
+						new THREE.MeshStandardMaterial( {
+							color: 0x7dcaff,
+							emissive: 0x65c2ff,
+							emissiveIntensity: 0.5,
+							metalness: 0.24,
+							roughness: 0.25
+						} )
+					);
+					orb.position.y = 0.92;
+					holder.add( orb );
+
+					const ring = new THREE.Mesh(
+						new THREE.TorusGeometry( 0.92, 0.06, 12, 46 ),
+						new THREE.MeshStandardMaterial( {
+							color: 0x8fd8ff,
+							emissive: 0x6ec9ff,
+							emissiveIntensity: 0.5,
+							metalness: 0.45,
+							roughness: 0.24
+						} )
+					);
+					ring.position.y = 0.92;
+					ring.rotation.x = Math.PI / 2;
+					holder.add( ring );
+
+					const label = createWorldLabel( validatorLabelText( data ), 1024, 220, 2.7, 0.7, '#dcf3ff', 'rgba(18, 58, 82, 0.9)' );
+					label.mesh.position.set( 0, 2.05, 0 );
+					holder.add( label.mesh );
+
+					const lineGeometry = new THREE.BufferGeometry().setFromPoints( [
+						new THREE.Vector3( 0, 1.02, 0 ),
+						new THREE.Vector3( - x * 0.78, 1.22, - z * 0.78 )
+					] );
+					const line = new THREE.Line(
+						lineGeometry,
+						new THREE.LineBasicMaterial( { color: 0x4e84ab, transparent: true, opacity: 0.5 } )
+					);
+					holder.add( line );
+
+					const hit = new THREE.Mesh(
+						new THREE.BoxGeometry( 1.95, 2.5, 1.8 ),
+						new THREE.MeshBasicMaterial( { transparent: true, opacity: 0 } )
+					);
+					hit.position.y = 1;
+					holder.add( hit );
+
+					registerInteractiveTarget( hit, 'validator', () => setSelectedValidator( data.id ) );
+
+					group.add( holder );
+					sceneRefs.validators.push( {
+						id: data.id,
+						holder,
+						orb,
+						ring,
+						label,
+						line,
+						hit,
+						hovered: false
+					} );
+					sceneRefs.floatingGlyphs.push( { mesh: ring, speed: 0.48 + i * 0.08 } );
+
+				}
+
+				scene.add( group );
+
+			}
+
+			function setupVRControllers() {
+
+				const factory = new XRControllerModelFactory();
+				const rayGeometry = new THREE.BufferGeometry().setFromPoints( [
+					new THREE.Vector3( 0, 0, 0 ),
+					new THREE.Vector3( 0, 0, - 1 )
+				] );
+
+				for ( let i = 0; i < 2; i ++ ) {
+
+					const controller = renderer.xr.getController( i );
+					const ray = new THREE.Line(
+						rayGeometry,
+						new THREE.LineBasicMaterial( { color: 0xbbe9ff, transparent: true, opacity: 0.93 } )
+					);
+					ray.scale.z = vrRayLength;
+					ray.name = 'ray';
+					controller.add( ray );
+					controller.userData.ray = ray;
+					controller.userData.hoveredTarget = null;
+					controller.userData.hoveredIntersection = null;
+					controller.addEventListener( 'selectstart', onVrSelectStart );
+					scene.add( controller );
+					vr.controllers.push( controller );
+
+					const grip = renderer.xr.getControllerGrip( i );
+					grip.add( factory.createControllerModel( grip ) );
+					scene.add( grip );
+
+				}
+
+			}
+
+			function setupVRPanel() {
+
+				const panel = new THREE.Group();
+				panel.position.set( - 6.3, 3.1, - 5.8 );
+				panel.rotation.y = Math.PI / 8;
+
+				const body = new THREE.Mesh(
+					new THREE.BoxGeometry( 5.6, 7.2, 0.12 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x0f2839,
+						emissive: 0x092031,
+						emissiveIntensity: 0.62,
+						metalness: 0.24,
+						roughness: 0.42,
+						opacity: 0.9,
+						transparent: true
+					} )
+				);
+				panel.add( body );
+
+				const title = createWorldLabel( 'VR CONSENSUS CONTROL', 1024, 180, 4.45, 0.48, '#dff4ff', 'rgba(20, 64, 91, 0.9)' );
+				title.mesh.position.set( 0, 3.05, 0.08 );
+				panel.add( title.mesh );
+
+				panelState.buttons.pow = createVrButton( 'Mode PoW', 0xae6a3c, () => setMode( 'pow' ) );
+				panelState.buttons.pos = createVrButton( 'Mode PoS', 0x2f8a5f, () => setMode( 'pos' ) );
+				panelState.buttons.start = createVrButton( 'Start Round', 0x357bb0, () => startRound( true ) );
+				panelState.buttons.auto = createVrButton( 'Auto: Off', 0x66608f, toggleAutoRun );
+				panelState.buttons.randomStake = createVrButton( 'Random Stakes', 0x4f6f92, randomizeStakes );
+				panelState.buttons.rebalance = createVrButton( 'Rebalance Hash', 0x5d668f, rebalanceHashPower );
+				panelState.buttons.boost = createVrButton( 'Boost Stake', 0x2f7c8d, boostSelectedStake );
+				panelState.buttons.reset = createVrButton( 'Reset Stats', 0x516285, resetStats );
+
+				panelState.buttons.pow.group.position.set( - 1.38, 2.35, 0.1 );
+				panelState.buttons.pos.group.position.set( 1.38, 2.35, 0.1 );
+				panelState.buttons.start.group.position.set( 0, 1.75, 0.1 );
+				panelState.buttons.auto.group.position.set( - 1.38, 1.1, 0.1 );
+				panelState.buttons.randomStake.group.position.set( 1.38, 1.1, 0.1 );
+				panelState.buttons.rebalance.group.position.set( - 1.38, 0.48, 0.1 );
+				panelState.buttons.boost.group.position.set( 1.38, 0.48, 0.1 );
+				panelState.buttons.reset.group.position.set( 0, - 0.12, 0.1 );
+
+				panel.add(
+					panelState.buttons.pow.group,
+					panelState.buttons.pos.group,
+					panelState.buttons.start.group,
+					panelState.buttons.auto.group,
+					panelState.buttons.randomStake.group,
+					panelState.buttons.rebalance.group,
+					panelState.buttons.boost.group,
+					panelState.buttons.reset.group
+				);
+
+				panelState.statusLabel = createWorldLabel( 'Status: pending', 1140, 160, 4.75, 0.3, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
+				panelState.statusLabel.mesh.position.set( 0, - 0.78, 0.1 );
+				panel.add( panelState.statusLabel.mesh );
+
+				panelState.roundLabel = createWorldLabel( 'Round #0', 1140, 160, 4.75, 0.3, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
+				panelState.roundLabel.mesh.position.set( 0, - 1.18, 0.1 );
+				panel.add( panelState.roundLabel.mesh );
+
+				panelState.selectedLabel = createWorldLabel( 'Selected: Node A', 1140, 160, 4.75, 0.3, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
+				panelState.selectedLabel.mesh.position.set( 0, - 1.58, 0.1 );
+				panel.add( panelState.selectedLabel.mesh );
+
+				panelState.metricsLabel = createWorldLabel( 'PoW 0.0 blk/min | PoS 0.0 blk/min', 1140, 160, 4.75, 0.3, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
+				panelState.metricsLabel.mesh.position.set( 0, - 1.98, 0.1 );
+				panel.add( panelState.metricsLabel.mesh );
+
+				panelState.auditLabel = createWorldLabel( 'Log: 0 events', 1024, 140, 4.3, 0.28, '#d8f2ff', 'rgba(16, 49, 70, 0.88)' );
+				panelState.auditLabel.mesh.position.set( 0, - 2.38, 0.1 );
+				panel.add( panelState.auditLabel.mesh );
+
+				scene.add( panel );
+
+			}
+
+			function createVrButton( text, baseColor, onActivate ) {
+
+				const group = new THREE.Group();
+
+				const frame = new THREE.Mesh(
+					new THREE.BoxGeometry( 2.08, 0.46, 0.09 ),
+					new THREE.MeshStandardMaterial( {
+						color: 0x1b3242,
+						emissive: 0x112332,
+						emissiveIntensity: 0.45,
+						metalness: 0.35,
+						roughness: 0.46
+					} )
+				);
+				group.add( frame );
+
+				const material = new THREE.MeshStandardMaterial( {
+					color: baseColor,
+					emissive: baseColor,
+					emissiveIntensity: 0.32,
+					metalness: 0.26,
+					roughness: 0.38,
+					transparent: true,
+					opacity: 0.95
+				} );
+				const hit = new THREE.Mesh( new THREE.BoxGeometry( 1.96, 0.37, 0.12 ), material );
+				hit.position.z = 0.03;
+				group.add( hit );
+
+				const label = createWorldLabel( text, 1024, 160, 1.84, 0.25, '#eef9ff', 'rgba(0,0,0,0)' );
+				label.mesh.position.set( 0, 0, 0.11 );
+				group.add( label.mesh );
+
+				const button = {
+					group,
+					hit,
+					label,
+					material,
+					baseColor,
+					hoverColor: new THREE.Color( baseColor ).offsetHSL( 0, 0, 0.14 ).getHex(),
+					hovered: false,
+					enabled: true,
+					setText( next ) {
+
+						label.redraw( next );
+
+					},
+					setEnabled( enabled ) {
+
+						button.enabled = enabled;
+						refreshVrButtonVisual( button );
+
+					}
+				};
+
+				hit.userData.button = button;
+				registerInteractiveTarget( hit, 'button', () => {
+
+					if ( button.enabled ) onActivate();
+
+				} );
+
+				refreshVrButtonVisual( button );
+
+				return button;
+
+			}
+
+			function createWorldLabel( text, width, height, worldWidth, worldHeight, color, background ) {
+
+				const canvas = document.createElement( 'canvas' );
+				canvas.width = width;
+				canvas.height = height;
+				const ctx = canvas.getContext( '2d' );
+				const texture = new THREE.CanvasTexture( canvas );
+				texture.colorSpace = THREE.SRGBColorSpace;
+				texture.needsUpdate = true;
+
+				const material = new THREE.MeshBasicMaterial( {
+					map: texture,
+					transparent: true,
+					opacity: 0.98,
+					depthWrite: false
+				} );
+
+				const mesh = new THREE.Mesh( new THREE.PlaneGeometry( worldWidth, worldHeight ), material );
+
+				const redraw = ( value, nextColor = color, nextBackground = background ) => {
+
+					ctx.clearRect( 0, 0, width, height );
+					ctx.fillStyle = nextBackground;
+					ctx.fillRect( 0, 0, width, height );
+					ctx.strokeStyle = 'rgba(165, 224, 255, 0.85)';
+					ctx.lineWidth = Math.max( 2, Math.floor( width * 0.004 ) );
+					ctx.strokeRect( 2, 2, width - 4, height - 4 );
+					ctx.fillStyle = nextColor;
+					ctx.font = `600 ${Math.floor( height * 0.36 )}px "Segoe UI", sans-serif`;
+					ctx.textAlign = 'center';
+					ctx.textBaseline = 'middle';
+
+					const rows = String( value ).split( '\n' );
+					const lineHeight = height * 0.3;
+					const startY = height * 0.5 - ( rows.length - 1 ) * lineHeight * 0.5;
+
+					for ( let i = 0; i < rows.length; i ++ ) {
+
+						ctx.fillText( truncateLabel( rows[ i ], 40 ), width * 0.5, startY + i * lineHeight );
+
+					}
+
+					texture.needsUpdate = true;
+
+				};
+
+				redraw( text );
+
+				return { mesh, redraw, texture };
+
+			}
+
+			function truncateLabel( value, max ) {
+
+				if ( value.length <= max ) return value;
+				return `${value.slice( 0, max - 1 )}...`;
+
+			}
+
+			function addAtmosphereDetails() {
+
+				const skyline = new THREE.Group();
+
+				for ( let i = 0; i < 56; i ++ ) {
+
+					const angle = Math.random() * Math.PI * 2;
+					const radius = 15 + Math.random() * 16;
+					const height = 1.3 + Math.random() * 5.5;
+
+					const tower = new THREE.Mesh(
+						new THREE.BoxGeometry( 0.65 + Math.random() * 0.95, height, 0.65 + Math.random() * 0.95 ),
+						new THREE.MeshStandardMaterial( {
+							color: 0x21445f,
+							emissive: 0x10283a,
+							emissiveIntensity: 0.35,
+							metalness: 0.17,
+							roughness: 0.79
+						} )
+					);
+					tower.position.set( Math.cos( angle ) * radius, height * 0.5, Math.sin( angle ) * radius );
+					skyline.add( tower );
+
+				}
+
+				scene.add( skyline );
+
+				const stars = new THREE.Group();
+
+				for ( let i = 0; i < 92; i ++ ) {
+
+					const dot = new THREE.Mesh(
+						new THREE.SphereGeometry( 0.05 + Math.random() * 0.02, 8, 6 ),
+						new THREE.MeshBasicMaterial( {
+							color: 0xa8e2ff,
+							transparent: true,
+							opacity: 0.56 + Math.random() * 0.24
+						} )
+					);
+					dot.position.set( ( Math.random() - 0.5 ) * 88, 13 + Math.random() * 22, ( Math.random() - 0.5 ) * 88 );
+					dot.userData.phase = Math.random() * Math.PI * 2;
+					stars.add( dot );
+
+				}
+
+				scene.add( stars );
+				sceneRefs.stars = stars;
+
+			}
+
+			function validatorLabelText( validator ) {
+
+				return `${validator.label}\nStake ${Math.round( validator.stake )} | Hash ${Math.round( validator.power )}`;
+
+			}
+
+			function randomBetween( min, max ) {
+
+				return min + Math.random() * ( max - min );
+
+			}
+
+			function clamp( value, min, max ) {
+
+				return Math.min( max, Math.max( min, value ) );
+
+			}
+
+			function getValidatorById( id ) {
+
+				return validators.find( ( item ) => item.id === id ) || null;
+
+			}
+
+			function pickValidatorForMode( mode ) {
+
+				let total = 0;
+				const weights = [];
+
+				for ( const validator of validators ) {
+
+					const base = mode === 'pow' ? validator.power : validator.stake;
+					let weight = Math.max( 1, base );
+
+					if ( state.selectedValidatorId === validator.id ) {
+
+						weight *= mode === 'pos' ? 1.2 : 1.08;
+
+					}
+
+					weights.push( { validator, weight } );
+					total += weight;
+
+				}
+
+				let threshold = Math.random() * total;
+
+				for ( const row of weights ) {
+
+					threshold -= row.weight;
+					if ( threshold <= 0 ) return row.validator;
+
+				}
+
+				return weights[ weights.length - 1 ].validator;
+
+			}
+
+			function setMode( nextMode, log = true ) {
+
+				if ( state.roundInProgress ) {
+
+					state.event = 'Cannot switch mode during active round.';
+					refreshUI();
+					return;
+
+				}
+
+				if ( state.mode === nextMode && log ) {
+
+					state.event = `${modeConfigs[ nextMode ].label} already active.`;
+					refreshUI();
+					return;
+
+				}
+
+				state.mode = nextMode;
+				state.decision = 'pending';
+				state.event = `${modeConfigs[ nextMode ].label} selected.`;
+				state.resultPulse = 0;
+				sceneRefs.resultShield.visible = false;
+				applyModeVisuals();
+
+				if ( log ) {
+
+					recordAudit( `Mode switched to ${modeConfigs[ nextMode ].label}.`, 'info' );
+
+				}
+
+				refreshUI();
+
+			}
+
+			function applyModeVisuals() {
+
+				const config = modeConfigs[ state.mode ];
+				sceneRefs.modeRing.material.color.setHex( config.accentColor );
+				sceneRefs.modeRing.material.emissive.setHex( config.accentColor );
+				sceneRefs.progressBeam.material.color.setHex( config.beamColor );
+				sceneRefs.progressBeam.material.emissive.setHex( config.beamColor );
+
+			}
+
+			function setSelectedValidator( validatorId, log = true ) {
+
+				state.selectedValidatorId = validatorId;
+				const validator = getValidatorById( validatorId );
+
+				if ( validator && log ) {
+
+					recordAudit( `${validator.label} selected for inspection.`, 'info' );
+
+				}
+
+				refreshUI();
+
+			}
+
+			function randomizeStakes() {
+
+				if ( state.roundInProgress ) {
+
+					state.event = 'Wait for round completion before changing stakes.';
+					refreshUI();
+					return;
+
+				}
+
+				for ( const validator of validators ) {
+
+					validator.stake = Math.round( randomBetween( 10, 48 ) );
+
+				}
+
+				state.event = 'Validator stakes randomized.';
+				recordAudit( 'Stake distribution reshuffled.', 'info' );
+				refreshUI();
+
+			}
+
+			function rebalanceHashPower() {
+
+				if ( state.roundInProgress ) {
+
+					state.event = 'Wait for round completion before rebalancing hash power.';
+					refreshUI();
+					return;
+
+				}
+
+				for ( const validator of validators ) {
+
+					validator.power = Math.round( randomBetween( 18, 72 ) );
+
+				}
+
+				state.event = 'Hash power rebalanced for all validators.';
+				recordAudit( 'Hash power profile changed.', 'info' );
+				refreshUI();
+
+			}
+
+			function boostSelectedStake() {
+
+				if ( state.roundInProgress ) {
+
+					state.event = 'Cannot boost stake during active round.';
+					refreshUI();
+					return;
+
+				}
+
+				const selected = getValidatorById( state.selectedValidatorId );
+				if ( ! selected ) {
+
+					state.event = 'Select validator first.';
+					refreshUI();
+					return;
+
+				}
+
+				selected.stake = clamp( selected.stake + 8, 8, 95 );
+
+				for ( const validator of validators ) {
+
+					if ( validator.id === selected.id ) continue;
+					validator.stake = clamp( validator.stake - 1.4, 5, 95 );
+
+				}
+
+				state.event = `${selected.label} stake boosted.`;
+				recordAudit( `${selected.label} stake increased for PoS influence.`, 'info' );
+				refreshUI();
+
+			}
+
+			function toggleAutoRun() {
+
+				state.autoRun = ! state.autoRun;
+				state.autoRunReadyAt = performance.now() + 300;
+				state.event = state.autoRun ? 'Auto run enabled.' : 'Auto run stopped.';
+				recordAudit( `Auto run ${state.autoRun ? 'enabled' : 'disabled'}.`, 'info' );
+				refreshUI();
+
+			}
+
+			function startRound( isManual ) {
+
+				unlockAudio();
+
+				if ( state.roundInProgress ) return;
+
+				const mode = state.mode;
+				const config = modeConfigs[ mode ];
+				const validator = pickValidatorForMode( mode );
+
+				state.roundInProgress = true;
+				state.roundIndex ++;
+				state.decision = 'pending';
+				state.roundStartMs = performance.now();
+				state.roundDuration = randomBetween( config.durationRange[ 0 ], config.durationRange[ 1 ] );
+				state.roundProgress = 0;
+				state.roundTargetEnergy = randomBetween( config.energyRange[ 0 ], config.energyRange[ 1 ] );
+				state.roundTargetCompute = randomBetween( config.computeRange[ 0 ], config.computeRange[ 1 ] );
+				state.roundEnergy = 0;
+				state.roundCompute = 0;
+				state.currentValidatorId = validator.id;
+				state.event = `${config.label} round #${state.roundIndex} started by ${validator.label}.`;
+				state.resultPulse = 0;
+				sceneRefs.resultShield.visible = false;
+
+				recordAudit( `Round #${state.roundIndex} started in ${mode.toUpperCase()} with ${validator.label}.`, 'info' );
+				playStart();
+				pulseHaptics( 0.24, 40 );
+
+				if ( isManual === false ) {
+
+					state.event = `Auto: ${config.label} round #${state.roundIndex} started by ${validator.label}.`;
+
+				}
+
+				refreshUI();
+
+			}
+
+			function finalizeRound() {
+
+				state.roundInProgress = false;
+
+				const mode = state.mode;
+				const config = modeConfigs[ mode ];
+				const modeStat = modeMetrics[ mode ];
+				const validator = getValidatorById( state.currentValidatorId );
+				if ( ! validator ) return;
+
+				let failureChance = config.failureChance;
+				if ( mode === 'pow' && validator.power < 24 ) failureChance += 0.08;
+				if ( mode === 'pos' && validator.stake < 18 ) failureChance += 0.12;
+
+				const accepted = Math.random() > failureChance;
+				state.decision = accepted ? 'valid' : 'invalid';
+				state.roundProgress = 1;
+				state.roundEnergy = state.roundTargetEnergy;
+				state.roundCompute = state.roundTargetCompute;
+				state.lastRoundLatency = state.roundDuration;
+				state.lastRoundEnergy = state.roundTargetEnergy;
+				state.lastRoundCompute = state.roundTargetCompute;
+				state.resultPulse = 1;
+
+				modeStat.rounds ++;
+				modeStat.totalLatency += state.roundDuration;
+				modeStat.totalEnergy += state.roundTargetEnergy;
+
+				if ( accepted ) {
+
+					modeStat.approved ++;
+					modeStat.acceptedBlocks ++;
+					state.event = `Block accepted: ${validator.label} finalized in ${state.roundDuration.toFixed( 1 )}s.`;
+					recordAudit( `Round #${state.roundIndex}: accepted by ${validator.label}.`, 'valid' );
+					applyApprovedVisuals();
+
+				} else {
+
+					modeStat.rejected ++;
+					state.event = `Consensus failed: ${validator.label} produced invalid block.`;
+					recordAudit( `Round #${state.roundIndex}: rejected, ${validator.label} failed consensus.`, 'invalid' );
+					applyRejectedVisuals();
+
+				}
+
+				if ( state.autoRun ) {
+
+					state.autoRunReadyAt = performance.now() + 1200;
+
+				}
+
+				refreshUI();
+
+			}
+
+			function applyApprovedVisuals() {
+
+				sceneRefs.resultShield.visible = true;
+				sceneRefs.resultShield.material.color.setHex( 0x61f3b7 );
+				sceneRefs.resultShield.material.emissive.setHex( 0x43dca2 );
+				sceneRefs.statusHalo.material.color.setHex( 0x6bf7bc );
+				sceneRefs.statusHalo.material.emissive.setHex( 0x58ecb0 );
+
+				playApprove();
+				pulseHaptics( 0.55, 95 );
+
+			}
+
+			function applyRejectedVisuals() {
+
+				sceneRefs.resultShield.visible = true;
+				sceneRefs.resultShield.material.color.setHex( 0xff6f7a );
+				sceneRefs.resultShield.material.emissive.setHex( 0xff4f60 );
+				sceneRefs.statusHalo.material.color.setHex( 0xff7381 );
+				sceneRefs.statusHalo.material.emissive.setHex( 0xff566a );
+
+				playReject();
+				pulseHaptics( 0.4, 85 );
+
+			}
+
+			function resetStats() {
+
+				state.roundInProgress = false;
+				state.autoRun = false;
+				state.autoRunReadyAt = 0;
+				state.roundIndex = 0;
+				state.roundProgress = 0;
+				state.roundDuration = 0;
+				state.roundEnergy = 0;
+				state.roundCompute = 0;
+				state.currentValidatorId = null;
+				state.decision = 'pending';
+				state.event = 'Stats reset. Ready for new consensus rounds.';
+				state.resultPulse = 0;
+				sceneRefs.resultShield.visible = false;
+
+				for ( const key of [ 'pow', 'pos' ] ) {
+
+					modeMetrics[ key ].rounds = 0;
+					modeMetrics[ key ].approved = 0;
+					modeMetrics[ key ].rejected = 0;
+					modeMetrics[ key ].totalLatency = 0;
+					modeMetrics[ key ].totalEnergy = 0;
+					modeMetrics[ key ].acceptedBlocks = 0;
+
+				}
+
+				recordAudit( 'All round metrics reset.', 'info' );
+				refreshUI();
+
+			}
+
+			function recordAudit( message, kind ) {
+
+				audit.entries.unshift( {
+					message,
+					kind,
+					time: new Date().toLocaleTimeString( [], { hour: '2-digit', minute: '2-digit', second: '2-digit' } )
+				} );
+
+				if ( audit.entries.length > audit.maxEntries ) {
+
+					audit.entries.length = audit.maxEntries;
+
+				}
+
+			}
+
+			function getTotals() {
+
+				const approved = modeMetrics.pow.approved + modeMetrics.pos.approved;
+				const rejected = modeMetrics.pow.rejected + modeMetrics.pos.rejected;
+				const rounds = modeMetrics.pow.rounds + modeMetrics.pos.rounds;
+				return { approved, rejected, rounds };
+
+			}
+
+			function calculateThroughput( modeKey ) {
+
+				const metric = modeMetrics[ modeKey ];
+				if ( metric.totalLatency <= 0 ) return 0;
+				return metric.acceptedBlocks / ( metric.totalLatency / 60 );
+
+			}
+
+			function refreshUI() {
+
+				const selected = getValidatorById( state.selectedValidatorId );
+				const current = getValidatorById( state.currentValidatorId );
+				const totals = getTotals();
+
+				ui.modeValue.textContent = modeConfigs[ state.mode ].label;
+				ui.eventValue.textContent = state.event;
+				ui.metricsValue.textContent = `Rounds: ${totals.rounds} | Accepted: ${totals.approved} | Rejected: ${totals.rejected}`;
+				ui.roundValue.textContent = state.roundInProgress ? `#${state.roundIndex} (${Math.floor( state.roundProgress * 100 )}%)` : `#${state.roundIndex}`;
+				ui.validatorValue.textContent = current ? current.label : 'none';
+
+				if ( state.roundInProgress ) {
+
+					const elapsed = ( performance.now() - state.roundStartMs ) / 1000;
+					ui.roundTimerValue.textContent = `Target ${state.roundDuration.toFixed( 1 )}s | Elapsed ${elapsed.toFixed( 1 )}s | Energy ${state.roundEnergy.toFixed( 1 )} | Compute ${state.roundCompute.toFixed( 1 )}`;
+
+				} else {
+
+					ui.roundTimerValue.textContent = `Latency ${state.lastRoundLatency.toFixed( 1 )}s | Energy ${state.lastRoundEnergy.toFixed( 1 )} | Compute ${state.lastRoundCompute.toFixed( 1 )}`;
+
+				}
+
+				if ( state.roundInProgress ) {
+
+					ui.stateBadge.textContent = 'PENDING';
+					ui.stateBadge.className = 'badge pending';
+
+				} else if ( state.decision === 'valid' ) {
+
+					ui.stateBadge.textContent = 'VALID';
+					ui.stateBadge.className = 'badge valid';
+
+				} else if ( state.decision === 'invalid' ) {
+
+					ui.stateBadge.textContent = 'INVALID';
+					ui.stateBadge.className = 'badge invalid';
+
+				} else {
+
+					ui.stateBadge.textContent = 'PENDING';
+					ui.stateBadge.className = 'badge pending';
+
+				}
+
+				ui.modePowButton.disabled = state.mode === 'pow' || state.roundInProgress;
+				ui.modePosButton.disabled = state.mode === 'pos' || state.roundInProgress;
+				ui.startRoundButton.disabled = state.roundInProgress;
+				autoRunButtonText();
+				ui.randomizeStakeButton.disabled = state.roundInProgress;
+				ui.rebalancePowerButton.disabled = state.roundInProgress;
+				ui.boostStakeButton.disabled = state.roundInProgress || ! selected;
+				ui.resetStatsButton.disabled = false;
+
+				refreshSideBySideMetrics();
+				refreshStakeList();
+				refreshAuditList();
+				refreshWorldPanelLabels();
+				refreshVrButtonState();
+				updateValidatorVisuals();
+
+			}
+
+			function autoRunButtonText() {
+
+				ui.autoRunButton.textContent = state.autoRun ? 'Auto Run: On' : 'Auto Run: Off';
+
+			}
+
+			function refreshSideBySideMetrics() {
+
+				const powRounds = modeMetrics.pow.rounds;
+				const posRounds = modeMetrics.pos.rounds;
+
+				const powAvgLatency = powRounds > 0 ? modeMetrics.pow.totalLatency / powRounds : 0;
+				const posAvgLatency = posRounds > 0 ? modeMetrics.pos.totalLatency / posRounds : 0;
+
+				const powAvgEnergy = powRounds > 0 ? modeMetrics.pow.totalEnergy / powRounds : 0;
+				const posAvgEnergy = posRounds > 0 ? modeMetrics.pos.totalEnergy / posRounds : 0;
+
+				ui.powLatencyValue.textContent = `${powAvgLatency.toFixed( 1 )}s`;
+				ui.powEnergyValue.textContent = powAvgEnergy.toFixed( 1 );
+				ui.powThroughputValue.textContent = `${calculateThroughput( 'pow' ).toFixed( 1 )} blk/min`;
+				ui.powRoundsValue.textContent = String( powRounds );
+
+				ui.posLatencyValue.textContent = `${posAvgLatency.toFixed( 1 )}s`;
+				ui.posEnergyValue.textContent = posAvgEnergy.toFixed( 1 );
+				ui.posThroughputValue.textContent = `${calculateThroughput( 'pos' ).toFixed( 1 )} blk/min`;
+				ui.posRoundsValue.textContent = String( posRounds );
+
+			}
+
+			function refreshStakeList() {
+
+				ui.stakeMeta.textContent = `${validators.length} nodes`;
+				ui.stakeList.innerHTML = '';
+
+				for ( const validator of validators ) {
+
+					const item = document.createElement( 'li' );
+					item.classList.toggle( 'selected', validator.id === state.selectedValidatorId );
+					item.classList.toggle( 'winner', validator.id === state.currentValidatorId );
+					item.textContent = `${validator.label} | stake ${validator.stake.toFixed( 1 )} | hash ${validator.power.toFixed( 1 )}`;
+					ui.stakeList.appendChild( item );
+
+				}
+
+				for ( const entry of sceneRefs.validators ) {
+
+					const source = getValidatorById( entry.id );
+					if ( source ) entry.label.redraw( validatorLabelText( source ) );
+
+				}
+
+			}
+
+			function refreshAuditList() {
+
+				ui.auditMeta.textContent = `${audit.entries.length} events`;
+				ui.auditLog.innerHTML = '';
+
+				for ( const entry of audit.entries ) {
+
+					const item = document.createElement( 'li' );
+					item.classList.toggle( 'valid', entry.kind === 'valid' );
+					item.classList.toggle( 'invalid', entry.kind === 'invalid' );
+					item.textContent = `[${entry.time}] ${entry.message}`;
+					ui.auditLog.appendChild( item );
+
+				}
+
+			}
+
+			function refreshWorldPanelLabels() {
+
+				const selected = getValidatorById( state.selectedValidatorId );
+
+				if ( panelState.statusLabel ) {
+
+					const statusText = state.roundInProgress ? 'RUNNING' : state.decision.toUpperCase();
+					panelState.statusLabel.redraw( `${modeConfigs[ state.mode ].label} | ${statusText}` );
+
+				}
+
+				if ( panelState.roundLabel ) {
+
+					const roundText = state.roundInProgress ? `Round #${state.roundIndex}: ${Math.floor( state.roundProgress * 100 )}%` : `Round #${state.roundIndex}`;
+					panelState.roundLabel.redraw( roundText );
+
+				}
+
+				if ( panelState.selectedLabel ) {
+
+					panelState.selectedLabel.redraw( `Selected: ${selected ? selected.label : 'none'}` );
+
+				}
+
+				if ( panelState.metricsLabel ) {
+
+					panelState.metricsLabel.redraw( `PoW ${calculateThroughput( 'pow' ).toFixed( 1 )} blk/min | PoS ${calculateThroughput( 'pos' ).toFixed( 1 )} blk/min` );
+
+				}
+
+				if ( panelState.auditLabel ) {
+
+					panelState.auditLabel.redraw( `Log: ${audit.entries.length} events` );
+
+				}
+
+			}
+
+			function refreshVrButtonState() {
+
+				if ( ! panelState.buttons.pow ) return;
+
+				panelState.buttons.pow.setEnabled( state.mode !== 'pow' && ! state.roundInProgress );
+				panelState.buttons.pos.setEnabled( state.mode !== 'pos' && ! state.roundInProgress );
+				panelState.buttons.start.setEnabled( ! state.roundInProgress );
+				panelState.buttons.auto.setEnabled( true );
+				panelState.buttons.randomStake.setEnabled( ! state.roundInProgress );
+				panelState.buttons.rebalance.setEnabled( ! state.roundInProgress );
+				panelState.buttons.boost.setEnabled( ! state.roundInProgress && !! state.selectedValidatorId );
+				panelState.buttons.reset.setEnabled( true );
+
+				panelState.buttons.auto.setText( state.autoRun ? 'Auto: On' : 'Auto: Off' );
+
+			}
+
+			function updateValidatorVisuals() {
+
+				const modeColor = modeConfigs[ state.mode ].accentColor;
+
+				for ( const entry of sceneRefs.validators ) {
+
+					const isSelected = entry.id === state.selectedValidatorId;
+					const isCurrent = entry.id === state.currentValidatorId;
+
+					let color = 0x7dcaff;
+					let emissive = 0x65c2ff;
+					let intensity = 0.5;
+
+					if ( isCurrent && state.roundInProgress ) {
+
+						color = modeColor;
+						emissive = modeColor;
+						intensity = 1;
+
+					} else if ( isCurrent && ! state.roundInProgress && state.decision === 'valid' ) {
+
+						color = 0x76ffbe;
+						emissive = 0x59ffb1;
+						intensity = 0.92;
+
+					} else if ( isCurrent && ! state.roundInProgress && state.decision === 'invalid' ) {
+
+						color = 0xff8994;
+						emissive = 0xff6778;
+						intensity = 0.95;
+
+					} else if ( isSelected ) {
+
+						color = 0x91e5ff;
+						emissive = 0x7fdfff;
+						intensity = 0.7;
+
+					}
+
+					if ( entry.hovered ) intensity += 0.25;
+
+					entry.orb.material.color.setHex( color );
+					entry.orb.material.emissive.setHex( emissive );
+					entry.orb.material.emissiveIntensity = intensity;
+
+					entry.ring.material.color.setHex( color );
+					entry.ring.material.emissive.setHex( emissive );
+					entry.ring.material.emissiveIntensity = intensity;
+
+					entry.line.material.color.setHex( isCurrent ? color : 0x4e84ab );
+					entry.line.material.opacity = isCurrent ? 0.95 : 0.5;
+
+				}
+
+			}
+
+			function initAudio() {
+
+				try {
+
+					const listener = new THREE.AudioListener();
+					camera.add( listener );
+					audioFx.listener = listener;
+
+					audioFx.start = new THREE.PositionalAudio( listener );
+					audioFx.start.setBuffer( createToneBuffer( listener.context, 430, 510, 0.24, 0.34 ) );
+					audioFx.start.setRefDistance( 5 );
+					audioFx.start.setVolume( 0.44 );
+					sceneRefs.arenaGroup.add( audioFx.start );
+
+					audioFx.approve = new THREE.PositionalAudio( listener );
+					audioFx.approve.setBuffer( createToneBuffer( listener.context, 510, 760, 0.32, 0.38 ) );
+					audioFx.approve.setRefDistance( 5 );
+					audioFx.approve.setVolume( 0.48 );
+					sceneRefs.arenaGroup.add( audioFx.approve );
+
+					audioFx.reject = new THREE.PositionalAudio( listener );
+					audioFx.reject.setBuffer( createToneBuffer( listener.context, 320, 180, 0.35, 0.4 ) );
+					audioFx.reject.setRefDistance( 5 );
+					audioFx.reject.setVolume( 0.5 );
+					sceneRefs.arenaGroup.add( audioFx.reject );
+
+					audioFx.initialized = true;
+
+				} catch ( error ) {
+
+					console.warn( 'Audio init failed:', error );
+
+				}
+
+			}
+
+			function createToneBuffer( context, fromFreq, toFreq, duration, amplitude ) {
+
+				const frameCount = Math.floor( context.sampleRate * duration );
+				const buffer = context.createBuffer( 1, frameCount, context.sampleRate );
+				const data = buffer.getChannelData( 0 );
+
+				for ( let i = 0; i < frameCount; i ++ ) {
+
+					const t = i / frameCount;
+					const freq = fromFreq + ( toFreq - fromFreq ) * t;
+					const env = Math.pow( 1 - t, 1.4 );
+					data[ i ] = Math.sin( 2 * Math.PI * freq * t ) * amplitude * env;
+
+				}
+
+				return buffer;
+
+			}
+
+			function unlockAudio() {
+
+				if ( ! audioFx.listener ) return;
+				const context = audioFx.listener.context;
+				if ( context.state === 'suspended' ) context.resume();
+
+			}
+
+			function playStart() {
+
+				if ( ! audioFx.initialized ) return;
+				if ( audioFx.start.isPlaying ) audioFx.start.stop();
+				audioFx.start.play();
+
+			}
+
+			function playApprove() {
+
+				if ( ! audioFx.initialized ) return;
+				if ( audioFx.approve.isPlaying ) audioFx.approve.stop();
+				audioFx.approve.play();
+
+			}
+
+			function playReject() {
+
+				if ( ! audioFx.initialized ) return;
+				if ( audioFx.reject.isPlaying ) audioFx.reject.stop();
+				audioFx.reject.play();
+
+			}
+
+			function registerInteractiveTarget( mesh, type, onActivate ) {
+
+				mesh.userData.interactiveType = type;
+				mesh.userData.onActivate = onActivate;
+				mesh.userData.hovered = false;
+				vr.interactiveTargets.push( mesh );
+
+			}
+
+			function refreshVrButtonVisual( button ) {
+
+				if ( ! button.enabled ) {
+
+					button.material.color.setHex( 0x44596a );
+					button.material.emissive.setHex( 0x2b3947 );
+					button.material.emissiveIntensity = 0.2;
+					button.material.opacity = 0.5;
+					return;
+
+				}
+
+				button.material.opacity = 0.95;
+				button.material.color.setHex( button.hovered ? button.hoverColor : button.baseColor );
+				button.material.emissive.setHex( button.hovered ? button.hoverColor : button.baseColor );
+				button.material.emissiveIntensity = button.hovered ? 0.7 : 0.32;
+
+			}
+
+			function onVrSelectStart( event ) {
+
+				unlockAudio();
+
+				const controller = event.target;
+				const target = controller.userData.hoveredTarget;
+				if ( ! target || ! target.userData.onActivate ) return;
+
+				const intersection = controller.userData.hoveredIntersection || null;
+				target.userData.onActivate( intersection );
+
+				const button = target.userData.button;
+				if ( button ) {
+
+					button.material.emissiveIntensity = 0.85;
+					setTimeout( () => refreshVrButtonVisual( button ), 95 );
+
+				}
+
+				pulseHaptics( 0.3, 40 );
+
+			}
+
+			function pulseHaptics( intensity, durationMs ) {
+
+				for ( const controller of vr.controllers ) {
+
+					const gamepad = controller.userData.gamepad || controller.gamepad;
+					if ( ! gamepad || ! gamepad.hapticActuators || gamepad.hapticActuators.length === 0 ) continue;
+					gamepad.hapticActuators[ 0 ].pulse( intensity, durationMs );
+
+				}
+
+			}
+
+			function updateVrInteractions() {
+
+				if ( ! renderer.xr.isPresenting ) {
+
+					clearVrHover();
+					return;
+
+				}
+
+				for ( const controller of vr.controllers ) {
+
+					tempMatrix.identity().extractRotation( controller.matrixWorld );
+					vr.raycaster.ray.origin.setFromMatrixPosition( controller.matrixWorld );
+					vr.raycaster.ray.direction.set( 0, 0, - 1 ).applyMatrix4( tempMatrix );
+
+					const intersections = vr.raycaster.intersectObjects( vr.interactiveTargets, false );
+					const hit = intersections.length > 0 ? intersections[ 0 ] : null;
+					controller.userData.hoveredIntersection = hit;
+
+					if ( hit ) {
+
+						if ( controller.userData.hoveredTarget && controller.userData.hoveredTarget !== hit.object ) {
+
+							setHoveredState( controller.userData.hoveredTarget, false );
+
+						}
+
+						controller.userData.hoveredTarget = hit.object;
+						controller.userData.ray.scale.z = hit.distance;
+						setHoveredState( hit.object, true );
+
+					} else {
+
+						controller.userData.ray.scale.z = vrRayLength;
+						if ( controller.userData.hoveredTarget ) setHoveredState( controller.userData.hoveredTarget, false );
+						controller.userData.hoveredTarget = null;
+
+					}
+
+				}
+
+			}
+
+			function setHoveredState( mesh, hovered ) {
+
+				if ( ! mesh || mesh.userData.hovered === hovered ) return;
+				mesh.userData.hovered = hovered;
+
+				if ( mesh.userData.button ) {
+
+					mesh.userData.button.hovered = hovered;
+					refreshVrButtonVisual( mesh.userData.button );
+					return;
+
+				}
+
+				if ( mesh.userData.interactiveType === 'validator' ) {
+
+					const entry = sceneRefs.validators.find( ( item ) => item.hit === mesh );
+					if ( entry ) {
+
+						entry.hovered = hovered;
+						updateValidatorVisuals();
+
+					}
+
+				}
+
+			}
+
+			function clearVrHover() {
+
+				for ( const controller of vr.controllers ) {
+
+					if ( controller.userData.hoveredTarget ) setHoveredState( controller.userData.hoveredTarget, false );
+					controller.userData.hoveredTarget = null;
+					controller.userData.hoveredIntersection = null;
+					if ( controller.userData.ray ) controller.userData.ray.scale.z = vrRayLength;
+
+				}
+
+			}
+
+			function toggleHudVisibility( forceVisible ) {
+
+				state.hudVisible = forceVisible === undefined ? ! state.hudVisible : forceVisible;
+				ui.hud.classList.toggle( 'is-hidden', ! state.hudVisible );
+				ui.hudToggleButton.textContent = state.hudVisible ? 'Hide Panel (H)' : 'Show Panel (H)';
+				ui.hudToggleButton.setAttribute( 'aria-pressed', String( ! state.hudVisible ) );
+
+			}
+
+			function isEditableTarget( target ) {
+
+				if ( ! target ) return false;
+				const tag = target.tagName;
+				return tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable;
+
+			}
+
+			function onGlobalKeyDown( event ) {
+
+				if ( event.repeat ) return;
+				if ( event.key.toLowerCase() !== 'h' ) return;
+				if ( isEditableTarget( event.target ) ) return;
+
+				event.preventDefault();
+				toggleHudVisibility();
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function updateRound() {
+
+				if ( state.roundInProgress ) {
+
+					const now = performance.now();
+					const elapsed = ( now - state.roundStartMs ) / 1000;
+					state.roundProgress = Math.min( 1, elapsed / state.roundDuration );
+					state.roundEnergy = state.roundTargetEnergy * state.roundProgress;
+
+					const turbulence = state.mode === 'pow'
+						? 0.84 + 0.22 * Math.abs( Math.sin( elapsed * 4.5 ) )
+						: 0.92 + 0.08 * Math.abs( Math.sin( elapsed * 2.5 ) );
+
+					state.roundCompute = state.roundTargetCompute * turbulence;
+
+					refreshRoundLiveUI();
+
+					if ( state.roundProgress >= 1 ) {
+
+						finalizeRound();
+
+					}
+
+					return;
+
+				}
+
+				if ( state.autoRun && performance.now() >= state.autoRunReadyAt ) {
+
+					startRound( false );
+
+				}
+
+			}
+
+			function refreshRoundLiveUI() {
+
+				if ( ! state.roundInProgress ) return;
+
+				const elapsed = ( performance.now() - state.roundStartMs ) / 1000;
+				ui.roundValue.textContent = `#${state.roundIndex} (${Math.floor( state.roundProgress * 100 )}%)`;
+				ui.roundTimerValue.textContent = `Target ${state.roundDuration.toFixed( 1 )}s | Elapsed ${elapsed.toFixed( 1 )}s | Energy ${state.roundEnergy.toFixed( 1 )} | Compute ${state.roundCompute.toFixed( 1 )}`;
+
+				if ( panelState.roundLabel ) panelState.roundLabel.redraw( `Round #${state.roundIndex}: ${Math.floor( state.roundProgress * 100 )}%` );
+				if ( panelState.statusLabel ) panelState.statusLabel.redraw( `${modeConfigs[ state.mode ].label} | RUNNING` );
+
+			}
+
+			function animateArena( delta, elapsed ) {
+
+				sceneRefs.modeRing.rotation.z += delta * 0.35;
+				sceneRefs.statusHalo.rotation.z -= delta * 0.22;
+
+				const pulse = state.roundInProgress ? 0.22 : 0.08;
+				sceneRefs.modeRing.material.emissiveIntensity = 0.74 + pulse * Math.sin( elapsed * 6.2 );
+				sceneRefs.statusHalo.material.emissiveIntensity = 0.58 + 0.16 * Math.sin( elapsed * 5.2 );
+
+				const targetScale = state.roundInProgress ? 0.06 + 4.4 * state.roundProgress : 0.06;
+				sceneRefs.progressBeam.scale.y = THREE.MathUtils.damp( sceneRefs.progressBeam.scale.y, targetScale, 5.4, delta );
+				sceneRefs.progressBeam.position.y = 0.55 + sceneRefs.progressBeam.scale.y * 0.5;
+				sceneRefs.progressBeam.material.opacity = state.roundInProgress ? 0.24 + 0.2 * state.roundProgress : 0.18;
+
+				if ( sceneRefs.resultShield.visible ) {
+
+					if ( state.resultPulse > 0.001 ) {
+
+						state.resultPulse = Math.max( 0, state.resultPulse - delta * 0.9 );
+
+					}
+
+					sceneRefs.resultShield.material.opacity = 0.14 + 0.2 * Math.sin( elapsed * 7.1 ) + state.resultPulse * 0.22;
+
+				}
+
+			}
+
+			function animateValidators( delta, elapsed ) {
+
+				for ( const glyph of sceneRefs.floatingGlyphs ) {
+
+					glyph.mesh.rotation.z += delta * glyph.speed;
+
+				}
+
+				for ( let i = 0; i < sceneRefs.validators.length; i ++ ) {
+
+					const entry = sceneRefs.validators[ i ];
+					entry.holder.position.y = 0.8 + Math.sin( elapsed * 1.45 + i * 0.7 ) * 0.03;
+
+				}
+
+			}
+
+			function animateStars( elapsed ) {
+
+				if ( ! sceneRefs.stars ) return;
+
+				for ( const star of sceneRefs.stars.children ) {
+
+					star.material.opacity = 0.56 + 0.25 * Math.sin( elapsed * 1.55 + star.userData.phase );
+
+				}
+
+			}
+
+			function animate() {
+
+				const delta = clock.getDelta();
+				const elapsed = clock.elapsedTime;
+
+				if ( renderer.xr.isPresenting === false ) {
+
+					controls.update();
+
+				}
+
+				updateRound();
+				animateArena( delta, elapsed );
+				animateValidators( delta, elapsed );
+				animateStars( elapsed );
+				updateVrInteractions();
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+	</body>
+</html>

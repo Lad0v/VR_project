@@ -2,6 +2,7 @@
 	"webxr": [
 		"webxr_vr_blockchain_architecture",
 		"webxr_vr_block_structure_integrity",
-		"webxr_vr_keys_access_decision"
+		"webxr_vr_keys_access_decision",
+		"webxr_vr_consensus_arena"
 	]
 }
