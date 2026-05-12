@@ -257,8 +257,8 @@
 	</head>
 	<body>
 		<div id="hud">
-			<h2>Scene 3: Cryptographic Keys</h2>
-			<p>
+			<h2 id="sceneTitle">Scene 3: Cryptographic Keys</h2>
+			<p id="sceneDescription">
 				Three-step verification: key format, ownership, signature.<br>
 				Challenge-response uses a rotating nonce and derived signature.
 			</p>
@@ -269,7 +269,7 @@
 			</div>
 			<div class="panel">
 				<div class="panel-title">
-					<span>Key Console</span>
+					<span id="keyConsoleTitle">Key Console</span>
 					<span id="publicKeyValue">PUB: -</span>
 				</div>
 				<div class="editor-row">
@@ -284,35 +284,38 @@
 				</div>
 			</div>
 			<div class="indicators">
-				<span>Actor</span>
+				<span id="actorLabel">Actor</span>
 				<span class="value" id="actorValue">Alice</span>
-				<span>Challenge Nonce</span>
+				<span id="challengeLabel">Challenge Nonce</span>
 				<span class="value" id="challengeValue">-</span>
-				<span>Derived Signature</span>
+				<span id="signatureLabel">Derived Signature</span>
 				<span class="value" id="signatureValue">-</span>
-				<span>Pipeline</span>
+				<span id="pipelineLabel">Pipeline</span>
 				<span class="value" id="pipelineValue">0/3 passed</span>
-				<span>Decision</span>
+				<span id="decisionLabel">Decision</span>
 				<span><span class="badge invalid" id="decisionBadge">PENDING</span></span>
-				<span>Reason</span>
+				<span id="reasonLabel">Reason</span>
 				<span class="value" id="reasonValue">Provide private key and run verification.</span>
-				<span>Metrics</span>
+				<span id="metricsLabel">Metrics</span>
 				<span class="value" id="metricsValue">Attempts: 0 | Approved: 0 | Denied: 0</span>
 			</div>
 			<div class="panel">
 				<div class="panel-title">
-					<span>Audit Log</span>
+					<span id="auditLogTitle">Audit Log</span>
 					<span id="auditMeta">0 events</span>
 				</div>
 				<ul class="audit-log" id="auditLog"></ul>
 			</div>
 			<div class="legend">
-				<strong>Legend:</strong> Green means transaction approved and vault unlocks.<br>
+				<strong id="legendTitle">Legend:</strong> <span id="legendDescription">Green means transaction approved and vault unlocks.<br>
 				Red means access denied due to invalid private key.<br>
-				<strong>VR:</strong> Use controller ray + trigger on panel buttons and actor terminals.
+				<strong>VR:</strong> Use controller ray + trigger on panel buttons and actor terminals.</span>
 			</div>
 		</div>
 		<button id="hudToggleButton" class="hud-toggle" type="button" aria-controls="hud" aria-pressed="false">Hide Panel (H)</button>
+		<button id="langToggleButton" class="hud-toggle" type="button" style="inset-inline-end: 170px;">Language: EN</button>
+
+		<script src="https://unpkg.com/i18next@23.7.6/i18next.min.js"></script>
 
 		<script type="importmap">
 			{
@@ -329,6 +332,100 @@
 			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 			import { VRButton } from 'three/addons/webxr/VRButton.js';
 			import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
+
+			// Initialize i18next
+			let enTranslations, ruTranslations;
+			try {
+				enTranslations = await fetch('../locales/en.json').then(r => r.json());
+				ruTranslations = await fetch('../locales/ru.json').then(r => r.json());
+			} catch (e) {
+				console.warn('Failed to load translation files, using inline translations', e);
+				// Inline translations for scene3
+				enTranslations = {
+					"scene3": {
+						"title": "Scene 3: Cryptographic Keys",
+						"description": "Three-step verification: key format, ownership, signature.<br>Challenge-response uses a rotating nonce and derived signature.",
+						"buttons": {
+							"ownerAlice": "Owner: Alice",
+							"ownerBob": "Owner: Bob",
+							"actorEve": "Actor: Eve",
+							"verify": "Verify",
+							"useCorrectKey": "Use Correct Key",
+							"useWrongKey": "Use Wrong Key",
+							"clearInput": "Clear Input",
+							"resetVault": "Reset Vault"
+						},
+						"indicators": {
+							"actor": "Actor",
+							"challengeNonce": "Challenge Nonce",
+							"derivedSignature": "Derived Signature",
+							"pipeline": "Pipeline",
+							"decision": "Decision",
+							"reason": "Reason",
+							"metrics": "Metrics"
+						},
+						"panels": {
+							"keyConsole": "Key Console",
+							"auditLog": "Audit Log"
+						},
+						"legend": {
+							"title": "Legend:",
+							"description": "Green means transaction approved and vault unlocks.<br>Red means access denied due to invalid private key.<br><strong>VR:</strong> Use controller ray + trigger on panel buttons and actor terminals."
+						}
+					},
+					"common": {
+						"language": "Language",
+						"english": "English",
+						"russian": "Русский"
+					}
+				};
+				ruTranslations = {
+					"scene3": {
+						"title": "Сцена 3: Криптографические ключи",
+						"description": "Трехэтапная верификация: формат ключа, владение, подпись.<br>Challenge-response использует вращающийся nonce и производную подпись.",
+						"buttons": {
+							"ownerAlice": "Владелец: Alice",
+							"ownerBob": "Владелец: Bob",
+							"actorEve": "Актер: Eve",
+							"verify": "Проверить",
+							"useCorrectKey": "Использовать правильный ключ",
+							"useWrongKey": "Использовать неправильный ключ",
+							"clearInput": "Очистить ввод",
+							"resetVault": "Сбросить хранилище"
+						},
+						"indicators": {
+							"actor": "Актер",
+							"challengeNonce": "Challenge Nonce",
+							"derivedSignature": "Производная подпись",
+							"pipeline": "Pipeline",
+							"decision": "Решение",
+							"reason": "Причина",
+							"metrics": "Метрики"
+						},
+						"panels": {
+							"keyConsole": "Консоль ключей",
+							"auditLog": "Журнал аудита"
+						},
+						"legend": {
+							"title": "Легенда:",
+							"description": "Зеленый означает, что транзакция одобрена и хранилище разблокируется.<br>Красный означает отказ в доступе из-за недействительного приватного ключа.<br><strong>VR:</strong> Используйте луч контроллера + триггер на кнопках панели и терминалах актеров."
+						}
+					},
+					"common": {
+						"language": "Язык",
+						"english": "English",
+						"russian": "Русский"
+					}
+				};
+			}
+			await i18next.init({
+				lng: localStorage.getItem('language') || navigator.language.split('-')[0] || 'en',
+				fallbackLng: 'en',
+				resources: {
+					en: { translation: enTranslations },
+					ru: { translation: ruTranslations }
+				}
+			});
 
 			let camera, scene, renderer, controls;
 
@@ -423,8 +520,47 @@
 				reasonValue: document.getElementById( 'reasonValue' ),
 				metricsValue: document.getElementById( 'metricsValue' ),
 				auditMeta: document.getElementById( 'auditMeta' ),
-				auditLog: document.getElementById( 'auditLog' )
+				auditLog: document.getElementById( 'auditLog' ),
+				langToggleButton: document.getElementById( 'langToggleButton' ),
+				sceneTitle: document.getElementById( 'sceneTitle' ),
+				sceneDescription: document.getElementById( 'sceneDescription' ),
+				actorLabel: document.getElementById( 'actorLabel' ),
+				challengeLabel: document.getElementById( 'challengeLabel' ),
+				signatureLabel: document.getElementById( 'signatureLabel' ),
+				pipelineLabel: document.getElementById( 'pipelineLabel' ),
+				decisionLabel: document.getElementById( 'decisionLabel' ),
+				reasonLabel: document.getElementById( 'reasonLabel' ),
+				metricsLabel: document.getElementById( 'metricsLabel' ),
+				keyConsoleTitle: document.getElementById( 'keyConsoleTitle' ),
+				auditLogTitle: document.getElementById( 'auditLogTitle' ),
+				legendTitle: document.getElementById( 'legendTitle' ),
+				legendDescription: document.getElementById( 'legendDescription' )
 			};
+
+			function updateTexts() {
+				ui.sceneTitle.textContent = i18next.t('scene3.title');
+				ui.sceneDescription.innerHTML = i18next.t('scene3.description');
+				ui.ownerAliceButton.textContent = i18next.t('scene3.buttons.ownerAlice');
+				ui.ownerBobButton.textContent = i18next.t('scene3.buttons.ownerBob');
+				ui.ownerEveButton.textContent = i18next.t('scene3.buttons.actorEve');
+				ui.verifyButton.textContent = i18next.t('scene3.buttons.verify');
+				ui.useCorrectKeyButton.textContent = i18next.t('scene3.buttons.useCorrectKey');
+				ui.useWrongKeyButton.textContent = i18next.t('scene3.buttons.useWrongKey');
+				ui.clearKeyButton.textContent = i18next.t('scene3.buttons.clearInput');
+				ui.resetVaultButton.textContent = i18next.t('scene3.buttons.resetVault');
+				ui.actorLabel.textContent = i18next.t('scene3.indicators.actor');
+				ui.challengeLabel.textContent = i18next.t('scene3.indicators.challengeNonce');
+				ui.signatureLabel.textContent = i18next.t('scene3.indicators.derivedSignature');
+				ui.pipelineLabel.textContent = i18next.t('scene3.indicators.pipeline');
+				ui.decisionLabel.textContent = i18next.t('scene3.indicators.decision');
+				ui.reasonLabel.textContent = i18next.t('scene3.indicators.reason');
+				ui.metricsLabel.textContent = i18next.t('scene3.indicators.metrics');
+				ui.keyConsoleTitle.textContent = i18next.t('scene3.panels.keyConsole');
+				ui.auditLogTitle.textContent = i18next.t('scene3.panels.auditLog');
+				ui.legendTitle.textContent = i18next.t('scene3.legend.title');
+				ui.legendDescription.innerHTML = i18next.t('scene3.legend.description');
+				ui.langToggleButton.textContent = i18next.t('common.language') + ': ' + (i18next.language === 'ru' ? i18next.t('common.russian') : i18next.t('common.english'));
+			}
 
 			init();
 
@@ -508,6 +644,13 @@
 				ui.clearKeyButton.addEventListener( 'click', clearInput );
 				ui.resetVaultButton.addEventListener( 'click', resetVault );
 				ui.hudToggleButton.addEventListener( 'click', () => toggleHudVisibility() );
+				ui.langToggleButton.addEventListener( 'click', () => {
+					const newLang = i18next.language === 'en' ? 'ru' : 'en';
+					i18next.changeLanguage(newLang, () => {
+						localStorage.setItem('language', newLang);
+						updateTexts();
+					});
+				});
 
 				ui.privateKeyInput.addEventListener( 'keydown', ( event ) => {
 
@@ -523,6 +666,8 @@
 
 				window.addEventListener( 'resize', onWindowResize );
 				window.addEventListener( 'keydown', onGlobalKeyDown );
+
+				updateTexts();
 
 			}
 

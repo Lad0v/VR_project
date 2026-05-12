@@ -221,8 +221,8 @@
 	</head>
 	<body>
 		<div id="hud">
-			<h2>Scene 1: Architecture Comparison</h2>
-			<p>
+			<h2 id="sceneTitle">Scene 1: Architecture Comparison</h2>
+			<p id="sceneDescription">
 				Centralized mode uses one central server.<br>
 				Decentralized mode uses distributed nodes.
 			</p>
@@ -239,11 +239,11 @@
 				<button id="recoverButton">Recover System</button>
 			</div>
 			<div class="indicators">
-				<span>Mode</span>
+				<span id="modeLabel">Mode</span>
 				<span class="value" id="modeValue">Centralized (Bank City)</span>
-				<span>State</span>
+				<span id="stateLabel">State</span>
 				<span><span class="badge valid" id="stateBadge">VALID</span></span>
-				<span>Event</span>
+				<span id="eventLabel">Event</span>
 				<span class="value" id="eventValue">Network stable. Transactions are flowing.</span>
 			</div>
 			<div class="timeline">
@@ -255,12 +255,15 @@
 				<button id="timelineLiveButton">Return to Live</button>
 			</div>
 			<div class="legend">
-				<strong>Legend:</strong> Green nodes are online. Red nodes are offline.<br>
+				<strong id="legendTitle">Legend:</strong> <span id="legendDescription">Green nodes are online. Red nodes are offline.<br>
 				Bright links indicate active data transfer.<br>
-				<strong>VR:</strong> Use controller ray + trigger on 3D panel or directly on nodes.
+				<strong>VR:</strong> Use controller ray + trigger on 3D panel or directly on nodes.</span>
 			</div>
 		</div>
 		<button id="hudToggleButton" class="hud-toggle" type="button" aria-controls="hud" aria-pressed="false">Hide Panel (H)</button>
+		<button id="langToggleButton" class="hud-toggle" type="button" style="inset-inline-end: 170px;">Language: EN</button>
+
+		<script src="https://unpkg.com/i18next@23.7.6/i18next.min.js"></script>
 
 		<script type="importmap">
 			{
@@ -277,6 +280,91 @@
 			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 			import { VRButton } from 'three/addons/webxr/VRButton.js';
 			import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
+
+			// Initialize i18next
+			let enTranslations, ruTranslations;
+			try {
+				enTranslations = await fetch('../locales/en.json').then(r => r.json());
+				ruTranslations = await fetch('../locales/ru.json').then(r => r.json());
+			} catch (e) {
+				console.warn('Failed to load translation files, using inline translations', e);
+				enTranslations = {
+					"scene1": {
+						"title": "Scene 1: Architecture Comparison",
+						"description": "Explore the fundamental differences between centralized and decentralized systems.<br>Walk through the Bank City and Blockchain City to understand how trust and control are distributed.",
+						"buttons": {
+							"switchToBank": "Switch to Bank City",
+							"switchToBlockchain": "Switch to Blockchain City",
+							"hidePanel": "Hide Panel (H)"
+						},
+						"indicators": {
+							"currentCity": "Current City",
+							"trustModel": "Trust Model",
+							"controlModel": "Control Model",
+							"failurePoints": "Failure Points",
+							"bankCity": "Bank City",
+							"blockchainCity": "Blockchain City",
+							"centralized": "Centralized",
+							"decentralized": "Decentralized",
+							"singlePoint": "Single Point of Failure",
+							"distributed": "Distributed Trust"
+						},
+						"legend": {
+							"title": "Legend:",
+							"bank": "<strong>Bank City:</strong> Traditional centralized system with a central authority managing all transactions.",
+							"blockchain": "<strong>Blockchain City:</strong> Decentralized network where trust is distributed across many nodes.",
+							"vr": "<strong>VR:</strong> Use controller ray + trigger to switch cities and explore."
+						}
+					},
+					"common": {
+						"language": "Language",
+						"english": "English",
+						"russian": "Русский"
+					}
+				};
+				ruTranslations = {
+					"scene1": {
+						"title": "Сцена 1: Сравнение архитектур",
+						"description": "Изучите фундаментальные различия между централизованными и децентрализованными системами.<br>Пройдитесь по Банковскому городу и Блокчейн городу, чтобы понять, как распределяются доверие и контроль.",
+						"buttons": {
+							"switchToBank": "Переключиться на Банковский город",
+							"switchToBlockchain": "Переключиться на Блокчейн город",
+							"hidePanel": "Скрыть панель (H)"
+						},
+						"indicators": {
+							"currentCity": "Текущий город",
+							"trustModel": "Модель доверия",
+							"controlModel": "Модель контроля",
+							"failurePoints": "Точки отказа",
+							"bankCity": "Банковский город",
+							"blockchainCity": "Блокчейн город",
+							"centralized": "Централизованный",
+							"decentralized": "Децентрализованный",
+							"singlePoint": "Единственная точка отказа",
+							"distributed": "Распределенное доверие"
+						},
+						"legend": {
+							"title": "Легенда:",
+							"bank": "<strong>Банковский город:</strong> Традиционная централизованная система с центральным органом, управляющим всеми транзакциями.",
+							"blockchain": "<strong>Блокчейн город:</strong> Децентрализованная сеть, где доверие распределено между многими узлами.",
+							"vr": "<strong>VR:</strong> Используйте луч контроллера + триггер для переключения городов и исследования."
+						}
+					},
+					"common": {
+						"language": "Язык",
+						"english": "English",
+						"russian": "Русский"
+					}
+				};
+			}
+			await i18next.init({
+				lng: localStorage.getItem('language') || navigator.language.split('-')[0] || 'en',
+				fallbackLng: 'en',
+				resources: {
+					en: { translation: enTranslations },
+					ru: { translation: ruTranslations }
+				}
+			});
 
 			let camera, scene, renderer, controls;
 
@@ -334,8 +422,29 @@
 				eventValue: document.getElementById( 'eventValue' ),
 				timelineSlider: document.getElementById( 'timelineSlider' ),
 				timelineLiveButton: document.getElementById( 'timelineLiveButton' ),
-				timelineMeta: document.getElementById( 'timelineMeta' )
+				timelineMeta: document.getElementById( 'timelineMeta' ),
+				langToggleButton: document.getElementById( 'langToggleButton' ),
+				sceneTitle: document.getElementById( 'sceneTitle' ),
+				sceneDescription: document.getElementById( 'sceneDescription' ),
+				modeLabel: document.getElementById( 'modeLabel' ),
+				stateLabel: document.getElementById( 'stateLabel' ),
+				eventLabel: document.getElementById( 'eventLabel' ),
+				legendTitle: document.getElementById( 'legendTitle' ),
+				legendDescription: document.getElementById( 'legendDescription' )
 			};
+
+			function updateTexts() {
+				ui.sceneTitle.textContent = i18next.t('scene1.title');
+				ui.sceneDescription.innerHTML = i18next.t('scene1.description');
+				ui.switchModeButton.textContent = i18next.t('scene1.buttons.switchToBlockchain');
+				ui.hudToggleButton.textContent = i18next.t('scene1.buttons.hidePanel');
+				ui.modeLabel.textContent = i18next.t('scene1.indicators.currentCity');
+				ui.stateLabel.textContent = i18next.t('scene1.indicators.trustModel');
+				ui.eventLabel.textContent = i18next.t('scene1.indicators.controlModel');
+				ui.legendTitle.textContent = i18next.t('scene1.legend.title');
+				ui.legendDescription.innerHTML = i18next.t('scene1.legend.bank') + '<br>' + i18next.t('scene1.legend.blockchain') + '<br>' + i18next.t('scene1.legend.vr');
+				ui.langToggleButton.textContent = i18next.t('common.language') + ': ' + (i18next.language === 'ru' ? i18next.t('common.russian') : i18next.t('common.english'));
+			}
 
 			const centralized = {
 				group: new THREE.Group(),
@@ -428,11 +537,20 @@
 				ui.timelineSlider.addEventListener( 'input', onTimelineSliderInput );
 				ui.timelineLiveButton.addEventListener( 'click', jumpToLiveTimeline );
 				ui.hudToggleButton.addEventListener( 'click', () => toggleHudVisibility() );
+				ui.langToggleButton.addEventListener( 'click', () => {
+					const newLang = i18next.language === 'en' ? 'ru' : 'en';
+					i18next.changeLanguage(newLang, () => {
+						localStorage.setItem('language', newLang);
+						updateTexts();
+					});
+				});
 
 				window.addEventListener( 'resize', onWindowResize );
 				window.addEventListener( 'keydown', onGlobalKeyDown );
 
 				toggleHudVisibility( true );
+
+				updateTexts();
 
 				updateNetworkState();
 				recordHistorySnapshot( 'initial' );

@@ -120,5 +120,8 @@
       "build/three.module.js"
     ],
     "directories": {}
+  },
+  "dependencies": {
+    "i18next": "^26.0.10"
   }
 }

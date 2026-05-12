@@ -292,8 +292,8 @@
 	</head>
 	<body>
 		<div id="hud">
-			<h2>Scene 2: Block Integrity Lab</h2>
-			<p>
+			<h2 id="sceneTitle">Scene 2: Block Integrity Lab</h2>
+			<p id="sceneDescription">
 				Inspect block fields, tamper one transaction, and watch downstream blocks fail.<br>
 				Then remint to restore chain integrity.
 			</p>
@@ -312,34 +312,34 @@
 				<button id="resetButton">Reset Chain</button>
 			</div>
 			<div class="indicators">
-				<span>Selected</span>
+				<span id="selectedLabel">Selected</span>
 				<span class="value" id="selectedValue">Block #0</span>
-				<span>Status</span>
+				<span id="statusLabel">Status</span>
 				<span><span class="badge valid" id="stateBadge">VALID</span></span>
-				<span>Causal Event</span>
+				<span id="eventLabel">Causal Event</span>
 				<span class="value" id="eventValue">Chain is valid. Waiting for changes.</span>
-				<span>Metrics</span>
+				<span id="metricsLabel">Metrics</span>
 				<span class="value" id="metricsValue">Total: 0 | Valid: 0 | Invalid: 0 | First broken: none | Tamps: 0 | Last recover: n/a</span>
 			</div>
 			<div class="inspector">
 				<div class="panel-title">
-					<span>Integrity Inspector</span>
+					<span id="inspectorTitle">Integrity Inspector</span>
 					<span id="inspectorStepHint">Select a block</span>
 				</div>
 				<div class="inspector-grid">
-					<span>Expected prevHash</span>
+					<span id="expectedPrevLabel">Expected prevHash</span>
 					<span class="value" id="expectedPrevValue">-</span>
-					<span>Actual prevHash</span>
+					<span id="actualPrevLabel">Actual prevHash</span>
 					<span class="value" id="actualPrevValue">-</span>
-					<span>Mismatch</span>
+					<span id="mismatchLabel">Mismatch</span>
 					<span class="value mismatch-ok" id="mismatchValue">No mismatch</span>
-					<span>Reason</span>
+					<span id="reasonLabel">Reason</span>
 					<span class="value" id="mismatchReasonValue">Chain linkage is intact.</span>
 				</div>
 			</div>
 			<div class="tutorial">
 				<div class="panel-title">
-					<span>Guided Tutorial</span>
+					<span id="tutorialTitle">Guided Tutorial</span>
 					<span id="tutorialStepLabel">Step 1/4</span>
 				</div>
 				<p id="tutorialText">Select a non-genesis block (#1 and above).</p>
@@ -347,19 +347,22 @@
 			</div>
 			<div class="timeline">
 				<div class="timeline-header">
-					<span class="timeline-label">Timeline Replay</span>
+					<span class="timeline-label" id="timelineLabel">Timeline Replay</span>
 					<span id="timelineMeta">LIVE</span>
 				</div>
 				<input id="timelineSlider" type="range" min="0" max="0" step="1" value="0">
 				<button id="timelineLiveButton">Return to Live</button>
 			</div>
 			<div class="legend">
-				<strong>Legend:</strong> Green blocks are valid, red blocks are invalid.<br>
+				<strong id="legendTitle">Legend:</strong> <span id="legendDescription">Green blocks are valid, red blocks are invalid.<br>
 				Connectors turn red where chain linkage is broken.<br>
-				<strong>VR:</strong> Use controller ray + trigger to select blocks and press panel controls.
+				<strong>VR:</strong> Use controller ray + trigger to select blocks and press panel controls.</span>
 			</div>
 		</div>
 		<button id="hudToggleButton" class="hud-toggle" type="button" aria-controls="hud" aria-pressed="false">Hide Panel (H)</button>
+		<button id="langToggleButton" class="hud-toggle" type="button" style="inset-inline-end: 170px;">Language: EN</button>
+
+		<script src="https://unpkg.com/i18next@23.7.6/i18next.min.js"></script>
 
 		<script type="importmap">
 			{
@@ -376,6 +379,149 @@
 			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 			import { VRButton } from 'three/addons/webxr/VRButton.js';
 			import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
+
+			// Initialize i18next with robust file loading and fallback
+			const initialLanguage = localStorage.getItem('language') || (/^ru/.test(navigator.language) ? 'ru' : 'en');
+			let enTranslations, ruTranslations;
+			try {
+				const [enResponse, ruResponse] = await Promise.all([
+					fetch('../locales/en.json'),
+					fetch('../locales/ru.json')
+				]);
+				if ( ! enResponse.ok || ! ruResponse.ok ) throw new Error('Translation files not available');
+				enTranslations = await enResponse.json();
+				ruTranslations = await ruResponse.json();
+			} catch (e) {
+				console.warn('Failed to load translation files, using inline translations', e);
+				enTranslations = {
+					"scene2": {
+						"title": "Scene 2: Block Integrity Lab",
+						"description": "Inspect block fields, tamper one transaction, and watch downstream blocks fail.<br>Then remint to restore chain integrity.",
+						"buttons": {
+							"selectPrev": "Select Previous Block",
+							"selectNext": "Select Next Block",
+							"applyTamper": "Apply Tamper",
+							"randomTamper": "Random Tamper",
+							"restoreTx": "Restore Block Tx",
+							"remint": "Remint Chain",
+							"reset": "Reset Chain",
+							"restartTutorial": "Restart Tutorial",
+							"returnToLive": "Return to Live",
+							"hidePanel": "Hide Panel (H)"
+						},
+						"indicators": {
+							"selected": "Selected",
+							"status": "Status",
+							"causalEvent": "Causal Event",
+							"metrics": "Metrics",
+							"valid": "VALID",
+							"invalid": "INVALID"
+						},
+						"inspector": {
+							"title": "Integrity Inspector",
+							"selectBlock": "Select a block",
+							"expectedPrevHash": "Expected prevHash",
+							"actualPrevHash": "Actual prevHash",
+							"mismatch": "Mismatch",
+							"noMismatch": "No mismatch",
+							"reason": "Reason",
+							"chainIntact": "Chain linkage is intact."
+						},
+						"tutorial": {
+							"title": "Guided Tutorial",
+							"step": "Step",
+							"of": "/",
+							"steps": [
+								"Select a non-genesis block (#1 and above).",
+								"Edit TX and apply tamper to break the chain.",
+								"Select the first broken block to inspect the mismatch.",
+								"Recover integrity with Remint Chain or Reset Chain."
+							]
+						},
+						"timeline": {
+							"label": "Timeline Replay",
+							"live": "LIVE"
+						},
+						"legend": {
+							"title": "Legend:",
+							"description": "Green blocks are valid, red blocks are invalid.<br>Connectors turn red where chain linkage is broken.<br><strong>VR:</strong> Use controller ray + trigger to select blocks and press panel controls."
+						}
+					},
+					"common": {
+						"language": "Language",
+						"english": "English",
+						"russian": "Русский"
+					}
+				};
+				ruTranslations = {
+					"scene2": {
+						"title": "Сцена 2: Лаборатория целостности блоков",
+						"description": "Проверьте поля блока, измените одну транзакцию и посмотрите, как последующие блоки станут недействительными.<br>Затем переминтуйте цепочку, чтобы восстановить целостность.",
+						"buttons": {
+							"selectPrev": "Выбрать предыдущий блок",
+							"selectNext": "Выбрать следующий блок",
+							"applyTamper": "Применить изменение",
+							"randomTamper": "Случайное изменение",
+							"restoreTx": "Восстановить транзакцию блока",
+							"remint": "Переминтовать цепочку",
+							"reset": "Сбросить цепочку",
+							"restartTutorial": "Перезапустить обучение",
+							"returnToLive": "Вернуться к живому",
+							"hidePanel": "Скрыть панель (H)"
+						},
+						"indicators": {
+							"selected": "Выбран",
+							"status": "Статус",
+							"causalEvent": "Причинное событие",
+							"metrics": "Метрики",
+							"valid": "ДЕЙСТВИТЕЛЬНЫЙ",
+							"invalid": "НЕДЕЙСТВИТЕЛЬНЫЙ"
+						},
+						"inspector": {
+							"title": "Инспектор целостности",
+							"selectBlock": "Выберите блок",
+							"expectedPrevHash": "Ожидаемый prevHash",
+							"actualPrevHash": "Фактический prevHash",
+							"mismatch": "Несоответствие",
+							"noMismatch": "Нет несоответствия",
+							"reason": "Причина",
+							"chainIntact": "Связь цепочки intact."
+						},
+						"tutorial": {
+							"title": "Руководство",
+							"step": "Шаг",
+							"of": "/",
+							"steps": [
+								"Выберите не-генезис блок (#1 и выше).",
+								"Измените TX и примените изменение, чтобы сломать цепочку.",
+								"Выберите первый сломанный блок, чтобы проверить несоответствие.",
+								"Восстановите целостность с помощью Переминтовать цепочку или Сбросить цепочку."
+							]
+						},
+						"timeline": {
+							"label": "Повтор временной шкалы",
+							"live": "ЖИВОЙ"
+						},
+						"legend": {
+							"title": "Легенда:",
+							"description": "Зеленые блоки действительны, красные недействительны.<br>Соединители становятся красными, где связь цепочки сломана.<br><strong>VR:</strong> Используйте луч контроллера + триггер для выбора блоков и нажатия элементов панели."
+						}
+					},
+					"common": {
+						"language": "Язык",
+						"english": "English",
+						"russian": "Русский"
+					}
+				};
+			}
+			await i18next.init({
+				lng: initialLanguage,
+				fallbackLng: 'en',
+				resources: {
+					en: { translation: enTranslations },
+					ru: { translation: ruTranslations }
+				}
+			});
 
 			let camera, scene, renderer, controls;
 
@@ -429,10 +575,10 @@
 			};
 
 			const tutorialSteps = [
-				'Select a non-genesis block (#1 and above).',
-				'Edit TX and apply tamper to break the chain.',
-				'Select the first broken block to inspect the mismatch.',
-				'Recover integrity with Remint Chain or Reset Chain.'
+				() => i18next.t('scene2.tutorial.steps', { returnObjects: true })[0],
+				() => i18next.t('scene2.tutorial.steps', { returnObjects: true })[1],
+				() => i18next.t('scene2.tutorial.steps', { returnObjects: true })[2],
+				() => i18next.t('scene2.tutorial.steps', { returnObjects: true })[3]
 			];
 
 			const cameraFocus = {
@@ -514,8 +660,53 @@
 				tutorialRestartButton: document.getElementById( 'tutorialRestartButton' ),
 				timelineSlider: document.getElementById( 'timelineSlider' ),
 				timelineLiveButton: document.getElementById( 'timelineLiveButton' ),
-				timelineMeta: document.getElementById( 'timelineMeta' )
+				timelineMeta: document.getElementById( 'timelineMeta' ),
+				langToggleButton: document.getElementById( 'langToggleButton' ),
+				sceneTitle: document.getElementById( 'sceneTitle' ),
+				sceneDescription: document.getElementById( 'sceneDescription' ),
+				selectedLabel: document.getElementById( 'selectedLabel' ),
+				statusLabel: document.getElementById( 'statusLabel' ),
+				eventLabel: document.getElementById( 'eventLabel' ),
+				metricsLabel: document.getElementById( 'metricsLabel' ),
+				inspectorTitle: document.getElementById( 'inspectorTitle' ),
+				expectedPrevLabel: document.getElementById( 'expectedPrevLabel' ),
+				actualPrevLabel: document.getElementById( 'actualPrevLabel' ),
+				mismatchLabel: document.getElementById( 'mismatchLabel' ),
+				reasonLabel: document.getElementById( 'reasonLabel' ),
+				tutorialTitle: document.getElementById( 'tutorialTitle' ),
+				timelineLabel: document.getElementById( 'timelineLabel' ),
+				legendTitle: document.getElementById( 'legendTitle' ),
+				legendDescription: document.getElementById( 'legendDescription' )
 			};
+
+			function updateTexts() {
+				ui.sceneTitle.textContent = i18next.t('scene2.title');
+				ui.sceneDescription.innerHTML = i18next.t('scene2.description');
+				ui.selectPrevButton.textContent = i18next.t('scene2.buttons.selectPrev');
+				ui.selectNextButton.textContent = i18next.t('scene2.buttons.selectNext');
+				ui.applyTamperButton.textContent = i18next.t('scene2.buttons.applyTamper');
+				ui.randomTamperButton.textContent = i18next.t('scene2.buttons.randomTamper');
+				ui.restoreTxButton.textContent = i18next.t('scene2.buttons.restoreTx');
+				ui.remintButton.textContent = i18next.t('scene2.buttons.remint');
+				ui.resetButton.textContent = i18next.t('scene2.buttons.reset');
+				ui.tutorialRestartButton.textContent = i18next.t('scene2.buttons.restartTutorial');
+				ui.timelineLiveButton.textContent = i18next.t('scene2.buttons.returnToLive');
+				ui.hudToggleButton.textContent = i18next.t('scene2.buttons.hidePanel');
+				ui.selectedLabel.textContent = i18next.t('scene2.indicators.selected');
+				ui.statusLabel.textContent = i18next.t('scene2.indicators.status');
+				ui.eventLabel.textContent = i18next.t('scene2.indicators.causalEvent');
+				ui.metricsLabel.textContent = i18next.t('scene2.indicators.metrics');
+				ui.inspectorTitle.textContent = i18next.t('scene2.inspector.title');
+				ui.expectedPrevLabel.textContent = i18next.t('scene2.inspector.expectedPrevHash');
+				ui.actualPrevLabel.textContent = i18next.t('scene2.inspector.actualPrevHash');
+				ui.mismatchLabel.textContent = i18next.t('scene2.inspector.mismatch');
+				ui.reasonLabel.textContent = i18next.t('scene2.inspector.reason');
+				ui.tutorialTitle.textContent = i18next.t('scene2.tutorial.title');
+				ui.timelineLabel.textContent = i18next.t('scene2.timeline.label');
+				ui.legendTitle.textContent = i18next.t('scene2.legend.title');
+				ui.legendDescription.innerHTML = i18next.t('scene2.legend.description');
+				ui.langToggleButton.textContent = i18next.t('common.language') + ': ' + (i18next.language === 'ru' ? i18next.t('common.russian') : i18next.t('common.english'));
+			}
 
 			init();
 
@@ -615,18 +806,33 @@
 				ui.timelineSlider.addEventListener( 'input', onTimelineSliderInput );
 				ui.timelineLiveButton.addEventListener( 'click', jumpToLiveTimeline );
 				ui.hudToggleButton.addEventListener( 'click', () => toggleHudVisibility() );
+				ui.langToggleButton.addEventListener( 'click', () => {
+					const newLang = i18next.language === 'en' ? 'ru' : 'en';
+					i18next.changeLanguage(newLang, () => {
+						localStorage.setItem('language', newLang);
+						updateTexts();
+						updateTutorialStep();
+					});
+				});
 				window.addEventListener( 'resize', onWindowResize );
 				window.addEventListener( 'keydown', onGlobalKeyDown );
 
 				toggleHudVisibility( true );
 
+				updateTexts();
+
+			}
+
+			function updateTutorialStep() {
+				refreshTutorialPanel();
 			}
 
 			function buildChain() {
 
 				for ( let i = 0; i < blockCount; i ++ ) {
 
-					const tx = baseTransactions[ i % baseTransactions.length ];
+					const tx = baseTransactions[ i ];
+
 					const blockData = {
 						index: i,
 						tx,
@@ -659,7 +865,7 @@
 
 				}
 
-			}
+				}
 
 			function createBlockVisual( block ) {
 
@@ -1832,11 +2038,11 @@
 
 				if ( tutorial.step === 2 && chain.firstBrokenIndex !== - 1 ) {
 
-					ui.tutorialText.textContent = `${tutorialSteps[ tutorial.step ]} First broken block: #${chain.firstBrokenIndex}.`;
+					ui.tutorialText.textContent = `${tutorialSteps[ tutorial.step ]()} First broken block: #${chain.firstBrokenIndex}.`;
 
 				} else {
 
-					ui.tutorialText.textContent = tutorialSteps[ tutorial.step ];
+					ui.tutorialText.textContent = tutorialSteps[ tutorial.step ]();
 
 				}
 

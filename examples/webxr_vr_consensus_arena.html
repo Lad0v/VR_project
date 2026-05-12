@@ -82,6 +82,29 @@
 				transform: translateY( -1px );
 			}
 
+			.lang-toggle {
+				position: absolute;
+				inset-block-start: 14px;
+				inset-inline-end: 170px;
+				z-index: 5;
+				inline-size: 50px;
+				padding: 8px 12px;
+				border-radius: 999px;
+				border: 1px solid rgba( 123, 199, 255, 0.5 );
+				background: rgba( 12, 37, 54, 0.86 );
+				color: #eef9ff;
+				font-size: 12px;
+				font-weight: 700;
+				letter-spacing: 0.02em;
+				cursor: pointer;
+				transition: background-color 0.2s ease, transform 0.2s ease;
+			}
+
+			.lang-toggle:hover {
+				background: rgba( 24, 60, 83, 0.95 );
+				transform: translateY( -1px );
+			}
+
 			#hud h2 {
 				margin: 0 0 10px;
 				font-size: 18px;
@@ -345,8 +368,8 @@
 	</head>
 	<body>
 		<div id="hud">
-			<h2>Scene 4: Consensus Arena</h2>
-			<p>
+			<h2 id="sceneTitle">Scene 4: Consensus Arena</h2>
+			<p id="sceneDescription">
 				Compare Proof of Work and Proof of Stake in one arena.<br>
 				PoW is slower and energy-heavy, PoS picks validators by stake and finalizes faster.
 			</p>
@@ -365,33 +388,33 @@
 				<button id="resetStatsButton">Reset Stats</button>
 			</div>
 			<div class="indicators">
-				<span>Mode</span>
+				<span id="labelMode">Mode</span>
 				<span class="value" id="modeValue">Proof of Work</span>
-				<span>Profile</span>
+				<span id="labelProfile">Profile</span>
 				<span class="value" id="profileValue">Learning</span>
-				<span>Network</span>
+				<span id="labelNetwork">Network</span>
 				<span class="value" id="networkValue">Connected</span>
-				<span>Status</span>
+				<span id="labelStatus">Status</span>
 				<span><span class="badge pending" id="stateBadge">PENDING</span></span>
-				<span>Round</span>
+				<span id="labelRound">Round</span>
 				<span class="value" id="roundValue">#0</span>
-				<span>Pipeline Stage</span>
+				<span id="labelPipelineStage">Pipeline Stage</span>
 				<span class="value" id="stageValue">Idle (0%)</span>
-				<span>Validator</span>
+				<span id="labelValidator">Validator</span>
 				<span class="value" id="validatorValue">none</span>
-				<span>Round Metrics</span>
+				<span id="labelRoundMetrics">Round Metrics</span>
 				<span class="value" id="roundTimerValue">Latency 0.0s | Energy 0.0 | Compute 0.0</span>
-				<span>Economy</span>
+				<span id="labelEconomy">Economy</span>
 				<span class="value" id="economyValue">Rewards 0.00 | Slashed 0.00</span>
-				<span>Summary</span>
+				<span id="labelSummary">Summary</span>
 				<span class="value" id="metricsValue">Rounds: 0 | Accepted: 0 | Rejected: 0</span>
-				<span>Event</span>
+				<span id="labelEvent">Event</span>
 				<span class="value" id="eventValue">Select mode and start consensus round.</span>
 			</div>
 
 			<div class="panel">
 				<div class="panel-title">
-					<span>Consensus Pipeline</span>
+					<span id="consensusPipelineTitle">Consensus Pipeline</span>
 					<span id="pipelineMeta">Stage 0/3</span>
 				</div>
 				<div class="pipeline-grid">
@@ -404,18 +427,18 @@
 
 			<div class="panel">
 				<div class="panel-title">
-					<span>PoW vs PoS Side-by-Side</span>
+					<span id="sideBySideTitle">PoW vs PoS Side-by-Side</span>
 				</div>
 				<div class="metrics-board">
-					<div class="metrics-head">Mode</div>
-					<div class="metrics-head">Avg Latency</div>
-					<div class="metrics-head">Avg Energy</div>
-					<div class="metrics-head">Throughput</div>
-					<div class="metrics-head">Rounds</div>
-					<div class="metrics-head">Rewards</div>
-					<div class="metrics-head">Slashed</div>
+					<div class="metrics-head" id="headMode">Mode</div>
+					<div class="metrics-head" id="headAvgLatency">Avg Latency</div>
+					<div class="metrics-head" id="headAvgEnergy">Avg Energy</div>
+					<div class="metrics-head" id="headThroughput">Throughput</div>
+					<div class="metrics-head" id="headRounds">Rounds</div>
+					<div class="metrics-head" id="headRewards">Rewards</div>
+					<div class="metrics-head" id="headSlashed">Slashed</div>
 
-					<div class="metrics-cell mode">Proof of Work</div>
+					<div class="metrics-cell mode" id="powModeLabel">Proof of Work</div>
 					<div class="metrics-cell" id="powLatencyValue">0.0s</div>
 					<div class="metrics-cell" id="powEnergyValue">0.0</div>
 					<div class="metrics-cell" id="powThroughputValue">0.0 blk/min</div>
@@ -423,7 +446,7 @@
 					<div class="metrics-cell" id="powRewardValue">0.00</div>
 					<div class="metrics-cell" id="powSlashValue">0.00</div>
 
-					<div class="metrics-cell mode">Proof of Stake</div>
+					<div class="metrics-cell mode" id="posModeLabel">Proof of Stake</div>
 					<div class="metrics-cell" id="posLatencyValue">0.0s</div>
 					<div class="metrics-cell" id="posEnergyValue">0.0</div>
 					<div class="metrics-cell" id="posThroughputValue">0.0 blk/min</div>
@@ -435,7 +458,7 @@
 
 			<div class="panel">
 				<div class="panel-title">
-					<span>Validator Stakes and Hash Power</span>
+					<span id="validatorStakesTitle">Validator Stakes and Hash Power</span>
 					<span id="stakeMeta">6 nodes</span>
 				</div>
 				<ul class="stake-list" id="stakeList"></ul>
@@ -443,20 +466,23 @@
 
 			<div class="panel">
 				<div class="panel-title">
-					<span>Consensus Log</span>
+					<span id="consensusLogTitle">Consensus Log</span>
 					<span id="auditMeta">0 events</span>
 				</div>
 				<ul class="audit-log" id="auditLog"></ul>
 			</div>
 
 			<div class="legend">
-				<strong>Legend:</strong> Green means block accepted, red means consensus failed.<br>
+				<strong id="legendTitle">Legend:</strong> <span id="legendDescription">Green means block accepted, red means consensus failed.<br>
 				In PoW winner is weighted by hash power; in PoS by validator stake and can be slashed.<br>
-				Partition mode can create fork pressure and quorum failures.<br>
-				<strong>VR:</strong> Use controller ray + trigger on panel buttons or validator nodes.
+				Partition mode can create fork pressure and quorum failures.</span><br>
+				<strong>VR:</strong> <span id="legendVrText">Use controller ray + trigger on panel buttons or validator nodes.</span>
 			</div>
 		</div>
 		<button id="hudToggleButton" class="hud-toggle" type="button" aria-controls="hud" aria-pressed="false">Hide Panel (H)</button>
+		<button id="langToggleButton" class="lang-toggle" type="button">RU</button>
+
+		<script src="https://unpkg.com/i18next@23.7.6/i18next.min.js"></script>
 
 		<script type="importmap">
 			{
@@ -473,6 +499,99 @@
 			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 			import { VRButton } from 'three/addons/webxr/VRButton.js';
 			import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
+
+			// i18next initialization with both language resources
+			const initialLanguage = localStorage.getItem('language') || (navigator.language.startsWith('ru') ? 'ru' : 'en');
+			let translations = { en: {}, ru: {} };
+			try {
+				const [enResponse, ruResponse] = await Promise.all([
+					fetch('../locales/en.json'),
+					fetch('../locales/ru.json')
+				]);
+				if (!enResponse.ok || !ruResponse.ok) throw new Error('Failed to load translations');
+				translations.en = await enResponse.json();
+				translations.ru = await ruResponse.json();
+			} catch (error) {
+				console.warn('Failed to load translations, using fallback:', error);
+				translations.en = {
+					"scene4": {
+						"title": "Scene 4: Consensus Arena",
+						"subtitle": "Compare Proof of Work vs Proof of Stake",
+						"buttons": {
+							"modePow": "Mode: PoW",
+							"modePos": "Mode: PoS",
+							"startRound": "Start Round",
+							"profile": "Profile: Learning",
+							"partition": "Partition: Off",
+							"autoRun": "Auto Run: Off",
+							"randomizeStakes": "Randomize Stakes",
+							"rebalancePower": "Rebalance Hash Power",
+							"boostStake": "Boost Selected Stake",
+							"resetStats": "Reset Stats",
+							"toggleHud": "Toggle HUD"
+						},
+						"metrics": {
+							"pow": "Proof of Work",
+							"pos": "Proof of Stake",
+							"latency": "Latency",
+							"energy": "Energy",
+							"throughput": "Throughput",
+							"rounds": "Rounds",
+							"reward": "Reward",
+							"slash": "Slash"
+						}
+					},
+					"common": {
+						"language": "Language",
+						"english": "English",
+						"russian": "Русский"
+					}
+				};
+				translations.ru = {
+					"scene4": {
+						"title": "Арена консенсуса",
+						"subtitle": "Сравните Proof of Work и Proof of Stake",
+						"buttons": {
+							"modePow": "Режим: PoW",
+							"modePos": "Режим: PoS",
+							"startRound": "Начать раунд",
+							"profile": "Профиль: Учебный",
+							"partition": "Разветвление: выкл.",
+							"autoRun": "Автозапуск: выкл.",
+							"randomizeStakes": "Случайные ставки",
+							"rebalancePower": "Перераспределить мощность",
+							"boostStake": "Увеличить ставку",
+							"resetStats": "Сбросить статистику",
+							"toggleHud": "Переключить HUD"
+						},
+						"indicators": {
+							"mode": "Режим",
+							"profile": "Профиль",
+							"network": "Сеть",
+							"state": "Состояние",
+							"round": "Раунд",
+							"stage": "Стадия",
+							"validator": "Валидатор",
+							"reward": "Награда",
+							"slash": "Штраф"
+						}
+					},
+					"common": {
+						"language": "Язык",
+						"english": "English",
+						"russian": "Русский"
+					}
+				};
+			}
+
+			await i18next.init({
+				lng: initialLanguage,
+				resources: {
+					en: { translation: translations.en },
+					ru: { translation: translations.ru }
+				},
+				fallbackLng: 'en'
+			});
 
 			let camera, scene, renderer, controls;
 
@@ -534,9 +653,9 @@
 			};
 
 			const pipelineBase = [
-				{ key: 'proposer', label: 'Proposer Selected', weight: 0.24 },
-				{ key: 'vote', label: 'Gossip/Vote', weight: 0.43 },
-				{ key: 'finalize', label: 'Finalization', weight: 0.33 }
+				{ key: 'proposer', labelKey: 'scene4.pipelineSteps.proposer', label: '', weight: 0.24 },
+				{ key: 'vote', labelKey: 'scene4.pipelineSteps.vote', label: '', weight: 0.43 },
+				{ key: 'finalize', labelKey: 'scene4.pipelineSteps.finalize', label: '', weight: 0.33 }
 			];
 
 			const state = {
@@ -686,7 +805,10 @@
 				stakeMeta: document.getElementById( 'stakeMeta' ),
 				stakeList: document.getElementById( 'stakeList' ),
 				auditMeta: document.getElementById( 'auditMeta' ),
-				auditLog: document.getElementById( 'auditLog' )
+				auditLog: document.getElementById( 'auditLog' ),
+				sceneTitle: document.getElementById( 'sceneTitle' ),
+				sceneDescription: document.getElementById( 'sceneDescription' ),
+				langToggleButton: document.getElementById( 'langToggleButton' )
 			};
 
 			init();
@@ -752,6 +874,7 @@
 				setupVRPanel();
 				initAudio();
 				bindEvents();
+				updateTexts();
 
 				setSelectedValidator( validators[ 0 ].id, false );
 				setMode( 'pow', false );
@@ -774,16 +897,71 @@
 				ui.boostStakeButton.addEventListener( 'click', boostSelectedStake );
 				ui.resetStatsButton.addEventListener( 'click', resetStats );
 				ui.hudToggleButton.addEventListener( 'click', () => toggleHudVisibility() );
+				ui.langToggleButton.addEventListener( 'click', () => {
+					const newLang = i18next.language === 'en' ? 'ru' : 'en';
+					i18next.changeLanguage(newLang, () => {
+						localStorage.setItem('language', newLang);
+						updateTexts();
+					});
+				});
 
 				window.addEventListener( 'resize', onWindowResize );
 				window.addEventListener( 'keydown', onGlobalKeyDown );
 
 			}
 
+			function updateTexts() {
+				ui.sceneTitle.textContent = i18next.t('scene4.title');
+				ui.sceneDescription.innerHTML = i18next.t('scene4.description');
+				ui.modePowButton.textContent = i18next.t('scene4.buttons.modePow');
+				ui.modePosButton.textContent = i18next.t('scene4.buttons.modePos');
+				ui.startRoundButton.textContent = i18next.t('scene4.buttons.startRound');
+				ui.profileButton.textContent = i18next.t('scene4.buttons.profile');
+				ui.partitionButton.textContent = i18next.t('scene4.buttons.partition');
+				ui.autoRunButton.textContent = i18next.t('scene4.buttons.autoRun');
+				ui.randomizeStakeButton.textContent = i18next.t('scene4.buttons.randomizeStakes');
+				ui.rebalancePowerButton.textContent = i18next.t('scene4.buttons.rebalancePower');
+				ui.boostStakeButton.textContent = i18next.t('scene4.buttons.boostStake');
+				ui.resetStatsButton.textContent = i18next.t('scene4.buttons.resetStats');
+				ui.hudToggleButton.textContent = i18next.t('scene4.buttons.toggleHud');
+				ui.langToggleButton.textContent = i18next.t('common.language') + ': ' + (i18next.language === 'ru' ? i18next.t('common.russian') : i18next.t('common.english'));
+				document.getElementById('labelMode').textContent = i18next.t('scene4.indicators.mode');
+				document.getElementById('labelProfile').textContent = i18next.t('scene4.indicators.profile');
+				document.getElementById('labelNetwork').textContent = i18next.t('scene4.indicators.network');
+				document.getElementById('labelStatus').textContent = i18next.t('scene4.indicators.status');
+				document.getElementById('labelRound').textContent = i18next.t('scene4.indicators.round');
+				document.getElementById('labelPipelineStage').textContent = i18next.t('scene4.indicators.pipelineStage');
+				document.getElementById('labelValidator').textContent = i18next.t('scene4.indicators.validator');
+				document.getElementById('labelRoundMetrics').textContent = i18next.t('scene4.indicators.roundMetrics');
+				document.getElementById('labelEconomy').textContent = i18next.t('scene4.indicators.economy');
+				document.getElementById('labelSummary').textContent = i18next.t('scene4.indicators.summary');
+				document.getElementById('labelEvent').textContent = i18next.t('scene4.indicators.event');
+				document.getElementById('consensusPipelineTitle').textContent = i18next.t('scene4.panels.consensusPipeline');
+				document.getElementById('sideBySideTitle').textContent = i18next.t('scene4.panels.sideBySide');
+				document.getElementById('validatorStakesTitle').textContent = i18next.t('scene4.panels.validatorStakes');
+				document.getElementById('consensusLogTitle').textContent = i18next.t('scene4.panels.consensusLog');
+				document.getElementById('headMode').textContent = i18next.t('scene4.panels.mode');
+				document.getElementById('headAvgLatency').textContent = i18next.t('scene4.panels.avgLatency');
+				document.getElementById('headAvgEnergy').textContent = i18next.t('scene4.panels.avgEnergy');
+				document.getElementById('headThroughput').textContent = i18next.t('scene4.panels.throughput');
+				document.getElementById('headRounds').textContent = i18next.t('scene4.panels.rounds');
+				document.getElementById('headRewards').textContent = i18next.t('scene4.panels.rewards');
+				document.getElementById('headSlashed').textContent = i18next.t('scene4.panels.slashed');
+				document.getElementById('powModeLabel').textContent = i18next.t('scene4.panels.powMode');
+				document.getElementById('posModeLabel').textContent = i18next.t('scene4.panels.posMode');
+				pipelineBase.forEach( stage => {
+					stage.label = i18next.t( stage.labelKey );
+				} );
+				document.getElementById('pipelineStep0').textContent = '1 ' + i18next.t('scene4.pipelineSteps.proposer');
+				document.getElementById('pipelineStep1').textContent = '2 ' + i18next.t('scene4.pipelineSteps.vote');
+				document.getElementById('pipelineStep2').textContent = '3 ' + i18next.t('scene4.pipelineSteps.finalize');
+				document.getElementById('legendTitle').textContent = i18next.t('scene4.panels.legendTitle');
+				document.getElementById('legendDescription').innerHTML = i18next.t('scene4.panels.legendDescription');
+				document.getElementById('legendVrText').textContent = i18next.t('scene4.panels.legendVrText');
+			}
+
 			function buildArena() {
-
 				const group = new THREE.Group();
-
 				const platform = new THREE.Mesh(
 					new THREE.CylinderGeometry( 6.4, 7.2, 1.5, 54 ),
 					new THREE.MeshStandardMaterial( {
@@ -1970,49 +2148,49 @@
 				const totals = getTotals();
 				const profile = getActiveProfileConfig();
 
-				ui.modeValue.textContent = modeConfigs[ state.mode ].label;
-				ui.profileValue.textContent = profile.label;
-				ui.networkValue.textContent = state.partitionActive ? 'Partitioned / Fork Risk' : 'Connected';
+				ui.modeValue.textContent = i18next.t('scene4.indicators.mode') + ': ' + modeConfigs[ state.mode ].label;
+				ui.profileValue.textContent = i18next.t('scene4.indicators.profile') + ': ' + profile.label;
+				ui.networkValue.textContent = state.partitionActive ? i18next.t('scene4.indicators.networkPartitioned') : i18next.t('scene4.indicators.networkConnected');
 				ui.stageValue.textContent = state.roundInProgress
 					? `${state.stageLabel} (${Math.floor( state.stageProgress * 100 )}%)`
 					: `${state.stageLabel} (${Math.floor( state.stageProgress * 100 )}%)`;
-				ui.economyValue.textContent = `Rewards ${state.totalRewards.toFixed( 2 )} | Slashed ${state.totalSlashed.toFixed( 2 )}`;
+				ui.economyValue.textContent = `${i18next.t('scene4.indicators.rewards')} ${state.totalRewards.toFixed( 2 )} | ${i18next.t('scene4.indicators.slashed')} ${state.totalSlashed.toFixed( 2 )}`;
 				ui.eventValue.textContent = state.event;
-				ui.metricsValue.textContent = `Rounds: ${totals.rounds} | Accepted: ${totals.approved} | Rejected: ${totals.rejected}`;
+				ui.metricsValue.textContent = `${i18next.t('scene4.indicators.rounds')}: ${totals.rounds} | ${i18next.t('scene4.indicators.accepted')}: ${totals.approved} | ${i18next.t('scene4.indicators.rejected')}: ${totals.rejected}`;
 				ui.roundValue.textContent = state.roundInProgress ? `#${state.roundIndex} (${Math.floor( state.roundProgress * 100 )}%)` : `#${state.roundIndex}`;
 				ui.validatorValue.textContent = current ? current.label : 'none';
-				ui.pipelineMeta.textContent = state.roundInProgress ? `Stage ${state.stageIndex + 1}/3` : `Stage ${Math.max( state.stageIndex + 1, 0 )}/3`;
+				ui.pipelineMeta.textContent = state.roundInProgress ? `${i18next.t('scene4.indicators.stage')} ${state.stageIndex + 1}/3` : `${i18next.t('scene4.indicators.stage')} ${Math.max( state.stageIndex + 1, 0 )}/3`;
 				ui.pipelineProgressFill.style.inlineSize = `${Math.floor( state.roundProgress * 100 )}%`;
 
 				if ( state.roundInProgress ) {
 
 					const elapsed = ( performance.now() - state.roundStartMs ) / 1000;
-					ui.roundTimerValue.textContent = `Target ${state.roundDuration.toFixed( 1 )}s | Elapsed ${elapsed.toFixed( 1 )}s | Energy ${state.roundEnergy.toFixed( 1 )} | Compute ${state.roundCompute.toFixed( 1 )}`;
+					ui.roundTimerValue.textContent = `${i18next.t('scene4.indicators.target')} ${state.roundDuration.toFixed( 1 )}s | ${i18next.t('scene4.indicators.elapsed')} ${elapsed.toFixed( 1 )}s | ${i18next.t('scene4.indicators.energy')} ${state.roundEnergy.toFixed( 1 )} | ${i18next.t('scene4.indicators.compute')} ${state.roundCompute.toFixed( 1 )}`;
 
 				} else {
 
-					ui.roundTimerValue.textContent = `Latency ${state.lastRoundLatency.toFixed( 1 )}s | Energy ${state.lastRoundEnergy.toFixed( 1 )} | Compute ${state.lastRoundCompute.toFixed( 1 )} | Reward ${state.lastRoundReward.toFixed( 2 )} | Slash ${state.lastRoundSlash.toFixed( 2 )}`;
+					ui.roundTimerValue.textContent = `${i18next.t('scene4.indicators.latency')} ${state.lastRoundLatency.toFixed( 1 )}s | ${i18next.t('scene4.indicators.energy')} ${state.lastRoundEnergy.toFixed( 1 )} | ${i18next.t('scene4.indicators.compute')} ${state.lastRoundCompute.toFixed( 1 )} | ${i18next.t('scene4.indicators.Reward')} ${state.lastRoundReward.toFixed( 2 )} | ${i18next.t('scene4.indicators.Slash')} ${state.lastRoundSlash.toFixed( 2 )}`;
 
 				}
 
 				if ( state.roundInProgress ) {
 
-					ui.stateBadge.textContent = 'PENDING';
+					ui.stateBadge.textContent = i18next.t('scene4.indicators.statusPending');
 					ui.stateBadge.className = 'badge pending';
 
 				} else if ( state.decision === 'valid' ) {
 
-					ui.stateBadge.textContent = 'VALID';
+					ui.stateBadge.textContent = i18next.t('scene4.indicators.statusValid');
 					ui.stateBadge.className = 'badge valid';
 
 				} else if ( state.decision === 'invalid' ) {
 
-					ui.stateBadge.textContent = 'INVALID';
+					ui.stateBadge.textContent = i18next.t('scene4.indicators.statusInvalid');
 					ui.stateBadge.className = 'badge invalid';
 
 				} else {
 
-					ui.stateBadge.textContent = 'PENDING';
+					ui.stateBadge.textContent = i18next.t('scene4.indicators.statusPending');
 					ui.stateBadge.className = 'badge pending';
 
 				}
@@ -2047,9 +2225,9 @@
 
 			function autoRunButtonText() {
 
-				ui.autoRunButton.textContent = state.autoRun ? 'Auto Run: On' : 'Auto Run: Off';
-				ui.profileButton.textContent = `Profile: ${getActiveProfileConfig().label}`;
-				ui.partitionButton.textContent = `Partition: ${state.partitionActive ? 'On' : 'Off'}`;
+				ui.autoRunButton.textContent = state.autoRun ? i18next.t('scene4.indicators.autoRunOn') : i18next.t('scene4.indicators.autoRunOff');
+				ui.profileButton.textContent = `${i18next.t('scene4.indicators.profile')}: ${getActiveProfileConfig().label}`;
+				ui.partitionButton.textContent = `${i18next.t('scene4.indicators.partition')}: ${state.partitionActive ? i18next.t('scene4.indicators.partitionOn') : i18next.t('scene4.indicators.partitionOff')}`;
 
 			}
 
@@ -2066,14 +2244,14 @@
 
 				ui.powLatencyValue.textContent = `${powAvgLatency.toFixed( 1 )}s`;
 				ui.powEnergyValue.textContent = powAvgEnergy.toFixed( 1 );
-				ui.powThroughputValue.textContent = `${calculateThroughput( 'pow' ).toFixed( 1 )} blk/min`;
+				ui.powThroughputValue.textContent = `${calculateThroughput( 'pow' ).toFixed( 1 )} ${i18next.t('scene4.indicators.blocksPerMinute')}`;
 				ui.powRoundsValue.textContent = String( powRounds );
 				ui.powRewardValue.textContent = modeMetrics.pow.rewards.toFixed( 2 );
 				ui.powSlashValue.textContent = modeMetrics.pow.slashed.toFixed( 2 );
 
 				ui.posLatencyValue.textContent = `${posAvgLatency.toFixed( 1 )}s`;
 				ui.posEnergyValue.textContent = posAvgEnergy.toFixed( 1 );
-				ui.posThroughputValue.textContent = `${calculateThroughput( 'pos' ).toFixed( 1 )} blk/min`;
+				ui.posThroughputValue.textContent = `${calculateThroughput( 'pos' ).toFixed( 1 )} ${i18next.t('scene4.indicators.blocksPerMinute')}`;
 				ui.posRoundsValue.textContent = String( posRounds );
 				ui.posRewardValue.textContent = modeMetrics.pos.rewards.toFixed( 2 );
 				ui.posSlashValue.textContent = modeMetrics.pos.slashed.toFixed( 2 );
@@ -2082,7 +2260,7 @@
 
 			function refreshStakeList() {
 
-				ui.stakeMeta.textContent = `${validators.length} nodes`;
+				ui.stakeMeta.textContent = `${validators.length} ${i18next.t('scene4.indicators.nodes')}`;
 				ui.stakeList.innerHTML = '';
 
 				for ( const validator of validators ) {
@@ -2090,7 +2268,7 @@
 					const item = document.createElement( 'li' );
 					item.classList.toggle( 'selected', validator.id === state.selectedValidatorId );
 					item.classList.toggle( 'winner', validator.id === state.currentValidatorId );
-					item.textContent = `${validator.label} | stake ${validator.stake.toFixed( 1 )} | hash ${validator.power.toFixed( 1 )} | reward ${validator.rewards.toFixed( 2 )}`;
+					item.textContent = `${validator.label} | ${i18next.t('scene4.indicators.stake')} ${validator.stake.toFixed( 1 )} | ${i18next.t('scene4.indicators.hash')} ${validator.power.toFixed( 1 )} | ${i18next.t('scene4.indicators.reward')} ${validator.rewards.toFixed( 2 )}`;
 					ui.stakeList.appendChild( item );
 
 				}
@@ -2128,7 +2306,7 @@
 
 				if ( panelState.statusLabel ) {
 
-					const statusText = state.roundInProgress ? 'RUNNING' : state.decision.toUpperCase();
+					const statusText = state.roundInProgress ? i18next.t('scene4.indicators.running') : state.decision.toUpperCase();
 					panelState.statusLabel.redraw( `${modeConfigs[ state.mode ].label} ${profile.label} | ${statusText}` );
 
 				}
@@ -2136,27 +2314,27 @@
 				if ( panelState.roundLabel ) {
 
 					const roundText = state.roundInProgress
-						? `Round #${state.roundIndex}: ${state.stageLabel} ${Math.floor( state.stageProgress * 100 )}%`
-						: `Round #${state.roundIndex}`;
+						? `${i18next.t('scene4.indicators.round')} #${state.roundIndex}: ${state.stageLabel} ${Math.floor( state.stageProgress * 100 )}%`
+						: `${i18next.t('scene4.indicators.round')} #${state.roundIndex}`;
 					panelState.roundLabel.redraw( roundText );
 
 				}
 
 				if ( panelState.selectedLabel ) {
 
-					panelState.selectedLabel.redraw( `Selected: ${selected ? selected.label : 'none'}` );
+					panelState.selectedLabel.redraw( `${i18next.t('scene4.indicators.selected')}: ${selected ? selected.label : 'none'}` );
 
 				}
 
 				if ( panelState.metricsLabel ) {
 
-					panelState.metricsLabel.redraw( `PoW ${calculateThroughput( 'pow' ).toFixed( 1 )} blk/min | PoS ${calculateThroughput( 'pos' ).toFixed( 1 )} blk/min | R ${state.totalRewards.toFixed( 1 )} S ${state.totalSlashed.toFixed( 1 )}` );
+					panelState.metricsLabel.redraw( `PoW ${calculateThroughput( 'pow' ).toFixed( 1 )} ${i18next.t('scene4.indicators.blocksPerMinute')} | PoS ${calculateThroughput( 'pos' ).toFixed( 1 )} ${i18next.t('scene4.indicators.blocksPerMinute')} | R ${state.totalRewards.toFixed( 1 )} S ${state.totalSlashed.toFixed( 1 )}` );
 
 				}
 
 				if ( panelState.auditLabel ) {
 
-					panelState.auditLabel.redraw( `Log: ${audit.entries.length} events` );
+					panelState.auditLabel.redraw( `${i18next.t('scene4.indicators.log')}: ${audit.entries.length} ${i18next.t('scene4.indicators.events')}` );
 
 				}
 

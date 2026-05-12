@@ -1,0 +1,211 @@
+{
+  "scene1": {
+    "title": "Scene 1: Architecture Comparison",
+    "description": "Explore the fundamental differences between centralized and decentralized systems.<br>Walk through the Bank City and Blockchain City to understand how trust and control are distributed.",
+    "buttons": {
+      "switchToBank": "Switch to Bank City",
+      "switchToBlockchain": "Switch to Blockchain City",
+      "hidePanel": "Hide Panel (H)"
+    },
+    "indicators": {
+      "currentCity": "Current City",
+      "trustModel": "Trust Model",
+      "controlModel": "Control Model",
+      "failurePoints": "Failure Points",
+      "bankCity": "Bank City",
+      "blockchainCity": "Blockchain City",
+      "centralized": "Centralized",
+      "decentralized": "Decentralized",
+      "singlePoint": "Single Point of Failure",
+      "distributed": "Distributed Trust"
+    },
+    "legend": {
+      "title": "Legend:",
+      "bank": "<strong>Bank City:</strong> Traditional centralized system with a central authority managing all transactions.",
+      "blockchain": "<strong>Blockchain City:</strong> Decentralized network where trust is distributed across many nodes.",
+      "vr": "<strong>VR:</strong> Use controller ray + trigger to switch cities and explore."
+    }
+  },
+  "scene2": {
+    "title": "Scene 2: Block Integrity Lab",
+    "description": "Inspect block fields, tamper one transaction, and watch downstream blocks fail.<br>Then remint to restore chain integrity.",
+    "buttons": {
+      "selectPrev": "Select Previous Block",
+      "selectNext": "Select Next Block",
+      "applyTamper": "Apply Tamper",
+      "randomTamper": "Random Tamper",
+      "restoreTx": "Restore Block Tx",
+      "remint": "Remint Chain",
+      "reset": "Reset Chain",
+      "restartTutorial": "Restart Tutorial",
+      "returnToLive": "Return to Live",
+      "hidePanel": "Hide Panel (H)"
+    },
+    "indicators": {
+      "selected": "Selected",
+      "status": "Status",
+      "causalEvent": "Causal Event",
+      "metrics": "Metrics",
+      "valid": "VALID",
+      "invalid": "INVALID"
+    },
+    "inspector": {
+      "title": "Integrity Inspector",
+      "selectBlock": "Select a block",
+      "expectedPrevHash": "Expected prevHash",
+      "actualPrevHash": "Actual prevHash",
+      "mismatch": "Mismatch",
+      "noMismatch": "No mismatch",
+      "reason": "Reason",
+      "chainIntact": "Chain linkage is intact."
+    },
+    "tutorial": {
+      "title": "Guided Tutorial",
+      "step": "Step",
+      "of": "/",
+      "steps": [
+        "Select a non-genesis block (#1 and above).",
+        "Edit TX and apply tamper to break the chain.",
+        "Select the first broken block to inspect the mismatch.",
+        "Recover integrity with Remint Chain or Reset Chain."
+      ]
+    },
+    "timeline": {
+      "label": "Timeline Replay",
+      "live": "LIVE"
+    },
+    "legend": {
+      "title": "Legend:",
+      "description": "Green blocks are valid, red blocks are invalid.<br>Connectors turn red where chain linkage is broken.<br><strong>VR:</strong> Use controller ray + trigger to select blocks and press panel controls."
+    }
+  },
+  "scene3": {
+    "title": "Scene 3: Cryptographic Keys",
+    "description": "Three-step verification: key format, ownership, signature.<br>Challenge-response uses a rotating nonce and derived signature.",
+    "buttons": {
+      "ownerAlice": "Owner: Alice",
+      "ownerBob": "Owner: Bob",
+      "actorEve": "Actor: Eve",
+      "verify": "Verify",
+      "useCorrectKey": "Use Correct Key",
+      "useWrongKey": "Use Wrong Key",
+      "clearInput": "Clear Input",
+      "resetVault": "Reset Vault"
+    },
+    "indicators": {
+      "actor": "Actor",
+      "challengeNonce": "Challenge Nonce",
+      "derivedSignature": "Derived Signature",
+      "pipeline": "Pipeline",
+      "decision": "Decision",
+      "reason": "Reason",
+      "metrics": "Metrics"
+    },
+    "panels": {
+      "keyConsole": "Key Console",
+      "auditLog": "Audit Log"
+    },
+    "legend": {
+      "title": "Legend:",
+      "description": "Green means transaction approved and vault unlocks.<br>Red means access denied due to invalid private key.<br><strong>VR:</strong> Use controller ray + trigger on panel buttons and actor terminals."
+    }
+  },
+  "scene4": {
+    "title": "Scene 4: Consensus Arena",
+    "description": "Compare Proof of Work and Proof of Stake in one arena.<br>PoW is slower and energy-heavy, PoS picks validators by stake and finalizes faster.",
+    "buttons": {
+      "modePow": "Mode: PoW",
+      "modePos": "Mode: PoS",
+      "startRound": "Start Round",
+      "profile": "Profile: Learning",
+      "partition": "Partition: Off",
+      "autoRun": "Auto Run: Off",
+      "randomizeStakes": "Randomize Stakes",
+      "rebalancePower": "Rebalance Hash Power",
+      "boostStake": "Boost Selected Stake",
+      "resetStats": "Reset Stats",
+      "toggleHud": "Toggle HUD"
+    },
+    "indicators": {
+      "mode": "Mode",
+      "profile": "Profile",
+      "network": "Network",
+      "status": "Status",
+      "round": "Round",
+      "pipelineStage": "Pipeline Stage",
+      "validator": "Validator",
+      "roundMetrics": "Round Metrics",
+      "economy": "Economy",
+      "summary": "Summary",
+      "event": "Event",
+      "networkConnected": "Connected",
+      "networkPartitioned": "Partitioned / Fork Risk",
+      "statusPending": "PENDING",
+      "statusValid": "VALID",
+      "statusInvalid": "INVALID",
+      "stageIdle": "Idle",
+      "autoRunOn": "Auto Run: On",
+      "autoRunOff": "Auto Run: Off",
+      "partitionOn": "On",
+      "partitionOff": "Off",
+      "partition": "Partition",
+      "rewards": "Rewards",
+      "slashed": "Slashed",
+      "rounds": "Rounds",
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "target": "Target",
+      "elapsed": "Elapsed",
+      "energy": "Energy",
+      "compute": "Compute",
+      "latency": "Latency",
+      "reward": "Reward",
+      "slash": "Slash",
+      "stage": "Stage",
+      "nodes": "nodes",
+      "stake": "stake",
+      "hash": "hash",
+      "reward": "reward",
+      "blocksPerMinute": "blk/min",
+      "running": "RUNNING",
+      "selected": "Selected",
+      "round": "Round",
+      "log": "Log",
+      "events": "events",
+      "Reward": "Reward",
+      "Slash": "Slash"
+    },
+    "panels": {
+      "consensusPipeline": "Consensus Pipeline",
+      "validatorStakes": "Validator Stakes and Hash Power",
+      "consensusLog": "Consensus Log",
+      "sideBySide": "PoW vs PoS Side-by-Side",
+      "mode": "Mode",
+      "avgLatency": "Avg Latency",
+      "avgEnergy": "Avg Energy",
+      "throughput": "Throughput",
+      "rounds": "Rounds",
+      "rewards": "Rewards",
+      "slashed": "Slashed",
+      "powMode": "Proof of Work",
+      "posMode": "Proof of Stake",
+      "legendTitle": "Legend:",
+      "legendDescription": "Green means block accepted, red means consensus failed.<br>In PoW winner is weighted by hash power; in PoS by validator stake and can be slashed.<br>Partition mode can create fork pressure and quorum failures.",
+      "legendVrText": "Use controller ray + trigger on panel buttons or validator nodes.",
+      "pipelineSteps": {
+        "proposer": "Proposer",
+        "vote": "Gossip/Vote",
+        "finalize": "Finalization"
+      }
+    },
+    "legend": {
+      "title": "Legend:",
+      "description": "Blue nodes are validators, green are proposers.<br>Yellow connections show active consensus communication.<br><strong>VR:</strong> Use controller ray + trigger to interact with nodes and controls."
+    }
+  },
+  "common": {
+    "language": "Language",
+    "english": "English",
+    "russian": "Русский"
+  }
+}

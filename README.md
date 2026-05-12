@@ -25,6 +25,16 @@ Build an educational 3D/VR experience that demonstrates:
 2. Run local development server:
    npm run dev
 
+## Internationalization (i18n)
+The project supports English (EN) and Russian (RU) languages.
+
+- **Language Toggle**: Use the "Language" button in the UI to switch between EN and RU in real-time.
+- **Persistent Language**: Your language preference is saved in localStorage and persists across sessions.
+- **Auto-Detection**: The app automatically detects your browser language on first visit (fallback to EN).
+- **Fallback**: If a translation is missing, it falls back to English.
+
+Translation files are located in `locales/en.json` and `locales/ru.json`.
+
 ## Repository Notes
 - This project was detached from the previous upstream repository metadata.
 - Source folders are kept intact to avoid breaking functionality.
