@@ -217,48 +217,84 @@
 					grid-template-columns: 1fr;
 				}
 			}
+
+			.language-switcher {
+				position: fixed;
+				inset-block-end: 16px;
+				inset-inline-end: 16px;
+				z-index: 6;
+				display: inline-flex;
+				align-items: center;
+				gap: 8px;
+				padding: 6px 10px;
+				border-radius: 999px;
+				border: 1px solid rgba( 123, 199, 255, 0.4 );
+				background: rgba( 11, 32, 48, 0.82 );
+				backdrop-filter: blur( 4px );
+				color: #eaf7ff;
+				font-size: 12px;
+				font-weight: 600;
+				letter-spacing: 0.01em;
+			}
+
+			.language-switcher select {
+				background: rgba( 18, 46, 68, 0.95 );
+				border: 1px solid rgba( 123, 199, 255, 0.55 );
+				color: inherit;
+				border-radius: 999px;
+				padding: 4px 8px;
+				font-size: 12px;
+				cursor: pointer;
+			}
 		</style>
 	</head>
 	<body>
 		<div id="hud">
-			<h2>Scene 1: Architecture Comparison</h2>
-			<p>
+			<h2 data-i18n="scene.title">Scene 1: Architecture Comparison</h2>
+			<p data-i18n-html="scene.description">
 				Centralized mode uses one central server.<br>
 				Decentralized mode uses distributed nodes.
 			</p>
 			<div class="toolbar">
-				<button id="switchModeButton">Switch to Decentralized</button>
-				<button id="centralServerButton">Disable Central Server</button>
-				<button id="decentralizedNodeButton">Disable Random Node</button>
-				<button id="resetButton">Reset Network</button>
+				<button id="switchModeButton" data-i18n="buttons.switchToDecentralized">Switch to Decentralized</button>
+				<button id="centralServerButton" data-i18n="buttons.disableCentral">Disable Central Server</button>
+				<button id="decentralizedNodeButton" data-i18n="buttons.disableNode">Disable Random Node</button>
+				<button id="resetButton" data-i18n="buttons.reset">Reset Network</button>
 			</div>
 			<div class="toolbar secondary">
-				<button id="ddosButton">Trigger DDoS</button>
-				<button id="fireButton">Trigger Fire Event</button>
-				<button id="segmentButton">Cut Network Segment</button>
-				<button id="recoverButton">Recover System</button>
+				<button id="ddosButton" data-i18n="buttons.ddos">Trigger DDoS</button>
+				<button id="fireButton" data-i18n="buttons.fire">Trigger Fire Event</button>
+				<button id="segmentButton" data-i18n="buttons.segment">Cut Network Segment</button>
+				<button id="recoverButton" data-i18n="buttons.recover">Recover System</button>
 			</div>
 			<div class="indicators">
-				<span>Mode</span>
+				<span data-i18n="labels.mode">Mode</span>
 				<span class="value" id="modeValue">Centralized (Bank City)</span>
-				<span>State</span>
+				<span data-i18n="labels.state">State</span>
 				<span><span class="badge valid" id="stateBadge">VALID</span></span>
-				<span>Event</span>
+				<span data-i18n="labels.event">Event</span>
 				<span class="value" id="eventValue">Network stable. Transactions are flowing.</span>
 			</div>
 			<div class="timeline">
 				<div class="timeline-header">
-					<span class="timeline-label">Timeline Replay</span>
+					<span class="timeline-label" data-i18n="labels.timeline">Timeline Replay</span>
 					<span id="timelineMeta">LIVE</span>
 				</div>
 				<input id="timelineSlider" type="range" min="0" max="0" step="1" value="0">
-				<button id="timelineLiveButton">Return to Live</button>
+				<button id="timelineLiveButton" data-i18n="buttons.returnLive">Return to Live</button>
 			</div>
-			<div class="legend">
+			<div class="legend" data-i18n-html="legend.text">
 				<strong>Legend:</strong> Green nodes are online. Red nodes are offline.<br>
 				Bright links indicate active data transfer.<br>
 				<strong>VR:</strong> Use controller ray + trigger on 3D panel or directly on nodes.
 			</div>
+		</div>
+		<div id="languageSwitcher" class="language-switcher">
+			<span data-i18n="language.label">Language</span>
+			<select id="languageSelect" aria-label="Language" data-i18n-aria-label="language.selectAria">
+				<option value="en">EN</option>
+				<option value="ru">RU</option>
+			</select>
 		</div>
 		<button id="hudToggleButton" class="hud-toggle" type="button" aria-controls="hud" aria-pressed="false">Hide Panel (H)</button>
 
@@ -291,6 +327,7 @@
 				controllers: [],
 				interactiveTargets: [],
 				buttons: {},
+				titleLabel: null,
 				statusLabel: null,
 				panel: null
 			};
@@ -302,7 +339,10 @@
 				incidentType: 'none',
 				fireTargetNode: null,
 				timelineIndex: - 1,
-				hudVisible: true
+				hudVisible: true,
+				uiValid: true,
+				eventKey: 'centralOnline',
+				eventParams: {}
 			};
 
 			const history = {
@@ -341,14 +381,365 @@
 				group: new THREE.Group(),
 				nodes: [],
 				routes: [],
-				centralNode: null
+				centralNode: null,
+				namePlate: null
 			};
 
 			const decentralized = {
 				group: new THREE.Group(),
 				nodes: [],
-				routes: []
+				routes: [],
+				namePlate: null
 			};
+
+			const languageState = {
+				current: 'en',
+				storageKey: 'vr_lang'
+			};
+
+			const i18n = {
+				en: {
+					language: {
+						label: 'Language',
+						selectAria: 'Select language'
+					},
+					scene: {
+						pageTitle: 'three.js webxr - blockchain architecture scene 1',
+						title: 'Scene 1: Architecture Comparison',
+						description: 'Centralized mode uses one central server.<br>Decentralized mode uses distributed nodes.'
+					},
+					buttons: {
+						switchToDecentralized: 'Switch to Decentralized',
+						switchToCentralized: 'Switch to Centralized',
+						disableCentral: 'Disable Central Server',
+						restoreCentral: 'Restore Central Server',
+						disableNode: 'Disable Random Node',
+						reset: 'Reset Network',
+						ddos: 'Trigger DDoS',
+						fire: 'Trigger Fire Event',
+						segment: 'Cut Network Segment',
+						recover: 'Recover System',
+						returnLive: 'Return to Live'
+					},
+					labels: {
+						mode: 'Mode',
+						state: 'State',
+						event: 'Event',
+						timeline: 'Timeline Replay'
+					},
+					legend: {
+						text: '<strong>Legend:</strong> Green nodes are online. Red nodes are offline.<br>Bright links indicate active data transfer.<br><strong>VR:</strong> Use controller ray + trigger on 3D panel or directly on nodes.'
+					},
+					status: {
+						valid: 'VALID',
+						invalid: 'INVALID'
+					},
+					mode: {
+						centralized: 'Centralized (Bank City)',
+						decentralized: 'Decentralized (Blockchain City)'
+					},
+					timeline: {
+						live: 'LIVE',
+						liveSnapshot: 'LIVE | snapshot {count}/{count}',
+						snapshot: 'Snapshot {index}/{count} | {reason}',
+						vrLive: 'Timeline: LIVE',
+						vrPercent: 'Timeline: {percent}%'
+					},
+					reason: {
+						state: 'State',
+						initial: 'Initial state',
+						'node interaction': 'Node interaction',
+						ddos: 'DDoS',
+						fire: 'Fire',
+						segment: 'Segment cut',
+						recovered: 'Recovered',
+						'switch mode': 'Mode switched',
+						'toggle central': 'Central server toggled',
+						'disable node': 'Node disabled',
+						reset: 'Network reset'
+					},
+					event: {
+						centralOnline: 'Central server is online. All transaction paths are operational.',
+						centralOffline: 'Central server offline. Entire system is halted (single point of failure).',
+						nodesOnline: 'All nodes online. Distributed traffic is stable.',
+						nodeOffline: 'Node {node} is offline. Network remains operational.',
+						networkPartition: 'Network partition detected. Connectivity degraded.',
+						ddos: 'DDoS attack: packet storm and congestion are degrading consensus stability.',
+						fireCentral: 'Fire at the central server: processing core damaged and traffic interrupted.',
+						fireDecentral: 'Fire at decentralized node {node}. Mesh reroutes around damaged zone.',
+						segmentCentral: 'Segment cut simulation is active. Switch to decentralized mode to see partition effects.',
+						segmentConnected: 'Segment cut: cross-zone links removed but core network still partially connected.',
+						segmentPartition: 'Segment cut: partition detected between network zones.',
+						clientSelected: 'Client selected. Disable the central server to demonstrate single point of failure.'
+					},
+					vr: {
+						title: 'VR NETWORK CONTROL',
+						switchDecentralized: 'Switch: Decentralized',
+						switchCentralized: 'Switch: Centralized',
+						centralDisable: 'Central Server: Disable',
+						centralRestore: 'Central Server: Restore',
+						disableNode: 'Disable Random Node',
+						reset: 'Reset Network',
+						ddos: 'Trigger DDoS',
+						fire: 'Trigger Fire',
+						segment: 'Cut Segment',
+						recover: 'Recover System'
+					},
+					plate: {
+						centralized: 'BANK CITY / CENTRALIZED',
+						decentralized: 'BLOCKCHAIN CITY / DECENTRALIZED'
+					},
+					hudToggle: {
+						hide: 'Hide Panel (H)',
+						show: 'Show Panel (H)'
+					}
+				},
+				ru: {
+					language: {
+						label: 'Язык',
+						selectAria: 'Выбор языка'
+					},
+					scene: {
+						pageTitle: 'three.js webxr - архитектура блокчейна, сцена 1',
+						title: 'Сцена 1: Сравнение архитектур',
+						description: 'Централизованный режим использует один центральный сервер.<br>Децентрализованный режим использует распределенные узлы.'
+					},
+					buttons: {
+						switchToDecentralized: 'Переключить на децентрализованную',
+						switchToCentralized: 'Переключить на централизованную',
+						disableCentral: 'Отключить центральный сервер',
+						restoreCentral: 'Восстановить центральный сервер',
+						disableNode: 'Отключить случайный узел',
+						reset: 'Сбросить сеть',
+						ddos: 'Запустить DDoS',
+						fire: 'Смоделировать пожар',
+						segment: 'Разрезать сегмент сети',
+						recover: 'Восстановить систему',
+						returnLive: 'Вернуться к LIVE'
+					},
+					labels: {
+						mode: 'Режим',
+						state: 'Состояние',
+						event: 'Событие',
+						timeline: 'Повтор по времени'
+					},
+					legend: {
+						text: '<strong>Легенда:</strong> Зеленые узлы в сети. Красные узлы отключены.<br>Яркие линии показывают активную передачу данных.<br><strong>VR:</strong> Используйте луч контроллера + триггер на 3D-панели или прямо на узлах.'
+					},
+					status: {
+						valid: 'ВАЛИДНО',
+						invalid: 'НЕВАЛИДНО'
+					},
+					mode: {
+						centralized: 'Централизованная (Банк-Сити)',
+						decentralized: 'Децентрализованная (Блокчейн-Сити)'
+					},
+					timeline: {
+						live: 'LIVE',
+						liveSnapshot: 'LIVE | снимок {count}/{count}',
+						snapshot: 'Снимок {index}/{count} | {reason}',
+						vrLive: 'Таймлайн: LIVE',
+						vrPercent: 'Таймлайн: {percent}%'
+					},
+					reason: {
+						state: 'Состояние',
+						initial: 'Инициализация',
+						'node interaction': 'Взаимодействие с узлом',
+						ddos: 'DDoS',
+						fire: 'Пожар',
+						segment: 'Разрез сегмента',
+						recovered: 'Восстановление',
+						'switch mode': 'Смена режима',
+						'toggle central': 'Переключение центрального',
+						'disable node': 'Отключение узла',
+						reset: 'Сброс сети'
+					},
+					event: {
+						centralOnline: 'Центральный сервер в сети. Все маршруты транзакций работают.',
+						centralOffline: 'Центральный сервер отключен. Вся система остановлена (единая точка отказа).',
+						nodesOnline: 'Все узлы в сети. Распределенный трафик стабилен.',
+						nodeOffline: 'Узел {node} отключен. Сеть остается работоспособной.',
+						networkPartition: 'Обнаружена сегментация сети. Связность снижена.',
+						ddos: 'DDoS-атака: поток пакетов и перегрузка ухудшают стабильность консенсуса.',
+						fireCentral: 'Пожар на центральном сервере: ядро обработки повреждено, трафик прерван.',
+						fireDecentral: 'Пожар на децентрализованном узле {node}. Сетка маршрутизирует трафик в обход.',
+						segmentCentral: 'Симуляция разреза сегмента активна. Переключитесь в децентрализованный режим, чтобы увидеть эффект.',
+						segmentConnected: 'Разрез сегмента: межзонные связи удалены, но ядро сети частично связано.',
+						segmentPartition: 'Разрез сегмента: обнаружено разделение между зонами сети.',
+						clientSelected: 'Выбран клиентский узел. Отключите центральный сервер, чтобы показать единую точку отказа.'
+					},
+					vr: {
+						title: 'VR УПРАВЛЕНИЕ СЕТЬЮ',
+						switchDecentralized: 'Перекл.: децентр.',
+						switchCentralized: 'Перекл.: центр.',
+						centralDisable: 'Центр. сервер: выкл.',
+						centralRestore: 'Центр. сервер: вкл.',
+						disableNode: 'Отключить узел',
+						reset: 'Сброс сети',
+						ddos: 'DDoS',
+						fire: 'Пожар',
+						segment: 'Разрез сегм.',
+						recover: 'Восстановить'
+					},
+					plate: {
+						centralized: 'БАНК-СИТИ / ЦЕНТРАЛ.',
+						decentralized: 'БЛОКЧЕЙН-СИТИ / ДЕЦЕНТР.'
+					},
+					hudToggle: {
+						hide: 'Скрыть панель (H)',
+						show: 'Показать панель (H)'
+					}
+				}
+			};
+
+			let isSceneReady = false;
+
+			function getTranslationValue( key ) {
+
+				const segments = key.split( '.' );
+				let current = i18n[ languageState.current ];
+				for ( const segment of segments ) {
+
+					if ( ! current || typeof current !== 'object' ) return undefined;
+					current = current[ segment ];
+
+				}
+
+				return current;
+
+			}
+
+			function t( key, params = {} ) {
+
+				const base = getTranslationValue( key );
+				const fallback = (() => {
+
+					const segments = key.split( '.' );
+					let current = i18n.en;
+					for ( const segment of segments ) {
+
+						if ( ! current || typeof current !== 'object' ) return undefined;
+						current = current[ segment ];
+					}
+
+					return current;
+
+				})();
+
+				const template = typeof base === 'string' ? base : ( typeof fallback === 'string' ? fallback : key );
+				return template.replace( /\{(\w+)\}/g, ( match, token ) => {
+
+					if ( Object.prototype.hasOwnProperty.call( params, token ) ) {
+						return params[ token ];
+					}
+
+					return match;
+
+				} );
+
+			}
+
+			function applyTranslations() {
+
+				document.querySelectorAll( '[data-i18n]' ).forEach( ( node ) => {
+
+					const key = node.dataset.i18n;
+					node.textContent = t( key );
+
+				} );
+
+				document.querySelectorAll( '[data-i18n-html]' ).forEach( ( node ) => {
+
+					const key = node.dataset.i18nHtml;
+					node.innerHTML = t( key );
+
+				} );
+
+				document.querySelectorAll( '[data-i18n-aria-label]' ).forEach( ( node ) => {
+
+					const key = node.dataset.i18nAriaLabel;
+					node.setAttribute( 'aria-label', t( key ) );
+
+				} );
+
+				if ( centralized.namePlate && centralized.namePlate.userData.redraw ) {
+
+					centralized.namePlate.userData.redraw( t( 'plate.centralized' ) );
+
+				}
+
+				if ( decentralized.namePlate && decentralized.namePlate.userData.redraw ) {
+
+					decentralized.namePlate.userData.redraw( t( 'plate.decentralized' ) );
+
+				}
+
+				if ( ui && ui.hudToggleButton ) {
+
+					ui.hudToggleButton.textContent = state.hudVisible ? t( 'hudToggle.hide' ) : t( 'hudToggle.show' );
+
+				}
+
+			}
+
+			function setLanguage( nextLanguage, persist = true ) {
+
+				if ( ! i18n[ nextLanguage ] ) return;
+				languageState.current = nextLanguage;
+				document.documentElement.lang = nextLanguage;
+
+				if ( persist ) {
+
+					try {
+
+						localStorage.setItem( languageState.storageKey, nextLanguage );
+
+					} catch ( error ) {
+
+						console.warn( 'Language storage unavailable:', error );
+
+					}
+
+				}
+
+				const select = document.getElementById( 'languageSelect' );
+				if ( select ) select.value = nextLanguage;
+
+				applyTranslations();
+				document.title = t( 'scene.pageTitle' );
+
+				if ( isSceneReady ) {
+
+					updateNetworkState();
+					syncTimelineControls();
+
+				}
+
+			}
+
+			function initLanguageSwitcher() {
+
+				const select = document.getElementById( 'languageSelect' );
+				if ( ! select ) return;
+				let saved = null;
+
+				try {
+
+					saved = localStorage.getItem( languageState.storageKey );
+
+				} catch ( error ) {
+
+					saved = null;
+
+				}
+
+				const auto = navigator.language && navigator.language.toLowerCase().startsWith( 'ru' ) ? 'ru' : 'en';
+				const initial = i18n[ saved ] ? saved : auto;
+				select.value = initial;
+				select.addEventListener( 'change', () => setLanguage( select.value ) );
+				setLanguage( initial, false );
+
+			}
 
 			init();
 
@@ -433,10 +824,12 @@
 				window.addEventListener( 'keydown', onGlobalKeyDown );
 
 				toggleHudVisibility( true );
+				initLanguageSwitcher();
 
 				updateNetworkState();
 				recordHistorySnapshot( 'initial' );
 				syncTimelineControls();
+				isSceneReady = true;
 
 			}
 
@@ -480,9 +873,10 @@
 
 				}
 
-				const namePlate = createPlate( 'BANK CITY / CENTRALIZED' );
+				const namePlate = createPlate( t( 'plate.centralized' ) );
 				namePlate.position.set( 0, 0.1, - 13 );
 				group.add( namePlate );
+				centralized.namePlate = namePlate;
 
 			}
 
@@ -552,9 +946,10 @@
 
 				}
 
-				const namePlate = createPlate( 'BLOCKCHAIN CITY / DECENTRALIZED' );
+				const namePlate = createPlate( t( 'plate.decentralized' ) );
 				namePlate.position.set( 0, 0.1, - 15.2 );
 				group.add( namePlate );
+				decentralized.namePlate = namePlate;
 
 			}
 
@@ -798,18 +1193,19 @@
 				);
 				panel.add( body );
 
-				const title = createVrLabel( 'VR NETWORK CONTROL', 1024, 180, 4.2, 0.48, '#d7f4ff', 'rgba(20, 65, 92, 0.88)' );
+				const title = createVrLabel( t( 'vr.title' ), 1024, 180, 4.2, 0.48, '#d7f4ff', 'rgba(20, 65, 92, 0.88)' );
 				title.mesh.position.set( 0, 2.08, 0.08 );
 				panel.add( title.mesh );
+				vr.titleLabel = title;
 
-				vr.buttons.switchMode = createVrButton( 'Switch: Decentralized', 0x3a7ea3, switchMode );
-				vr.buttons.centralServer = createVrButton( 'Central Server: Disable', 0x8d6c30, toggleCentralServer );
-				vr.buttons.disableNode = createVrButton( 'Disable Random Node', 0x2d8f63, disableRandomNode );
-				vr.buttons.reset = createVrButton( 'Reset Network', 0x7a3d89, resetNetwork );
-				vr.buttons.ddos = createVrButton( 'Trigger DDoS', 0x8f3f3f, triggerDdosIncident );
-				vr.buttons.fire = createVrButton( 'Trigger Fire', 0xb35d2d, triggerFireIncident );
-				vr.buttons.segment = createVrButton( 'Cut Segment', 0x2f7f88, triggerSegmentIncident );
-				vr.buttons.recover = createVrButton( 'Recover System', 0x3f8b5e, recoverIncident );
+				vr.buttons.switchMode = createVrButton( t( 'vr.switchDecentralized' ), 0x3a7ea3, switchMode );
+				vr.buttons.centralServer = createVrButton( t( 'vr.centralDisable' ), 0x8d6c30, toggleCentralServer );
+				vr.buttons.disableNode = createVrButton( t( 'vr.disableNode' ), 0x2d8f63, disableRandomNode );
+				vr.buttons.reset = createVrButton( t( 'vr.reset' ), 0x7a3d89, resetNetwork );
+				vr.buttons.ddos = createVrButton( t( 'vr.ddos' ), 0x8f3f3f, triggerDdosIncident );
+				vr.buttons.fire = createVrButton( t( 'vr.fire' ), 0xb35d2d, triggerFireIncident );
+				vr.buttons.segment = createVrButton( t( 'vr.segment' ), 0x2f7f88, triggerSegmentIncident );
+				vr.buttons.recover = createVrButton( t( 'vr.recover' ), 0x3f8b5e, recoverIncident );
 
 				vr.buttons.switchMode.group.position.set( - 1.3, 1.42, 0.12 );
 				vr.buttons.centralServer.group.position.set( 1.3, 1.42, 0.12 );
@@ -973,7 +1369,7 @@
 				knob.position.set( track.position.x + trackWidth * 0.5, track.position.y, 0.09 );
 				group.add( knob );
 
-				const label = createVrLabel( 'Timeline: LIVE', 1024, 150, 4.0, 0.28, '#dcf5ff', 'rgba(17, 53, 76, 0.9)' );
+				const label = createVrLabel( t( 'timeline.vrLive' ), 1024, 150, 4.0, 0.28, '#dcf5ff', 'rgba(17, 53, 76, 0.9)' );
 				label.mesh.position.set( 0, 0.28, 0.08 );
 				group.add( label.mesh );
 
@@ -988,7 +1384,8 @@
 
 						slider.value = THREE.MathUtils.clamp( value, 0, 1 );
 						slider.knob.position.x = slider.track.position.x + ( slider.value - 0.5 ) * slider.trackWidth;
-						label.redraw( isLive ? 'Timeline: LIVE' : `Timeline: ${Math.round( slider.value * 100 )}%` );
+						const percent = Math.round( slider.value * 100 );
+						label.redraw( isLive ? t( 'timeline.vrLive' ) : t( 'timeline.vrPercent', { percent } ) );
 
 					}
 				};
@@ -1105,7 +1502,7 @@
 
 					} else {
 
-						setUiState( true, 'Client selected. Disable the central server to demonstrate single point of failure.' );
+						setUiState( true, 'clientSelected' );
 						updateVRPanelState();
 
 					}
@@ -1236,19 +1633,28 @@
 				canvas.height = 140;
 
 				const ctx = canvas.getContext( '2d' );
-				ctx.fillStyle = 'rgba(6, 24, 34, 0.82)';
-				ctx.fillRect( 0, 0, canvas.width, canvas.height );
-				ctx.strokeStyle = 'rgba(124, 214, 255, 0.85)';
-				ctx.lineWidth = 6;
-				ctx.strokeRect( 6, 6, canvas.width - 12, canvas.height - 12 );
-				ctx.font = '700 44px Segoe UI';
-				ctx.textAlign = 'center';
-				ctx.textBaseline = 'middle';
-				ctx.fillStyle = '#d7f2ff';
-				ctx.fillText( text, canvas.width / 2, canvas.height / 2 );
 
 				const texture = new THREE.CanvasTexture( canvas );
 				texture.colorSpace = THREE.SRGBColorSpace;
+
+				const redraw = ( nextText ) => {
+
+					ctx.clearRect( 0, 0, canvas.width, canvas.height );
+					ctx.fillStyle = 'rgba(6, 24, 34, 0.82)';
+					ctx.fillRect( 0, 0, canvas.width, canvas.height );
+					ctx.strokeStyle = 'rgba(124, 214, 255, 0.85)';
+					ctx.lineWidth = 6;
+					ctx.strokeRect( 6, 6, canvas.width - 12, canvas.height - 12 );
+					ctx.font = '700 44px Segoe UI';
+					ctx.textAlign = 'center';
+					ctx.textBaseline = 'middle';
+					ctx.fillStyle = '#d7f2ff';
+					ctx.fillText( nextText, canvas.width / 2, canvas.height / 2 );
+					texture.needsUpdate = true;
+
+				};
+
+				redraw( text );
 
 				const plate = new THREE.Mesh(
 					new THREE.PlaneGeometry( 9, 2 ),
@@ -1260,6 +1666,7 @@
 					} )
 				);
 				plate.rotation.x = - Math.PI / 2;
+				plate.userData.redraw = redraw;
 
 				return plate;
 
@@ -1966,7 +2373,7 @@
 
 					ui.timelineSlider.max = '0';
 					ui.timelineSlider.value = '0';
-					ui.timelineMeta.textContent = 'LIVE';
+					ui.timelineMeta.textContent = t( 'timeline.live' );
 					ui.timelineLiveButton.disabled = true;
 					if ( vr.timelineSlider ) vr.timelineSlider.setNormalized( 1, true );
 					return;
@@ -1981,13 +2388,14 @@
 
 				if ( state.timelineIndex === - 1 ) {
 
-					ui.timelineMeta.textContent = `LIVE | snapshot ${count}/${count}`;
+					ui.timelineMeta.textContent = t( 'timeline.liveSnapshot', { count } );
 					ui.timelineLiveButton.disabled = true;
 
 				} else {
 
-					const reason = history.entries[ activeIndex ].reason || 'state';
-					ui.timelineMeta.textContent = `Snapshot ${activeIndex + 1}/${count} | ${reason}`;
+					const reasonKey = history.entries[ activeIndex ].reason || 'state';
+					const reason = t( `reason.${reasonKey}` );
+					ui.timelineMeta.textContent = t( 'timeline.snapshot', { index: activeIndex + 1, count, reason } );
 					ui.timelineLiveButton.disabled = false;
 
 				}
@@ -2122,15 +2530,15 @@
 
 					}
 
-					ui.modeValue.textContent = 'Centralized (Bank City)';
+					ui.modeValue.textContent = t( 'mode.centralized' );
 
 					if ( state.centralOnline && state.incidentType !== 'fire' ) {
 
-						setUiState( true, 'Central server is online. All transaction paths are operational.' );
+						setUiState( true, 'centralOnline' );
 
 					} else {
 
-						setUiState( false, 'Central server offline. Entire system is halted (single point of failure).' );
+						setUiState( false, 'centralOffline' );
 
 					}
 
@@ -2152,19 +2560,19 @@
 					}
 
 					const connected = isDecentralizedNetworkConnected();
-					ui.modeValue.textContent = 'Decentralized (Blockchain City)';
+					ui.modeValue.textContent = t( 'mode.decentralized' );
 
 					if ( state.offlineDecentralizedNode === null ) {
 
-						setUiState( true, 'All nodes online. Distributed traffic is stable.' );
+						setUiState( true, 'nodesOnline' );
 
 					} else if ( connected ) {
 
-						setUiState( true, `Node ${state.offlineDecentralizedNode} is offline. Network remains operational.` );
+						setUiState( true, 'nodeOffline', { node: state.offlineDecentralizedNode } );
 
 					} else {
 
-						setUiState( false, 'Network partition detected. Connectivity degraded.' );
+						setUiState( false, 'networkPartition' );
 
 					}
 
@@ -2172,18 +2580,18 @@
 
 				if ( state.incidentType === 'ddos' ) {
 
-					setUiState( false, 'DDoS attack: packet storm and congestion are degrading consensus stability.' );
+					setUiState( false, 'ddos' );
 
 				} else if ( state.incidentType === 'fire' ) {
 
 					if ( isCentralized ) {
 
-						setUiState( false, 'Fire at the central server: processing core damaged and traffic interrupted.' );
+						setUiState( false, 'fireCentral' );
 
 					} else {
 
-						const targetLabel = state.fireTargetNode === null ? 'unknown' : state.fireTargetNode;
-						setUiState( false, `Fire at decentralized node ${targetLabel}. Mesh reroutes around damaged zone.` );
+						const targetLabel = state.fireTargetNode === null ? '-' : state.fireTargetNode;
+						setUiState( false, 'fireDecentral', { node: targetLabel } );
 
 					}
 
@@ -2191,21 +2599,21 @@
 
 					if ( isCentralized ) {
 
-						setUiState( false, 'Segment cut simulation is active. Switch to decentralized mode to see partition effects.' );
+						setUiState( false, 'segmentCentral' );
 
 					} else {
 
 						const connected = isDecentralizedNetworkConnected();
-						setUiState( false, connected ? 'Segment cut: cross-zone links removed but core network still partially connected.' : 'Segment cut: partition detected between network zones.' );
+						setUiState( false, connected ? 'segmentConnected' : 'segmentPartition' );
 
 					}
 
 				}
 
-				ui.switchModeButton.textContent = isCentralized ? 'Switch to Decentralized' : 'Switch to Centralized';
+				ui.switchModeButton.textContent = isCentralized ? t( 'buttons.switchToDecentralized' ) : t( 'buttons.switchToCentralized' );
 				ui.centralServerButton.disabled = ! isCentralized;
 				ui.decentralizedNodeButton.disabled = isCentralized;
-				ui.centralServerButton.textContent = state.centralOnline ? 'Disable Central Server' : 'Restore Central Server';
+				ui.centralServerButton.textContent = state.centralOnline ? t( 'buttons.disableCentral' ) : t( 'buttons.restoreCentral' );
 				ui.ddosButton.disabled = state.incidentType === 'ddos';
 				ui.fireButton.disabled = state.incidentType === 'fire';
 				ui.segmentButton.disabled = isCentralized;
@@ -2266,11 +2674,14 @@
 
 			}
 
-			function setUiState( isValid, eventText ) {
+			function setUiState( isValid, eventKey, eventParams = {} ) {
 
+				state.uiValid = isValid;
+				state.eventKey = eventKey;
+				state.eventParams = eventParams;
 				ui.stateBadge.className = isValid ? 'badge valid' : 'badge invalid';
-				ui.stateBadge.textContent = isValid ? 'VALID' : 'INVALID';
-				ui.eventValue.textContent = eventText;
+				ui.stateBadge.textContent = isValid ? t( 'status.valid' ) : t( 'status.invalid' );
+				ui.eventValue.textContent = t( `event.${eventKey}`, eventParams );
 
 			}
 
@@ -2279,8 +2690,15 @@
 				if ( ! vr.panel ) return;
 
 				const isCentralized = state.mode === 'centralized';
-				vr.buttons.switchMode.setText( isCentralized ? 'Switch: Decentralized' : 'Switch: Centralized' );
-				vr.buttons.centralServer.setText( state.centralOnline ? 'Central Server: Disable' : 'Central Server: Restore' );
+				vr.buttons.switchMode.setText( isCentralized ? t( 'vr.switchDecentralized' ) : t( 'vr.switchCentralized' ) );
+				vr.buttons.centralServer.setText( state.centralOnline ? t( 'vr.centralDisable' ) : t( 'vr.centralRestore' ) );
+				vr.buttons.disableNode.setText( t( 'vr.disableNode' ) );
+				vr.buttons.reset.setText( t( 'vr.reset' ) );
+				vr.buttons.ddos.setText( t( 'vr.ddos' ) );
+				vr.buttons.fire.setText( t( 'vr.fire' ) );
+				vr.buttons.segment.setText( t( 'vr.segment' ) );
+				vr.buttons.recover.setText( t( 'vr.recover' ) );
+				if ( vr.titleLabel ) vr.titleLabel.redraw( t( 'vr.title' ) );
 				vr.buttons.centralServer.setEnabled( isCentralized );
 				vr.buttons.disableNode.setEnabled( ! isCentralized );
 				vr.buttons.ddos.setEnabled( state.incidentType !== 'ddos' );
@@ -2289,7 +2707,7 @@
 				vr.buttons.recover.setEnabled( state.incidentType !== 'none' );
 
 				const summary = `${ui.stateBadge.textContent} | ${ui.modeValue.textContent}`;
-				vr.statusLabel.setText( `${summary} - ${ui.eventValue.textContent}`, ui.stateBadge.textContent === 'VALID' );
+				vr.statusLabel.setText( `${summary} - ${ui.eventValue.textContent}`, state.uiValid );
 
 				if ( vr.timelineSlider ) {
 
@@ -2315,7 +2733,7 @@
 
 				state.hudVisible = forceVisible === undefined ? ! state.hudVisible : forceVisible;
 				ui.hud.classList.toggle( 'is-hidden', ! state.hudVisible );
-				ui.hudToggleButton.textContent = state.hudVisible ? 'Hide Panel (H)' : 'Show Panel (H)';
+				ui.hudToggleButton.textContent = state.hudVisible ? t( 'hudToggle.hide' ) : t( 'hudToggle.show' );
 				ui.hudToggleButton.setAttribute( 'aria-pressed', String( ! state.hudVisible ) );
 
 			}

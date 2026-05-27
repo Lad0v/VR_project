@@ -288,76 +288,112 @@
 					grid-template-columns: 1fr;
 				}
 			}
+
+			.language-switcher {
+				position: fixed;
+				inset-block-end: 16px;
+				inset-inline-end: 16px;
+				z-index: 6;
+				display: inline-flex;
+				align-items: center;
+				gap: 8px;
+				padding: 6px 10px;
+				border-radius: 999px;
+				border: 1px solid rgba( 123, 199, 255, 0.4 );
+				background: rgba( 11, 32, 48, 0.82 );
+				backdrop-filter: blur( 4px );
+				color: #eaf7ff;
+				font-size: 12px;
+				font-weight: 600;
+				letter-spacing: 0.01em;
+			}
+
+			.language-switcher select {
+				background: rgba( 18, 46, 68, 0.95 );
+				border: 1px solid rgba( 123, 199, 255, 0.55 );
+				color: inherit;
+				border-radius: 999px;
+				padding: 4px 8px;
+				font-size: 12px;
+				cursor: pointer;
+			}
 		</style>
 	</head>
 	<body>
 		<div id="hud">
-			<h2>Scene 2: Block Integrity Lab</h2>
-			<p>
+			<h2 data-i18n="scene.title">Scene 2: Block Integrity Lab</h2>
+			<p data-i18n-html="scene.description">
 				Inspect block fields, tamper one transaction, and watch downstream blocks fail.<br>
 				Then remint to restore chain integrity.
 			</p>
 			<div class="toolbar">
-				<button id="selectPrevButton">Select Previous Block</button>
-				<button id="selectNextButton">Select Next Block</button>
+				<button id="selectPrevButton" data-i18n="buttons.selectPrev">Select Previous Block</button>
+				<button id="selectNextButton" data-i18n="buttons.selectNext">Select Next Block</button>
 			</div>
 			<div class="editor-row">
 				<input id="txInput" type="text" value="Transfer 90 TOK" maxlength="48" autocomplete="off" spellcheck="false">
-				<button id="applyTamperButton">Apply Tamper</button>
+				<button id="applyTamperButton" data-i18n="buttons.applyTamper">Apply Tamper</button>
 			</div>
 			<div class="toolbar">
-				<button id="randomTamperButton">Random Tamper</button>
-				<button id="restoreTxButton">Restore Block Tx</button>
-				<button id="remintButton">Remint Chain</button>
-				<button id="resetButton">Reset Chain</button>
+				<button id="randomTamperButton" data-i18n="buttons.randomTamper">Random Tamper</button>
+				<button id="restoreTxButton" data-i18n="buttons.restoreTx">Restore Block Tx</button>
+				<button id="remintButton" data-i18n="buttons.remint">Remint Chain</button>
+				<button id="resetButton" data-i18n="buttons.reset">Reset Chain</button>
 			</div>
 			<div class="indicators">
-				<span>Selected</span>
+				<span data-i18n="labels.selected">Selected</span>
 				<span class="value" id="selectedValue">Block #0</span>
-				<span>Status</span>
+				<span data-i18n="labels.status">Status</span>
 				<span><span class="badge valid" id="stateBadge">VALID</span></span>
-				<span>Causal Event</span>
+				<span data-i18n="labels.event">Causal Event</span>
 				<span class="value" id="eventValue">Chain is valid. Waiting for changes.</span>
-				<span>Metrics</span>
+				<span data-i18n="labels.metrics">Metrics</span>
 				<span class="value" id="metricsValue">Total: 0 | Valid: 0 | Invalid: 0 | First broken: none | Tamps: 0 | Last recover: n/a</span>
 			</div>
 			<div class="inspector">
 				<div class="panel-title">
-					<span>Integrity Inspector</span>
+					<span data-i18n="labels.inspector">Integrity Inspector</span>
 					<span id="inspectorStepHint">Select a block</span>
 				</div>
 				<div class="inspector-grid">
-					<span>Expected prevHash</span>
+					<span data-i18n="labels.expectedPrev">Expected prevHash</span>
 					<span class="value" id="expectedPrevValue">-</span>
-					<span>Actual prevHash</span>
+					<span data-i18n="labels.actualPrev">Actual prevHash</span>
 					<span class="value" id="actualPrevValue">-</span>
-					<span>Mismatch</span>
+					<span data-i18n="labels.mismatch">Mismatch</span>
 					<span class="value mismatch-ok" id="mismatchValue">No mismatch</span>
-					<span>Reason</span>
+					<span data-i18n="labels.reason">Reason</span>
 					<span class="value" id="mismatchReasonValue">Chain linkage is intact.</span>
 				</div>
 			</div>
 			<div class="tutorial">
 				<div class="panel-title">
-					<span>Guided Tutorial</span>
+					<span data-i18n="labels.tutorial">Guided Tutorial</span>
 					<span id="tutorialStepLabel">Step 1/4</span>
 				</div>
 				<p id="tutorialText">Select a non-genesis block (#1 and above).</p>
-				<button id="tutorialRestartButton">Restart Tutorial</button>
+				<button id="tutorialRestartButton" data-i18n="buttons.restartTutorial">Restart Tutorial</button>
 			</div>
 			<div class="timeline">
 				<div class="timeline-header">
-					<span class="timeline-label">Timeline Replay</span>
+					<span class="timeline-label" data-i18n="labels.timeline">Timeline Replay</span>
 					<span id="timelineMeta">LIVE</span>
 				</div>
 				<input id="timelineSlider" type="range" min="0" max="0" step="1" value="0">
-				<button id="timelineLiveButton">Return to Live</button>
+				<button id="timelineLiveButton" data-i18n="buttons.returnLive">Return to Live</button>
 			</div>
-			<div class="legend">
+			<div class="legend" data-i18n-html="legend.text">
 				<strong>Legend:</strong> Green blocks are valid, red blocks are invalid.<br>
 				Connectors turn red where chain linkage is broken.<br>
 				<strong>VR:</strong> Use controller ray + trigger to select blocks and press panel controls.
 			</div>
+		</div>
+		<div id="languageSwitcher" class="language-switcher">
+			<span data-i18n="language.label">Language</span>
+			<select id="languageSelect" aria-label="Language" data-i18n-aria-label="language.selectAria">
+				<option value="en">EN</option>
+				<option value="ru">RU</option>
+			</select>
 		</div>
 		<button id="hudToggleButton" class="hud-toggle" type="button" aria-controls="hud" aria-pressed="false">Hide Panel (H)</button>
 
@@ -395,6 +431,7 @@
 				controllers: [],
 				interactiveTargets: [],
 				buttons: {},
+				titleLabel: null,
 				statusLabel: null,
 				chainLabel: null,
 				timelineSlider: null,
@@ -407,7 +444,8 @@
 				selectedIndex: 2,
 				firstBrokenIndex: - 1,
 				timelineIndex: - 1,
-				lastAction: 'Chain initialized and valid.'
+				lastActionKey: 'chainInit',
+				lastActionParams: {}
 			};
 
 			const history = {
@@ -428,12 +466,447 @@
 				completed: false
 			};
 
-			const tutorialSteps = [
-				'Select a non-genesis block (#1 and above).',
-				'Edit TX and apply tamper to break the chain.',
-				'Select the first broken block to inspect the mismatch.',
-				'Recover integrity with Remint Chain or Reset Chain.'
-			];
+			const languageState = {
+				current: 'en',
+				storageKey: 'vr_lang'
+			};
+
+			const i18n = {
+				en: {
+					language: {
+						label: 'Language',
+						selectAria: 'Select language'
+					},
+					scene: {
+						pageTitle: 'three.js webxr - blockchain block integrity scene 2',
+						title: 'Scene 2: Block Integrity Lab',
+						description: 'Inspect block fields, tamper one transaction, and watch downstream blocks fail.<br>Then remint to restore chain integrity.'
+					},
+					buttons: {
+						selectPrev: 'Select Previous Block',
+						selectNext: 'Select Next Block',
+						applyTamper: 'Apply Tamper',
+						randomTamper: 'Random Tamper',
+						restoreTx: 'Restore Block Tx',
+						remint: 'Remint Chain',
+						reset: 'Reset Chain',
+						restartTutorial: 'Restart Tutorial',
+						returnLive: 'Return to Live'
+					},
+					labels: {
+						selected: 'Selected',
+						status: 'Status',
+						event: 'Causal Event',
+						metrics: 'Metrics',
+						inspector: 'Integrity Inspector',
+						expectedPrev: 'Expected prevHash',
+						actualPrev: 'Actual prevHash',
+						mismatch: 'Mismatch',
+						reason: 'Reason',
+						tutorial: 'Guided Tutorial',
+						timeline: 'Timeline Replay'
+					},
+					legend: {
+						text: '<strong>Legend:</strong> Green blocks are valid, red blocks are invalid.<br>Connectors turn red where chain linkage is broken.<br><strong>VR:</strong> Use controller ray + trigger to select blocks and press panel controls.'
+					},
+					status: {
+						valid: 'VALID',
+						invalid: 'INVALID'
+					},
+					action: {
+						chainInit: 'Chain initialized and valid.',
+						selectBlock: 'Selected block #{index}.',
+						tamperBreak: 'Tamper on block #{index}. Chain broken at block #{broken}.',
+						tamperValid: 'Tamper on block #{index}, chain still valid.',
+						restoreTx: 'Transaction restored in block #{index}.',
+						remint: 'Chain reminted from first broken block.',
+						reset: 'Chain reset to baseline state.',
+						tutorialRestart: 'Tutorial restarted. Step 1: select a non-genesis block.'
+					},
+					inspector: {
+						selectHint: 'Select a block',
+						inspectingBlock: 'Inspecting block #{index}',
+						inspectingBroken: 'Inspecting first broken block #{index}',
+						mismatchDetected: 'Mismatch detected',
+						noMismatch: 'No mismatch',
+						genesisReason: 'Genesis block uses fixed prevHash = GENESIS.',
+						genesisHint: 'Genesis reference block',
+						mismatchReason: 'Expected block #{index} hash {expected}, but found {actual}.',
+						mismatchAt: 'Mismatch at block #{index}',
+						matchReason: 'Matches block #{index} hash {expected}.',
+						linkageOk: 'Block #{index} linkage OK'
+					},
+					tutorial: {
+						steps: [
+							'Select a non-genesis block (#1 and above).',
+							'Edit TX and apply tamper to break the chain.',
+							'Select the first broken block to inspect the mismatch.',
+							'Recover integrity with Remint Chain or Reset Chain.'
+						],
+						completeLabel: 'Complete',
+						completeText: 'Tutorial done: you selected, tampered, inspected mismatch, and recovered chain integrity.',
+						stepLabel: 'Step {step}/{total}',
+						stepWithBreak: '{text} First broken block: #{broken}.'
+					},
+					metrics: {
+						summary: 'Total: {total} | Valid: {valid} | Invalid: {invalid} | First broken: {broken} | Tamps: {tamper} | Break timer: {breakTime} | Last recover: {recoverTime}'
+					},
+					misc: {
+						none: 'none',
+						na: 'n/a'
+					},
+					hudToggle: {
+						hide: 'Hide Panel (H)',
+						show: 'Show Panel (H)'
+					},
+					timeline: {
+						live: 'LIVE',
+						liveSnapshot: 'LIVE | snapshot {count}/{count}',
+						snapshot: 'Snapshot {index}/{count} | {reason}',
+						vrLive: 'Timeline: LIVE',
+						vrPercent: 'Timeline: {percent}%'
+					},
+					reason: {
+						state: 'State',
+						initial: 'Initialization',
+						select: 'Select block',
+						tamperInput: 'Tamper (input)',
+						tamperRandom: 'Tamper (random)',
+						restoreTx: 'Restore tx',
+						remintChain: 'Remint chain',
+						resetChain: 'Reset chain'
+					},
+					block: {
+						blockLabel: 'BLOCK #{index}',
+						txLabel: 'TX: {tx}',
+						hashLabel: 'HASH: {hash}',
+						prevLabel: 'PREV: {prev}',
+						statusValid: 'STATUS: VALID',
+						statusInvalid: 'STATUS: INVALID'
+					},
+					ui: {
+						selectedBlock: 'Block #{index}'
+					},
+					vr: {
+						title: 'VR BLOCK INTEGRITY CONTROL',
+						prev: 'Select Prev',
+						next: 'Select Next',
+						tamper: 'Tamper Random',
+						restore: 'Restore Tx',
+						remint: 'Remint Chain',
+						reset: 'Reset Chain',
+						padLabel: 'TX PAD: {value}',
+						padEmpty: '(empty)',
+						pad: {
+							plus: '+10 TOK',
+							fee: 'FEE',
+							nft: 'NFT',
+							swap: 'SWAP',
+							vote: 'VOTE',
+							back: 'BACK',
+							clear: 'CLEAR',
+							base: 'BASE TX',
+							apply: 'APPLY'
+						},
+						prevWithIndex: 'Select Prev (#{index})',
+						nextWithIndex: 'Select Next (#{index})',
+						statusValid: 'CHAIN VALID | selected #{index}',
+						statusInvalid: 'CHAIN INVALID | first broken #{index}',
+						chainLabel: 'Block #{index} | TX: {tx}'
+					}
+				},
+				ru: {
+					language: {
+						label: 'Язык',
+						selectAria: 'Выбор языка'
+					},
+					scene: {
+						pageTitle: 'three.js webxr - целостность блоков в блокчейне, сцена 2',
+						title: 'Сцена 2: Лаборатория целостности блоков',
+						description: 'Осмотрите поля блока, подмените одну транзакцию и наблюдайте, как ломаются последующие блоки.<br>Затем переминтите, чтобы восстановить целостность цепочки.'
+					},
+					buttons: {
+						selectPrev: 'Выбрать предыдущий блок',
+						selectNext: 'Выбрать следующий блок',
+						applyTamper: 'Применить подмену',
+						randomTamper: 'Случайная подмена',
+						restoreTx: 'Восстановить транзакцию блока',
+						remint: 'Переминтить цепочку',
+						reset: 'Сбросить цепочку',
+						restartTutorial: 'Перезапустить обучение',
+						returnLive: 'Вернуться к LIVE'
+					},
+					labels: {
+						selected: 'Выбран',
+						status: 'Статус',
+						event: 'Причина',
+						metrics: 'Метрики',
+						inspector: 'Инспектор целостности',
+						expectedPrev: 'Ожидаемый prevHash',
+						actualPrev: 'Фактический prevHash',
+						mismatch: 'Несоответствие',
+						reason: 'Причина',
+						tutorial: 'Пошаговое обучение',
+						timeline: 'Повтор по времени'
+					},
+					legend: {
+						text: '<strong>Легенда:</strong> Зеленые блоки валидны, красные невалидны.<br>Соединители краснеют там, где нарушена связь цепочки.<br><strong>VR:</strong> Используйте луч контроллера + триггер, чтобы выбрать блоки и нажимать на панель.'
+					},
+					status: {
+						valid: 'ВАЛИДНО',
+						invalid: 'НЕВАЛИДНО'
+					},
+					action: {
+						chainInit: 'Цепочка инициализирована и валидна.',
+						selectBlock: 'Выбран блок #{index}.',
+						tamperBreak: 'Подмена в блоке #{index}. Цепочка сломана на блоке #{broken}.',
+						tamperValid: 'Подмена в блоке #{index}, цепочка остается валидной.',
+						restoreTx: 'Транзакция восстановлена в блоке #{index}.',
+						remint: 'Цепочка переминтена с первого поврежденного блока.',
+						reset: 'Цепочка сброшена в исходное состояние.',
+						tutorialRestart: 'Обучение перезапущено. Шаг 1: выберите негенезис-блок.'
+					},
+					inspector: {
+						selectHint: 'Выберите блок',
+						inspectingBlock: 'Осмотр блока #{index}',
+						inspectingBroken: 'Осмотр первого поврежденного блока #{index}',
+						mismatchDetected: 'Несоответствие найдено',
+						noMismatch: 'Несоответствий нет',
+						genesisReason: 'Генезис-блок использует фиксированный prevHash = GENESIS.',
+						genesisHint: 'Эталонный генезис-блок',
+						mismatchReason: 'Ожидался хэш блока #{index} {expected}, но найден {actual}.',
+						mismatchAt: 'Несоответствие в блоке #{index}',
+						matchReason: 'Совпадает с хэшем блока #{index}: {expected}.',
+						linkageOk: 'Связь блока #{index} в норме'
+					},
+					tutorial: {
+						steps: [
+							'Выберите негенезис-блок (№1 и выше).',
+							'Измените TX и примените подмену, чтобы сломать цепочку.',
+							'Выберите первый поврежденный блок для проверки несоответствия.',
+							'Восстановите целостность через Переминт или Сброс.'
+						],
+						completeLabel: 'Готово',
+						completeText: 'Обучение завершено: вы выбрали блок, сделали подмену, проверили несоответствие и восстановили цепочку.',
+						stepLabel: 'Шаг {step}/{total}',
+						stepWithBreak: '{text} Первый поврежденный блок: #{broken}.'
+					},
+					metrics: {
+						summary: 'Всего: {total} | Валидно: {valid} | Невалидно: {invalid} | Первый разрыв: {broken} | Подмен: {tamper} | Таймер разрыва: {breakTime} | Последнее восстановление: {recoverTime}'
+					},
+					misc: {
+						none: 'нет',
+						na: 'н/д'
+					},
+					hudToggle: {
+						hide: 'Скрыть панель (H)',
+						show: 'Показать панель (H)'
+					},
+					timeline: {
+						live: 'LIVE',
+						liveSnapshot: 'LIVE | снимок {count}/{count}',
+						snapshot: 'Снимок {index}/{count} | {reason}',
+						vrLive: 'Таймлайн: LIVE',
+						vrPercent: 'Таймлайн: {percent}%'
+					},
+					reason: {
+						state: 'Состояние',
+						initial: 'Инициализация',
+						select: 'Выбор блока',
+						tamperInput: 'Подмена (ввод)',
+						tamperRandom: 'Подмена (случайно)',
+						restoreTx: 'Восстановление TX',
+						remintChain: 'Переминт цепочки',
+						resetChain: 'Сброс цепочки'
+					},
+					block: {
+						blockLabel: 'БЛОК #{index}',
+						txLabel: 'TX: {tx}',
+						hashLabel: 'ХЭШ: {hash}',
+						prevLabel: 'ПРЕД: {prev}',
+						statusValid: 'СТАТУС: ВАЛИДНО',
+						statusInvalid: 'СТАТУС: НЕВАЛИДНО'
+					},
+					ui: {
+						selectedBlock: 'Блок #{index}'
+					},
+					vr: {
+						title: 'VR УПРАВЛЕНИЕ ЦЕПОЧКОЙ',
+						prev: 'Выбрать пред.',
+						next: 'Выбрать след.',
+						tamper: 'Подмена случайно',
+						restore: 'Восст. TX',
+						remint: 'Переминт',
+						reset: 'Сброс',
+						padLabel: 'TX ПАНЕЛЬ: {value}',
+						padEmpty: '(пусто)',
+						pad: {
+							plus: '+10 TOK',
+							fee: 'FEE',
+							nft: 'NFT',
+							swap: 'SWAP',
+							vote: 'VOTE',
+							back: 'НАЗАД',
+							clear: 'ОЧИСТ.',
+							base: 'БАЗА TX',
+							apply: 'ПРИМЕН.'
+						},
+						prevWithIndex: 'Пред. (#{index})',
+						nextWithIndex: 'След. (#{index})',
+						statusValid: 'ЦЕПОЧКА ВАЛИДНА | выбран #{index}',
+						statusInvalid: 'ЦЕПОЧКА НЕВАЛИДНА | первый разрыв #{index}',
+						chainLabel: 'Блок #{index} | TX: {tx}'
+					}
+				}
+			};
+
+			let isSceneReady = false;
+
+			function getTranslationValue( key ) {
+
+				const current = i18n[ languageState.current ] || i18n.en;
+				const fallback = i18n.en;
+				const parts = key.split( '.' );
+				let value = current;
+
+				for ( const part of parts ) {
+
+					if ( value && Object.prototype.hasOwnProperty.call( value, part ) ) {
+						value = value[ part ];
+					} else {
+						value = undefined;
+						break;
+					}
+
+				}
+
+				if ( value === undefined ) {
+
+					value = fallback;
+					for ( const part of parts ) {
+
+						if ( value && Object.prototype.hasOwnProperty.call( value, part ) ) {
+							value = value[ part ];
+						} else {
+							value = undefined;
+							break;
+						}
+
+					}
+
+				}
+
+				return value;
+
+			}
+
+			function t( key, params = {} ) {
+
+				const template = getTranslationValue( key );
+				if ( typeof template !== 'string' ) return key;
+
+				return template.replace( /\{(\w+)\}|#\{(\w+)\}/g, ( match, curly, hash ) => {
+
+					const token = curly || hash;
+					return Object.prototype.hasOwnProperty.call( params, token ) ? params[ token ] : match;
+
+				} );
+
+			}
+
+			function applyTranslations() {
+
+				document.querySelectorAll( '[data-i18n]' ).forEach( ( element ) => {
+
+					element.textContent = t( element.dataset.i18n );
+
+				} );
+
+				document.querySelectorAll( '[data-i18n-html]' ).forEach( ( element ) => {
+
+					element.innerHTML = t( element.dataset.i18nHtml );
+
+				} );
+
+				document.querySelectorAll( '[data-i18n-aria-label]' ).forEach( ( element ) => {
+
+					element.setAttribute( 'aria-label', t( element.dataset.i18nAriaLabel ) );
+
+				} );
+
+				if ( ui.hudToggleButton ) {
+					ui.hudToggleButton.textContent = panelState.hudVisible ? t( 'hudToggle.hide' ) : t( 'hudToggle.show' );
+				}
+
+			}
+
+			function setLanguage( nextLanguage, updateScene = true ) {
+
+				const lang = i18n[ nextLanguage ] ? nextLanguage : 'en';
+				languageState.current = lang;
+				document.documentElement.lang = lang;
+				try {
+					localStorage.setItem( languageState.storageKey, lang );
+				} catch ( error ) {
+					console.warn( 'Language storage unavailable:', error );
+				}
+
+				const select = document.getElementById( 'languageSelect' );
+				if ( select ) select.value = lang;
+
+				applyTranslations();
+				document.title = t( 'scene.pageTitle' );
+
+				if ( updateScene && isSceneReady ) {
+					refreshUI();
+					syncTimelineControls();
+					updateBlockVisuals();
+				}
+
+			}
+
+			function initLanguageSwitcher() {
+
+				const select = document.getElementById( 'languageSelect' );
+				if ( ! select ) return;
+
+				let stored = null;
+				try {
+					stored = localStorage.getItem( languageState.storageKey );
+				} catch ( error ) {
+					stored = null;
+				}
+
+				const detected = ( navigator.language || '' ).toLowerCase().startsWith( 'ru' ) ? 'ru' : 'en';
+				const initial = stored && i18n[ stored ] ? stored : detected;
+				select.value = initial;
+				setLanguage( initial, false );
+
+				select.addEventListener( 'change', ( event ) => {
+					setLanguage( event.target.value );
+				} );
+
+			}
+
+			function setLastAction( key, params = {} ) {
+
+				chain.lastActionKey = key;
+				chain.lastActionParams = { ...params };
+
+			}
+
+			function getLastActionText() {
+
+				return t( `action.${chain.lastActionKey}`, chain.lastActionParams );
+
+			}
+
+			function getTutorialSteps() {
+
+				const steps = getTranslationValue( 'tutorial.steps' );
+				return Array.isArray( steps ) ? steps : i18n.en.tutorial.steps;
+
+			}
 
 			const cameraFocus = {
 				desiredTarget: new THREE.Vector3( 0, 2.1, 0 ),
@@ -546,6 +1019,7 @@
 				cameraFocus.desiredTarget.copy( controls.target );
 				cameraFocus.desiredPosition.copy( camera.position );
 				initAudioSystem();
+				initLanguageSwitcher();
 
 				const hemi = new THREE.HemisphereLight( 0xa8d9ff, 0x1a2532, 0.95 );
 				scene.add( hemi );
@@ -593,6 +1067,7 @@
 				recordHistorySnapshot( 'initial' );
 				syncTimelineControls();
 				refreshUI();
+				isSceneReady = true;
 
 			}
 
@@ -1192,19 +1667,19 @@
 
 				if ( chain.firstBrokenIndex !== - 1 && chain.selectedIndex === chain.firstBrokenIndex ) {
 
-					ui.inspectorStepHint.textContent = `Inspecting first broken block #${chain.firstBrokenIndex}`;
+					ui.inspectorStepHint.textContent = t( 'inspector.inspectingBroken', { index: chain.firstBrokenIndex } );
 
 				} else {
 
-					ui.inspectorStepHint.textContent = `Inspecting block #${chain.selectedIndex}`;
+					ui.inspectorStepHint.textContent = t( 'inspector.inspectingBlock', { index: chain.selectedIndex } );
 
 				}
 
 				if ( record ) {
 
-					chain.lastAction = `Selected block #${selected.index}.`;
+					setLastAction( 'selectBlock', { index: selected.index } );
 					updateTutorialProgress( 'select' );
-					recordHistorySnapshot( 'select block' );
+					recordHistorySnapshot( 'select' );
 
 				}
 
@@ -1224,7 +1699,7 @@
 				unlockAudioContext();
 				const nextTx = ui.txInput.value.trim();
 				if ( nextTx.length === 0 ) return;
-				tamperSelectedTransaction( nextTx, 'tamper input' );
+				tamperSelectedTransaction( nextTx, 'tamperInput' );
 
 			}
 
@@ -1234,7 +1709,7 @@
 				const randomTx = tamperPool[ Math.floor( Math.random() * tamperPool.length ) ];
 				ui.txInput.value = randomTx;
 				syncVrTxPadLabel();
-				tamperSelectedTransaction( randomTx, 'tamper random' );
+				tamperSelectedTransaction( randomTx, 'tamperRandom' );
 
 			}
 
@@ -1254,7 +1729,7 @@
 				if ( chain.firstBrokenIndex !== - 1 ) {
 
 					pulseHaptics( 0.7, 90 );
-					chain.lastAction = `Tamper on block #${block.index}. Chain broken at block #${chain.firstBrokenIndex}.`;
+					setLastAction( 'tamperBreak', { index: block.index, broken: chain.firstBrokenIndex } );
 
 					if ( ! wasBroken ) {
 
@@ -1264,7 +1739,7 @@
 
 				} else {
 
-					chain.lastAction = `Tamper on block #${block.index}, chain still valid.`;
+					setLastAction( 'tamperValid', { index: block.index } );
 					setCameraFocusOnBlock( block.index );
 
 				}
@@ -1284,9 +1759,9 @@
 				block.hash = computeHash( block.index, block.tx, block.prevHash );
 
 				validateChain();
-				chain.lastAction = `Transaction restored in block #${block.index}.`;
+				setLastAction( 'restoreTx', { index: block.index } );
 				if ( chain.firstBrokenIndex === - 1 ) updateTutorialProgress( 'recover' );
-				recordHistorySnapshot( 'restore tx' );
+				recordHistorySnapshot( 'restoreTx' );
 				refreshUI();
 
 			}
@@ -1307,9 +1782,9 @@
 				}
 
 				validateChain();
-				chain.lastAction = 'Chain reminted from first broken block.';
+				setLastAction( 'remint' );
 				if ( chain.firstBrokenIndex === - 1 ) updateTutorialProgress( 'recover' );
-				recordHistorySnapshot( 'remint chain' );
+				recordHistorySnapshot( 'remintChain' );
 				refreshUI();
 
 			}
@@ -1329,9 +1804,9 @@
 				}
 
 				validateChain();
-				chain.lastAction = 'Chain reset to baseline state.';
+				setLastAction( 'reset' );
 				updateTutorialProgress( 'recover' );
-				recordHistorySnapshot( 'reset chain' );
+				recordHistorySnapshot( 'resetChain' );
 				refreshUI();
 
 			}
@@ -1489,12 +1964,12 @@
 					block.materials.crack.opacity = isInvalid ? 0.84 : 0;
 					block.userMeshes.crackEdges.visible = isInvalid;
 
-					block.labels.index.redraw( `BLOCK #${block.index}` );
-					block.labels.tx.redraw( `TX: ${block.tx}` );
-					block.labels.hash.redraw( `HASH: ${block.hash}` );
-					block.labels.prevHash.redraw( `PREV: ${block.prevHash}` );
+					block.labels.index.redraw( t( 'block.blockLabel', { index: block.index } ) );
+					block.labels.tx.redraw( t( 'block.txLabel', { tx: block.tx } ) );
+					block.labels.hash.redraw( t( 'block.hashLabel', { hash: block.hash } ) );
+					block.labels.prevHash.redraw( t( 'block.prevLabel', { prev: block.prevHash } ) );
 					block.labels.status.redraw(
-						block.valid ? 'STATUS: VALID' : 'STATUS: INVALID',
+						block.valid ? t( 'block.statusValid' ) : t( 'block.statusInvalid' ),
 						block.valid ? '#b7ffd7' : '#ffd0d0',
 						block.valid ? 'rgba(20, 86, 58, 0.92)' : 'rgba(109, 31, 38, 0.92)'
 					);
@@ -1535,15 +2010,18 @@
 
 				}
 
-				return `${signature}#${snapshot.selectedIndex}#${snapshot.firstBrokenIndex}#${snapshot.action}#${snapshot.tamperCount}`;
+				const actionSignature = snapshot.actionKey ? `${snapshot.actionKey}:${JSON.stringify( snapshot.actionParams || {} )}` : '';
+				const reasonSignature = snapshot.reasonKey || '';
+				return `${signature}#${snapshot.selectedIndex}#${snapshot.firstBrokenIndex}#${actionSignature}#${reasonSignature}#${snapshot.tamperCount}`;
 
 			}
 
-			function createSnapshot( reason ) {
+			function createSnapshot( reasonKey ) {
 
 				return {
-					reason,
-					action: chain.lastAction,
+					reasonKey,
+					actionKey: chain.lastActionKey,
+					actionParams: { ...chain.lastActionParams },
 					selectedIndex: chain.selectedIndex,
 					firstBrokenIndex: chain.firstBrokenIndex,
 					tamperCount: metrics.tamperCount,
@@ -1577,7 +2055,8 @@
 
 				chain.selectedIndex = snapshot.selectedIndex;
 				chain.firstBrokenIndex = snapshot.firstBrokenIndex;
-				chain.lastAction = snapshot.action;
+				chain.lastActionKey = snapshot.actionKey || chain.lastActionKey;
+				chain.lastActionParams = snapshot.actionParams ? { ...snapshot.actionParams } : {};
 				metrics.tamperCount = snapshot.tamperCount ?? metrics.tamperCount;
 				metrics.breakStartedAt = 0;
 
@@ -1590,11 +2069,11 @@
 
 			}
 
-			function recordHistorySnapshot( reason ) {
+			function recordHistorySnapshot( reasonKey ) {
 
 				if ( history.suspendRecording ) return;
 
-				const snapshot = createSnapshot( reason );
+				const snapshot = createSnapshot( reasonKey );
 				const signature = serializeSnapshotChain( snapshot );
 				const lastEntry = history.entries[ history.entries.length - 1 ];
 
@@ -1608,7 +2087,7 @@
 				history.entries.push( {
 					snapshot,
 					signature,
-					reason,
+					reasonKey,
 					timestamp: Date.now()
 				} );
 
@@ -1659,7 +2138,7 @@
 
 					ui.timelineSlider.max = '0';
 					ui.timelineSlider.value = '0';
-					ui.timelineMeta.textContent = 'LIVE';
+					ui.timelineMeta.textContent = t( 'timeline.live' );
 					ui.timelineLiveButton.disabled = true;
 					if ( vr.timelineSlider ) vr.timelineSlider.setNormalized( 1, true );
 					return;
@@ -1673,12 +2152,14 @@
 
 				if ( chain.timelineIndex === - 1 ) {
 
-					ui.timelineMeta.textContent = `LIVE | snapshot ${count}/${count}`;
+					ui.timelineMeta.textContent = t( 'timeline.liveSnapshot', { count } );
 					ui.timelineLiveButton.disabled = true;
 
 				} else {
 
-					ui.timelineMeta.textContent = `Snapshot ${activeIndex + 1}/${count} | ${history.entries[ activeIndex ].reason}`;
+					const reasonKey = history.entries[ activeIndex ].reasonKey || 'state';
+					const reasonLabel = t( `reason.${reasonKey}` );
+					ui.timelineMeta.textContent = t( 'timeline.snapshot', { index: activeIndex + 1, count, reason: reasonLabel } );
 					ui.timelineLiveButton.disabled = false;
 
 				}
@@ -1718,19 +2199,27 @@
 				const invalidCount = chain.blocks.filter( ( block ) => ! block.valid ).length;
 				const validCount = chain.blocks.length - invalidCount;
 				const chainValid = chain.firstBrokenIndex === - 1;
-				const brokenText = chain.firstBrokenIndex === - 1 ? 'none' : `#${chain.firstBrokenIndex}`;
+				const brokenText = chain.firstBrokenIndex === - 1 ? t( 'misc.none' ) : `#${chain.firstBrokenIndex}`;
 				const activeBreakMs = chain.firstBrokenIndex !== - 1 && metrics.breakStartedAt > 0
 					? performance.now() - metrics.breakStartedAt
 					: 0;
 				const activeBreakText = chain.firstBrokenIndex !== - 1 ? `${( activeBreakMs / 1000 ).toFixed( 1 )}s` : '0.0s';
-				const recoverText = metrics.lastRecoveryMs > 0 ? `${( metrics.lastRecoveryMs / 1000 ).toFixed( 1 )}s` : 'n/a';
+				const recoverText = metrics.lastRecoveryMs > 0 ? `${( metrics.lastRecoveryMs / 1000 ).toFixed( 1 )}s` : t( 'misc.na' );
 
-				ui.selectedValue.textContent = `Block #${selected.index}`;
-				ui.stateBadge.textContent = chainValid ? 'VALID' : 'INVALID';
+				ui.selectedValue.textContent = t( 'ui.selectedBlock', { index: selected.index } );
+				ui.stateBadge.textContent = chainValid ? t( 'status.valid' ) : t( 'status.invalid' );
 				ui.stateBadge.classList.toggle( 'valid', chainValid );
 				ui.stateBadge.classList.toggle( 'invalid', ! chainValid );
-				ui.eventValue.textContent = chain.lastAction;
-				ui.metricsValue.textContent = `Total: ${chain.blocks.length} | Valid: ${validCount} | Invalid: ${invalidCount} | First broken: ${brokenText} | Tamps: ${metrics.tamperCount} | Break timer: ${activeBreakText} | Last recover: ${recoverText}`;
+				ui.eventValue.textContent = getLastActionText();
+				ui.metricsValue.textContent = t( 'metrics.summary', {
+					total: chain.blocks.length,
+					valid: validCount,
+					invalid: invalidCount,
+					broken: brokenText,
+					tamper: metrics.tamperCount,
+					breakTime: activeBreakText,
+					recoverTime: recoverText
+				} );
 				ui.restoreTxButton.disabled = selected.tx === selected.baseTx;
 				ui.remintButton.disabled = chain.firstBrokenIndex === - 1;
 				ui.selectPrevButton.disabled = chain.blocks.length < 2;
@@ -1752,24 +2241,31 @@
 
 				ui.expectedPrevValue.textContent = expected;
 				ui.actualPrevValue.textContent = actual;
-				ui.mismatchValue.textContent = mismatch ? 'Mismatch detected' : 'No mismatch';
+				ui.mismatchValue.textContent = mismatch ? t( 'inspector.mismatchDetected' ) : t( 'inspector.noMismatch' );
 				ui.mismatchValue.classList.toggle( 'mismatch-bad', mismatch );
 				ui.mismatchValue.classList.toggle( 'mismatch-ok', ! mismatch );
 
 				if ( selected.index === 0 ) {
 
-					ui.mismatchReasonValue.textContent = 'Genesis block uses fixed prevHash = GENESIS.';
-					ui.inspectorStepHint.textContent = 'Genesis reference block';
+					ui.mismatchReasonValue.textContent = t( 'inspector.genesisReason' );
+					ui.inspectorStepHint.textContent = t( 'inspector.genesisHint' );
 
 				} else if ( mismatch ) {
 
-					ui.mismatchReasonValue.textContent = `Expected block #${selected.index - 1} hash ${expected}, but found ${actual}.`;
-					ui.inspectorStepHint.textContent = `Mismatch at block #${selected.index}`;
+					ui.mismatchReasonValue.textContent = t( 'inspector.mismatchReason', {
+						index: selected.index - 1,
+						expected,
+						actual
+					} );
+					ui.inspectorStepHint.textContent = t( 'inspector.mismatchAt', { index: selected.index } );
 
 				} else {
 
-					ui.mismatchReasonValue.textContent = `Matches block #${selected.index - 1} hash ${expected}.`;
-					ui.inspectorStepHint.textContent = `Block #${selected.index} linkage OK`;
+					ui.mismatchReasonValue.textContent = t( 'inspector.matchReason', {
+						index: selected.index - 1,
+						expected
+					} );
+					ui.inspectorStepHint.textContent = t( 'inspector.linkageOk', { index: selected.index } );
 
 				}
 
@@ -1808,7 +2304,7 @@
 
 				if ( announce ) {
 
-					chain.lastAction = 'Tutorial restarted. Step 1: select a non-genesis block.';
+					setLastAction( 'tutorialRestart' );
 
 				}
 
@@ -1821,22 +2317,26 @@
 
 				if ( tutorial.completed ) {
 
-					ui.tutorialStepLabel.textContent = 'Complete';
-					ui.tutorialText.textContent = 'Tutorial done: you selected, tampered, inspected mismatch, and recovered chain integrity.';
+					ui.tutorialStepLabel.textContent = t( 'tutorial.completeLabel' );
+					ui.tutorialText.textContent = t( 'tutorial.completeText' );
 					return;
 
 				}
 
 				const stepNumber = tutorial.step + 1;
-				ui.tutorialStepLabel.textContent = `Step ${stepNumber}/${tutorial.total}`;
+				ui.tutorialStepLabel.textContent = t( 'tutorial.stepLabel', { step: stepNumber, total: tutorial.total } );
+				const steps = getTutorialSteps();
 
 				if ( tutorial.step === 2 && chain.firstBrokenIndex !== - 1 ) {
 
-					ui.tutorialText.textContent = `${tutorialSteps[ tutorial.step ]} First broken block: #${chain.firstBrokenIndex}.`;
+					ui.tutorialText.textContent = t( 'tutorial.stepWithBreak', {
+						text: steps[ tutorial.step ],
+						broken: chain.firstBrokenIndex
+					} );
 
 				} else {
 
-					ui.tutorialText.textContent = tutorialSteps[ tutorial.step ];
+					ui.tutorialText.textContent = steps[ tutorial.step ];
 
 				}
 
@@ -1895,16 +2395,17 @@
 				);
 				panel.add( body );
 
-				const title = createWorldLabel( 'VR BLOCK INTEGRITY CONTROL', 1024, 190, 4.15, 0.5, '#dbf4ff', 'rgba(20, 67, 94, 0.88)' );
+				const title = createWorldLabel( t( 'vr.title' ), 1024, 190, 4.15, 0.5, '#dbf4ff', 'rgba(20, 67, 94, 0.88)' );
 				title.mesh.position.set( 0, 3.42, 0.08 );
 				panel.add( title.mesh );
+				vr.titleLabel = title;
 
-				vr.buttons.prev = createVrButton( 'Select Prev', 0x2f6f95, () => cycleSelection( - 1 ) );
-				vr.buttons.next = createVrButton( 'Select Next', 0x2f6f95, () => cycleSelection( 1 ) );
-				vr.buttons.tamper = createVrButton( 'Tamper Random', 0xa34b4b, tamperSelectedWithRandom );
-				vr.buttons.restore = createVrButton( 'Restore Tx', 0x5c7d9b, restoreSelectedTransaction );
-				vr.buttons.remint = createVrButton( 'Remint Chain', 0x2e8a5d, remintChain );
-				vr.buttons.reset = createVrButton( 'Reset Chain', 0x6b4fa4, resetChain );
+				vr.buttons.prev = createVrButton( t( 'vr.prev' ), 0x2f6f95, () => cycleSelection( - 1 ) );
+				vr.buttons.next = createVrButton( t( 'vr.next' ), 0x2f6f95, () => cycleSelection( 1 ) );
+				vr.buttons.tamper = createVrButton( t( 'vr.tamper' ), 0xa34b4b, tamperSelectedWithRandom );
+				vr.buttons.restore = createVrButton( t( 'vr.restore' ), 0x5c7d9b, restoreSelectedTransaction );
+				vr.buttons.remint = createVrButton( t( 'vr.remint' ), 0x2e8a5d, remintChain );
+				vr.buttons.reset = createVrButton( t( 'vr.reset' ), 0x6b4fa4, resetChain );
 
 				vr.buttons.prev.group.position.set( - 1.2, 2.58, 0.12 );
 				vr.buttons.next.group.position.set( 1.2, 2.58, 0.12 );
@@ -1930,7 +2431,8 @@
 				vr.statusLabel.mesh.position.set( 0, - 1.72, 0.12 );
 				panel.add( vr.statusLabel.mesh );
 
-				vr.chainLabel = createWorldLabel( 'Block #0', 980, 140, 4, 0.3, '#d7f2ff', 'rgba(18, 57, 79, 0.9)' );
+				const initialBlock = chain.blocks[ chain.selectedIndex ] || { index: 0, tx: '' };
+				vr.chainLabel = createWorldLabel( t( 'vr.chainLabel', { index: initialBlock.index, tx: initialBlock.tx } ), 980, 140, 4, 0.3, '#d7f2ff', 'rgba(18, 57, 79, 0.9)' );
 				vr.chainLabel.mesh.position.set( 0, - 2.12, 0.12 );
 				panel.add( vr.chainLabel.mesh );
 
@@ -2038,7 +2540,7 @@
 				);
 				group.add( base );
 
-				const label = createWorldLabel( 'TX PAD: (empty)', 1180, 170, 4.15, 0.31, '#dff5ff', 'rgba(20, 57, 80, 0.9)' );
+				const label = createWorldLabel( t( 'vr.padLabel', { value: t( 'vr.padEmpty' ) } ), 1180, 170, 4.15, 0.31, '#dff5ff', 'rgba(20, 57, 80, 0.9)' );
 				label.mesh.position.set( 0, 0.87, 0.08 );
 				group.add( label.mesh );
 
@@ -2049,15 +2551,15 @@
 				};
 
 				const actions = [
-					{ key: 'plus', text: '+10 TOK', color: 0x2a7ea0, run: () => appendTokenToInput( '+10TOK' ) },
-					{ key: 'fee', text: 'FEE', color: 0x2a7ea0, run: () => appendTokenToInput( 'FEE' ) },
-					{ key: 'nft', text: 'NFT', color: 0x2a7ea0, run: () => appendTokenToInput( 'NFT' ) },
-					{ key: 'swap', text: 'SWAP', color: 0x2a7ea0, run: () => appendTokenToInput( 'SWAP' ) },
-					{ key: 'vote', text: 'VOTE', color: 0x2a7ea0, run: () => appendTokenToInput( 'VOTE' ) },
-					{ key: 'back', text: 'BACK', color: 0x755c9f, run: removeLastTokenFromInput },
-					{ key: 'clear', text: 'CLEAR', color: 0x8b4d57, run: clearTxInput },
-					{ key: 'base', text: 'BASE TX', color: 0x4a6c8f, run: () => setTxInputValue( chain.blocks[ chain.selectedIndex ].baseTx ) },
-					{ key: 'apply', text: 'APPLY', color: 0x2f8a5f, run: applyTamperFromInput }
+					{ key: 'plus', color: 0x2a7ea0, run: () => appendTokenToInput( '+10TOK' ) },
+					{ key: 'fee', color: 0x2a7ea0, run: () => appendTokenToInput( 'FEE' ) },
+					{ key: 'nft', color: 0x2a7ea0, run: () => appendTokenToInput( 'NFT' ) },
+					{ key: 'swap', color: 0x2a7ea0, run: () => appendTokenToInput( 'SWAP' ) },
+					{ key: 'vote', color: 0x2a7ea0, run: () => appendTokenToInput( 'VOTE' ) },
+					{ key: 'back', color: 0x755c9f, run: removeLastTokenFromInput },
+					{ key: 'clear', color: 0x8b4d57, run: clearTxInput },
+					{ key: 'base', color: 0x4a6c8f, run: () => setTxInputValue( chain.blocks[ chain.selectedIndex ].baseTx ) },
+					{ key: 'apply', color: 0x2f8a5f, run: applyTamperFromInput }
 				];
 
 				const columns = 3;
@@ -2065,13 +2567,14 @@
 				for ( let i = 0; i < actions.length; i ++ ) {
 
 					const item = actions[ i ];
-					const button = createVrButton( item.text, item.color, item.run, {
+					const button = createVrButton( t( `vr.pad.${item.key}` ), item.color, item.run, {
 						frameInlineSize: 1.34,
 						frameBlockSize: 0.36,
 						labelInlineSize: 1.18,
 						labelBlockSize: 0.2,
 						labelCanvasBlockSize: 135
 					} );
+					button.i18nKey = item.key;
 
 					const col = i % columns;
 					const row = Math.floor( i / columns );
@@ -2146,7 +2649,7 @@
 				knob.position.set( track.position.x + trackWidth * 0.5, track.position.y, 0.1 );
 				group.add( knob );
 
-				const label = createWorldLabel( 'Timeline: LIVE', 1024, 150, 3.9, 0.28, '#def5ff', 'rgba(18, 54, 77, 0.9)' );
+				const label = createWorldLabel( t( 'timeline.vrLive' ), 1024, 150, 3.9, 0.28, '#def5ff', 'rgba(18, 54, 77, 0.9)' );
 				label.mesh.position.set( 0, 0.28, 0.08 );
 				group.add( label.mesh );
 
@@ -2161,7 +2664,8 @@
 
 						slider.value = THREE.MathUtils.clamp( value, 0, 1 );
 						slider.knob.position.x = slider.track.position.x + ( slider.value - 0.5 ) * slider.trackWidth;
-						label.redraw( isLive ? 'Timeline: LIVE' : `Timeline: ${Math.round( slider.value * 100 )}%` );
+						const percent = Math.round( slider.value * 100 );
+						label.redraw( isLive ? t( 'timeline.vrLive' ) : t( 'timeline.vrPercent', { percent } ) );
 
 					}
 				};
@@ -2197,10 +2701,23 @@
 				const selected = chain.blocks[ chain.selectedIndex ];
 				vr.buttons.restore.setEnabled( selected.tx !== selected.baseTx );
 				vr.buttons.remint.setEnabled( chain.firstBrokenIndex !== - 1 );
-				vr.buttons.prev.setText( `Select Prev (#${( chain.selectedIndex - 1 + chain.blocks.length ) % chain.blocks.length})` );
-				vr.buttons.next.setText( `Select Next (#${( chain.selectedIndex + 1 ) % chain.blocks.length})` );
+				vr.buttons.prev.setText( t( 'vr.prevWithIndex', { index: ( chain.selectedIndex - 1 + chain.blocks.length ) % chain.blocks.length } ) );
+				vr.buttons.next.setText( t( 'vr.nextWithIndex', { index: ( chain.selectedIndex + 1 ) % chain.blocks.length } ) );
+				vr.buttons.tamper.setText( t( 'vr.tamper' ) );
+				vr.buttons.restore.setText( t( 'vr.restore' ) );
+				vr.buttons.remint.setText( t( 'vr.remint' ) );
+				vr.buttons.reset.setText( t( 'vr.reset' ) );
+				if ( vr.titleLabel ) vr.titleLabel.redraw( t( 'vr.title' ) );
 
 				if ( vr.txPad ) {
+
+					for ( const padButton of vr.txPad.buttons ) {
+
+						if ( padButton.i18nKey ) {
+							padButton.setText( t( `vr.pad.${padButton.i18nKey}` ) );
+						}
+
+					}
 
 					const hasTxInput = ui.txInput.value.trim().length > 0;
 					if ( vr.txPad.back ) vr.txPad.back.setEnabled( hasTxInput );
@@ -2218,11 +2735,11 @@
 				const valid = chain.firstBrokenIndex === - 1;
 				const selected = chain.blocks[ chain.selectedIndex ];
 				const statusText = valid
-					? `CHAIN VALID | selected #${selected.index}`
-					: `CHAIN INVALID | first broken #${chain.firstBrokenIndex}`;
+					? t( 'vr.statusValid', { index: selected.index } )
+					: t( 'vr.statusInvalid', { index: chain.firstBrokenIndex } );
 
 				vr.statusLabel.setText( statusText, valid );
-				vr.chainLabel.redraw( `Block #${selected.index} | TX: ${selected.tx}` );
+				vr.chainLabel.redraw( t( 'vr.chainLabel', { index: selected.index, tx: selected.tx } ) );
 
 			}
 
@@ -2264,8 +2781,8 @@
 				if ( ! vr.txPad ) return;
 
 				const txValue = ui.txInput.value.trim();
-				const display = txValue.length === 0 ? '(empty)' : txValue;
-				vr.txPad.label.redraw( `TX PAD: ${truncateLabel( display, 40 )}` );
+				const display = txValue.length === 0 ? t( 'vr.padEmpty' ) : txValue;
+				vr.txPad.label.redraw( t( 'vr.padLabel', { value: truncateLabel( display, 40 ) } ) );
 
 			}
 
@@ -2551,7 +3068,7 @@
 
 				panelState.hudVisible = forceVisible === undefined ? ! panelState.hudVisible : forceVisible;
 				ui.hud.classList.toggle( 'is-hidden', ! panelState.hudVisible );
-				ui.hudToggleButton.textContent = panelState.hudVisible ? 'Hide Panel (H)' : 'Show Panel (H)';
+				ui.hudToggleButton.textContent = panelState.hudVisible ? t( 'hudToggle.hide' ) : t( 'hudToggle.show' );
 				ui.hudToggleButton.setAttribute( 'aria-pressed', String( ! panelState.hudVisible ) );
 
 			}

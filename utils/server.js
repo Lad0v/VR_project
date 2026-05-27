@@ -110,10 +110,10 @@ function createHandler( rootDirectory ) {
 <title>Index of ${safePath}</title>
 <style>
 body { font-family: system-ui, sans-serif; margin: 20px; }
-h1 { font-weight: normal; font-size: 1.2em; margin-bottom: 10px; }
+h1 { font-weight: normal; font-size: 1.2em; margin-block-end: 10px; }
 a { display: block; padding: 6px 8px; color: inherit; text-decoration: none; border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 a:hover { background: rgba(128,128,128,0.2); }
-.i { display: inline-block; width: 1.5em; }
+.i { display: inline-block; inline-size: 1.5em; }
 </style>
 </head>
 <body>

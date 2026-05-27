@@ -253,64 +253,107 @@
 					grid-template-columns: 1fr;
 				}
 			}
+
+			.language-switcher {
+				position: fixed;
+				inset-block-end: 16px;
+				inset-inline-end: 16px;
+				z-index: 6;
+				display: inline-flex;
+				align-items: center;
+				gap: 8px;
+				padding: 6px 10px;
+				border-radius: 999px;
+				border: 1px solid rgba( 123, 199, 255, 0.4 );
+				background: rgba( 11, 32, 48, 0.82 );
+				backdrop-filter: blur( 4px );
+				color: #eaf7ff;
+				font-size: 12px;
+				font-weight: 600;
+				letter-spacing: 0.01em;
+			}
+
+			.language-switcher select {
+				background: rgba( 18, 46, 68, 0.95 );
+				border: 1px solid rgba( 123, 199, 255, 0.55 );
+				color: inherit;
+				border-radius: 999px;
+				padding: 4px 8px;
+				font-size: 12px;
+				cursor: pointer;
+			}
 		</style>
 	</head>
 	<body>
 		<div id="hud">
-			<h2>Scene 3: Cryptographic Keys</h2>
-			<p>
-				Three-step verification: key format, ownership, signature.<br>
-				Challenge-response uses a rotating nonce and derived signature.
+			<h2 data-i18n="scene.title">Scene 3: Cryptographic Keys</h2>
+			<p data-i18n-html="scene.description">
+				Five-step verification: format, key registry, holder binding, owner policy, signature.<br>
+				Vault is in strict owner-only mode: private key must belong to selected actor and to vault owner.
 			</p>
 			<div class="toolbar triple">
-				<button id="ownerAliceButton">Owner: Alice</button>
-				<button id="ownerBobButton">Owner: Bob</button>
-				<button id="ownerEveButton">Actor: Eve</button>
+				<button id="ownerAliceButton" data-i18n="buttons.actorAlice">Actor: Alice (Vault Owner)</button>
+				<button id="ownerBobButton" data-i18n="buttons.actorBob">Actor: Bob</button>
+				<button id="ownerEveButton" data-i18n="buttons.actorEve">Actor: Eve</button>
 			</div>
 			<div class="panel">
 				<div class="panel-title">
-					<span>Key Console</span>
+					<span data-i18n="panel.keyConsole">Key Console</span>
 					<span id="publicKeyValue">PUB: -</span>
 				</div>
 				<div class="editor-row">
 					<input id="privateKeyInput" type="text" value="" maxlength="64" autocomplete="off" spellcheck="false" placeholder="Enter private key token">
-					<button id="verifyButton">Verify</button>
+					<button id="verifyButton" data-i18n="buttons.verify">Verify</button>
 				</div>
 				<div class="toolbar">
-					<button id="useCorrectKeyButton">Use Correct Key</button>
-					<button id="useWrongKeyButton">Use Wrong Key</button>
-					<button id="clearKeyButton">Clear Input</button>
-					<button id="resetVaultButton">Reset Vault</button>
+					<button id="useCorrectKeyButton" data-i18n="buttons.useCorrectKey">Use Correct Key</button>
+					<button id="useWrongKeyButton" data-i18n="buttons.useWrongKey">Use Wrong Key</button>
+					<button id="clearKeyButton" data-i18n="buttons.clearInput">Clear Input</button>
+					<button id="resetVaultButton" data-i18n="buttons.resetVault">Reset Vault</button>
 				</div>
 			</div>
 			<div class="indicators">
-				<span>Actor</span>
+				<span data-i18n="labels.actor">Actor</span>
 				<span class="value" id="actorValue">Alice</span>
-				<span>Challenge Nonce</span>
+				<span data-i18n="labels.vaultOwner">Vault Owner</span>
+				<span class="value" id="vaultOwnerValue">Alice</span>
+				<span data-i18n="labels.challengeNonce">Challenge Nonce</span>
 				<span class="value" id="challengeValue">-</span>
-				<span>Derived Signature</span>
+				<span data-i18n="labels.derivedSignature">Derived Signature</span>
 				<span class="value" id="signatureValue">-</span>
-				<span>Pipeline</span>
-				<span class="value" id="pipelineValue">0/3 passed</span>
-				<span>Decision</span>
+				<span data-i18n="labels.detectedKeyOwner">Detected Key Owner</span>
+				<span class="value" id="keyOwnerValue">none</span>
+				<span data-i18n="labels.pipeline">Pipeline</span>
+				<span class="value" id="pipelineValue">0/5 passed</span>
+				<span data-i18n="labels.securityMode">Security Mode</span>
+				<span class="value" id="securityModeValue">OWNER-ONLY STRICT</span>
+				<span data-i18n="labels.decision">Decision</span>
 				<span><span class="badge invalid" id="decisionBadge">PENDING</span></span>
-				<span>Reason</span>
-				<span class="value" id="reasonValue">Provide private key and run verification.</span>
-				<span>Metrics</span>
-				<span class="value" id="metricsValue">Attempts: 0 | Approved: 0 | Denied: 0</span>
+				<span data-i18n="labels.reason">Reason</span>
+				<span class="value" id="reasonValue">Owner-only policy active. Provide private key and run verification.</span>
+				<span data-i18n="labels.metrics">Metrics</span>
+				<span class="value" id="metricsValue">Attempts: 0 | Approved: 0 | Denied: 0 | Unauthorized: 0 | Lockout: off</span>
 			</div>
 			<div class="panel">
 				<div class="panel-title">
-					<span>Audit Log</span>
+					<span data-i18n="panel.auditLog">Audit Log</span>
 					<span id="auditMeta">0 events</span>
 				</div>
 				<ul class="audit-log" id="auditLog"></ul>
 			</div>
-			<div class="legend">
-				<strong>Legend:</strong> Green means transaction approved and vault unlocks.<br>
-				Red means access denied due to invalid private key.<br>
+			<div class="legend" data-i18n-html="legend.text">
+				<strong>Legend:</strong> Green means owner authenticated and vault unlocks.<br>
+				Red means denied due to format, key-owner mismatch, non-owner actor, or signature mismatch.<br>
+				Amber marks the vault owner identity in the scene and on VR panel.<br>
 				<strong>VR:</strong> Use controller ray + trigger on panel buttons and actor terminals.
 			</div>
+		</div>
+		<div id="languageSwitcher" class="language-switcher">
+			<span data-i18n="language.label">Language</span>
+			<select id="languageSelect" aria-label="Language" data-i18n-aria-label="language.selectAria">
+				<option value="en">EN</option>
+				<option value="ru">RU</option>
+			</select>
 		</div>
 		<button id="hudToggleButton" class="hud-toggle" type="button" aria-controls="hud" aria-pressed="false">Hide Panel (H)</button>
 
@@ -336,17 +379,279 @@
 			const vrRayLength = 13;
 			const tempMatrix = new THREE.Matrix4();
 
+			const languageState = {
+				current: 'en',
+				storageKey: 'vr_lang'
+			};
+
+			const i18n = {
+				en: {
+					language: {
+						label: 'Language',
+						selectAria: 'Select language'
+					},
+					scene: {
+						pageTitle: 'three.js webxr - cryptographic keys scene 3',
+						title: 'Scene 3: Cryptographic Keys',
+						description: 'Five-step verification: format, key registry, holder binding, owner policy, signature.<br>Vault is in strict owner-only mode: private key must belong to selected actor and to vault owner.'
+					},
+					buttons: {
+						actorAlice: 'Actor: Alice (Vault Owner)',
+						actorBob: 'Actor: Bob',
+						actorEve: 'Actor: Eve',
+						verify: 'Verify',
+						useCorrectKey: 'Use Correct Key',
+						useWrongKey: 'Use Wrong Key',
+						clearInput: 'Clear Input',
+						resetVault: 'Reset Vault'
+					},
+					panel: {
+						keyConsole: 'Key Console',
+						auditLog: 'Audit Log'
+					},
+					labels: {
+						actor: 'Actor',
+						vaultOwner: 'Vault Owner',
+						challengeNonce: 'Challenge Nonce',
+						derivedSignature: 'Derived Signature',
+						detectedKeyOwner: 'Detected Key Owner',
+						pipeline: 'Pipeline',
+						securityMode: 'Security Mode',
+						decision: 'Decision',
+						reason: 'Reason',
+						metrics: 'Metrics'
+					},
+					legend: {
+						text: '<strong>Legend:</strong> Green means owner authenticated and vault unlocks.<br>Red means denied due to format, key-owner mismatch, non-owner actor, or signature mismatch.<br>Amber marks the vault owner identity in the scene and on VR panel.<br><strong>VR:</strong> Use controller ray + trigger on panel buttons and actor terminals.'
+					},
+					input: {
+						placeholder: 'Enter private key token'
+					},
+					actors: {
+						alice: 'Alice',
+						bob: 'Bob',
+						eve: 'Eve',
+						ownerSuffix: ' (OWNER)'
+					},
+					status: {
+						pending: 'PENDING',
+						approved: 'APPROVED',
+						denied: 'DENIED'
+					},
+					ui: {
+						pubPrefix: 'PUB',
+						none: 'none',
+						unknown: 'Unknown',
+						unknownUnregistered: 'Unknown / Unregistered',
+						empty: '(empty)'
+					},
+					pipeline: {
+						progress: '{passed}/{total} passed'
+					},
+					securityMode: {
+						ownerOnlyStrict: 'OWNER-ONLY STRICT',
+						withLockout: '{mode} | LOCKOUT {seconds}s'
+					},
+					metrics: {
+						summary: 'Attempts: {attempts} | Approved: {approved} | Denied: {denied} | Unauthorized: {unauthorized} | Lockout: {lockout}',
+						lockoutOff: 'off',
+						lockoutTime: '{seconds}s'
+					},
+					reason: {
+						initial: 'Owner-only policy active. Provide private key and run verification.',
+						ownerContext: 'Owner context active. Provide owner private key and run verification.',
+						notOwner: 'Owner-only policy active. {actor} is not vault owner.',
+						step1: 'Step 1/5 failed: private key format is invalid (A-Z, 0-9, dash, 12-64 chars).',
+						step2: 'Step 2/5 failed: key token is not present in secure key registry.',
+						step3: 'Step 3/5 failed: key belongs to {owner}, not to active actor {actor}.',
+						step4: 'Step 4/5 failed: {actor} is not vault owner ({owner}).',
+						step5: 'Step 5/5 failed: challenge signature mismatch for owner-bound session.',
+						approved: 'Transaction approved: owner-only policy passed (all 5 checks).',
+						lockoutActive: 'Security lockout active. Retry in {seconds}s.',
+						lockoutTriggered: 'Security lockout triggered: {count} unauthorized owner-policy violations.',
+						reset: 'Vault reset. Owner-only policy remains active.'
+					},
+					audit: {
+						meta: '{count} events',
+						systemReady: 'System ready. Owner-only vault policy enabled.',
+						actorSwitched: 'Actor switched to {actor}.',
+						blockedByLockout: '{actor}: blocked by security lockout ({seconds}s left).',
+						approved: '{actor}: approved (5/5 passed, nonce {nonce}).',
+						denied: '{actor}: denied ({passed}/5 passed, nonce {nonce}).',
+						lockoutAlert: 'ALERT: owner-only security lockout enabled for {seconds}s.',
+						vaultResetStandby: 'Vault reset to secure standby mode.'
+					},
+					world: {
+						vaultTitle: 'CRYPTO VAULT'
+					},
+					vr: {
+						title: 'VR KEY AUTH CONTROL',
+						actorAlice: 'Actor Alice',
+						actorBob: 'Actor Bob',
+						actorEve: 'Actor Eve',
+						useCorrect: 'Use Correct Key',
+						useWrong: 'Use Wrong Key',
+						verifyAccess: 'Verify Access',
+						clearInput: 'Clear Input',
+						resetVault: 'Reset Vault',
+						actorOwner: 'Actor: {actor} | Owner: {owner}',
+						public: 'Public: {publicKey}',
+						inputOwner: 'Input: {input} | Key owner: {owner}',
+						nonce: 'Nonce: {nonce}{lock}',
+						lock: ' | Lock {seconds}s',
+						pipeline: 'Pipeline: {passed}/{total} | Policy {policy}',
+						decisionPending: 'Decision pending',
+						audit: 'Audit: {events} events | {approved} approved / {denied} denied',
+						verifyLocked: 'Locked {seconds}s'
+					},
+					hudToggle: {
+						hide: 'Hide Panel (H)',
+						show: 'Show Panel (H)'
+					}
+				},
+				ru: {
+					language: {
+						label: 'Язык',
+						selectAria: 'Выбор языка'
+					},
+					scene: {
+						pageTitle: 'three.js webxr - криптографические ключи, сцена 3',
+						title: 'Сцена 3: Криптографические ключи',
+						description: 'Пятишаговая проверка: формат, реестр ключей, привязка владельца, политика владельца, подпись.<br>Хранилище работает в строгом режиме только владельца: приватный ключ должен принадлежать выбранному актору и владельцу хранилища.'
+					},
+					buttons: {
+						actorAlice: 'Актор: Алиса (Владелец хранилища)',
+						actorBob: 'Актор: Боб',
+						actorEve: 'Актор: Ив',
+						verify: 'Проверить',
+						useCorrectKey: 'Подставить верный ключ',
+						useWrongKey: 'Подставить неверный ключ',
+						clearInput: 'Очистить ввод',
+						resetVault: 'Сбросить хранилище'
+					},
+					panel: {
+						keyConsole: 'Консоль ключей',
+						auditLog: 'Журнал аудита'
+					},
+					labels: {
+						actor: 'Актор',
+						vaultOwner: 'Владелец хранилища',
+						challengeNonce: 'Nonce-вызов',
+						derivedSignature: 'Вычисленная подпись',
+						detectedKeyOwner: 'Обнаруженный владелец ключа',
+						pipeline: 'Пайплайн',
+						securityMode: 'Режим безопасности',
+						decision: 'Решение',
+						reason: 'Причина',
+						metrics: 'Метрики'
+					},
+					legend: {
+						text: '<strong>Легенда:</strong> Зеленый означает, что владелец аутентифицирован и хранилище открывается.<br>Красный означает отказ из-за формата, несоответствия владельца ключа, не-владельца или ошибки подписи.<br>Янтарный цвет отмечает владельца хранилища в сцене и на VR-панели.<br><strong>VR:</strong> Используйте луч контроллера + триггер на кнопках панели и терминалах акторов.'
+					},
+					input: {
+						placeholder: 'Введите токен приватного ключа'
+					},
+					actors: {
+						alice: 'Алиса',
+						bob: 'Боб',
+						eve: 'Ив',
+						ownerSuffix: ' (ВЛАДЕЛЕЦ)'
+					},
+					status: {
+						pending: 'ОЖИДАНИЕ',
+						approved: 'ОДОБРЕНО',
+						denied: 'ОТКЛОНЕНО'
+					},
+					ui: {
+						pubPrefix: 'PUB',
+						none: 'нет',
+						unknown: 'Неизвестно',
+						unknownUnregistered: 'Неизвестен / Не зарегистрирован',
+						empty: '(пусто)'
+					},
+					pipeline: {
+						progress: '{passed}/{total} пройдено'
+					},
+					securityMode: {
+						ownerOnlyStrict: 'СТРОГО ТОЛЬКО ВЛАДЕЛЕЦ',
+						withLockout: '{mode} | БЛОКИРОВКА {seconds}с'
+					},
+					metrics: {
+						summary: 'Попытки: {attempts} | Одобрено: {approved} | Отклонено: {denied} | Неавториз.: {unauthorized} | Блокировка: {lockout}',
+						lockoutOff: 'выкл',
+						lockoutTime: '{seconds}с'
+					},
+					reason: {
+						initial: 'Активна политика только владельца. Введите приватный ключ и запустите проверку.',
+						ownerContext: 'Активен контекст владельца. Введите приватный ключ владельца и запустите проверку.',
+						notOwner: 'Активна политика только владельца. {actor} не является владельцем хранилища.',
+						step1: 'Шаг 1/5 не пройден: неверный формат приватного ключа (A-Z, 0-9, дефис, 12-64 символа).',
+						step2: 'Шаг 2/5 не пройден: токен ключа отсутствует в защищенном реестре ключей.',
+						step3: 'Шаг 3/5 не пройден: ключ принадлежит {owner}, а не активному актору {actor}.',
+						step4: 'Шаг 4/5 не пройден: {actor} не является владельцем хранилища ({owner}).',
+						step5: 'Шаг 5/5 не пройден: подпись вызова не совпала для сессии владельца.',
+						approved: 'Транзакция одобрена: политика только владельца пройдена (все 5 проверок).',
+						lockoutActive: 'Активна защитная блокировка. Повторите через {seconds}с.',
+						lockoutTriggered: 'Сработала защитная блокировка: {count} неавторизованных нарушений политики владельца.',
+						reset: 'Хранилище сброшено. Политика только владельца остается активной.'
+					},
+					audit: {
+						meta: '{count} событий',
+						systemReady: 'Система готова. Включена политика хранилища только владельца.',
+						actorSwitched: 'Актор переключен на {actor}.',
+						blockedByLockout: '{actor}: заблокирован защитной блокировкой (осталось {seconds}с).',
+						approved: '{actor}: одобрено (5/5 пройдено, nonce {nonce}).',
+						denied: '{actor}: отклонено ({passed}/5 пройдено, nonce {nonce}).',
+						lockoutAlert: 'ТРЕВОГА: защитная блокировка режима только владельца включена на {seconds}с.',
+						vaultResetStandby: 'Хранилище сброшено в защищенный режим ожидания.'
+					},
+					world: {
+						vaultTitle: 'КРИПТО-ХРАНИЛИЩЕ'
+					},
+					vr: {
+						title: 'VR КОНТРОЛЬ АУТЕНТИФИКАЦИИ КЛЮЧЕЙ',
+						actorAlice: 'Актор Алиса',
+						actorBob: 'Актор Боб',
+						actorEve: 'Актор Ив',
+						useCorrect: 'Верный ключ',
+						useWrong: 'Неверный ключ',
+						verifyAccess: 'Проверить доступ',
+						clearInput: 'Очистить ввод',
+						resetVault: 'Сбросить хранилище',
+						actorOwner: 'Актор: {actor} | Владелец: {owner}',
+						public: 'Публичный: {publicKey}',
+						inputOwner: 'Ввод: {input} | Владелец ключа: {owner}',
+						nonce: 'Nonce: {nonce}{lock}',
+						lock: ' | Блок {seconds}с',
+						pipeline: 'Пайплайн: {passed}/{total} | Политика {policy}',
+						decisionPending: 'Решение ожидается',
+						audit: 'Аудит: {events} событий | {approved} одобрено / {denied} отклонено',
+						verifyLocked: 'Блок {seconds}с'
+					},
+					hudToggle: {
+						hide: 'Скрыть панель (H)',
+						show: 'Показать панель (H)'
+					}
+				}
+			};
+
+			let isSceneReady = false;
+
 			const state = {
 				actorId: 'alice',
 				decision: 'pending',
-				reason: 'Provide private key and run verification.',
+				reason: '',
 				attempts: 0,
 				approved: 0,
 				denied: 0,
+				unauthorizedAttempts: 0,
 				challengeNonce: '',
 				lastSignature: '-',
+				inputOwnerId: null,
 				pipelinePassed: 0,
-				pipelineTotal: 3,
+				pipelineTotal: 5,
+				lockoutUntil: 0,
+				securityModeKey: 'securityMode.ownerOnlyStrict',
 				hudVisible: true
 			};
 
@@ -363,13 +668,20 @@
 			};
 
 			const actors = {
-				alice: { label: 'Alice', publicKey: 'PUB-ALICE-4A8F-22C1', privateKey: 'ALICE-KEY-7FA9-OWN' },
-				bob: { label: 'Bob', publicKey: 'PUB-BOB-99C2-01ED', privateKey: 'BOB-KEY-3CC1-OWN' },
-				eve: { label: 'Eve', publicKey: 'PUB-EVE-1BAD-C0DE', privateKey: 'EVE-KEY-UNKNOWN' }
+				alice: { labelKey: 'actors.alice', publicKey: 'PUB-ALICE-4A8F-22C1', privateKey: 'ALICE-KEY-7FA9-OWN' },
+				bob: { labelKey: 'actors.bob', publicKey: 'PUB-BOB-99C2-01ED', privateKey: 'BOB-KEY-3CC1-OWN' },
+				eve: { labelKey: 'actors.eve', publicKey: 'PUB-EVE-1BAD-C0DE', privateKey: 'EVE-KEY-UNKNOWN' }
+			};
+
+			const vaultPolicy = {
+				ownerId: 'alice',
+				maxUnauthorizedAttempts: 3,
+				lockoutDurationMs: 12000
 			};
 
 			const panelState = {
 				statusMesh: null,
+				titleLabel: null,
 				reasonLabel: null,
 				actorLabel: null,
 				privateLabel: null,
@@ -385,6 +697,7 @@
 				vaultRing: null,
 				vaultBarrier: null,
 				vaultBeam: null,
+				vaultTitleLabel: null,
 				actorTerminals: [],
 				floatingGlyphs: []
 			};
@@ -416,9 +729,12 @@
 				resetVaultButton: document.getElementById( 'resetVaultButton' ),
 				publicKeyValue: document.getElementById( 'publicKeyValue' ),
 				actorValue: document.getElementById( 'actorValue' ),
+				vaultOwnerValue: document.getElementById( 'vaultOwnerValue' ),
 				challengeValue: document.getElementById( 'challengeValue' ),
 				signatureValue: document.getElementById( 'signatureValue' ),
+				keyOwnerValue: document.getElementById( 'keyOwnerValue' ),
 				pipelineValue: document.getElementById( 'pipelineValue' ),
+				securityModeValue: document.getElementById( 'securityModeValue' ),
 				decisionBadge: document.getElementById( 'decisionBadge' ),
 				reasonValue: document.getElementById( 'reasonValue' ),
 				metricsValue: document.getElementById( 'metricsValue' ),
@@ -426,9 +742,159 @@
 				auditLog: document.getElementById( 'auditLog' )
 			};
 
+			function getTranslationValue( key ) {
+
+				const current = i18n[ languageState.current ] || i18n.en;
+				const fallback = i18n.en;
+				const parts = key.split( '.' );
+				let value = current;
+
+				for ( const part of parts ) {
+
+					if ( value && Object.prototype.hasOwnProperty.call( value, part ) ) {
+						value = value[ part ];
+					} else {
+						value = undefined;
+						break;
+					}
+
+				}
+
+				if ( value !== undefined ) return value;
+
+				value = fallback;
+				for ( const part of parts ) {
+
+					if ( value && Object.prototype.hasOwnProperty.call( value, part ) ) {
+						value = value[ part ];
+					} else {
+						return undefined;
+					}
+
+				}
+
+				return value;
+
+			}
+
+			function t( key, params = {} ) {
+
+				const template = getTranslationValue( key );
+				if ( typeof template !== 'string' ) return key;
+
+				return template.replace( /\{(\w+)\}/g, ( match, token ) => {
+
+					return Object.prototype.hasOwnProperty.call( params, token ) ? params[ token ] : match;
+
+				} );
+
+			}
+
+			function getActorLabel( actorId ) {
+
+				const actor = actors[ actorId ];
+				return actor ? t( actor.labelKey ) : actorId;
+
+			}
+
+			function getSecurityModeLabel() {
+
+				return t( state.securityModeKey );
+
+			}
+
+			function applyTranslations() {
+
+				document.querySelectorAll( '[data-i18n]' ).forEach( ( node ) => {
+
+					node.textContent = t( node.dataset.i18n );
+
+				} );
+
+				document.querySelectorAll( '[data-i18n-html]' ).forEach( ( node ) => {
+
+					node.innerHTML = t( node.dataset.i18nHtml );
+
+				} );
+
+				document.querySelectorAll( '[data-i18n-aria-label]' ).forEach( ( node ) => {
+
+					node.setAttribute( 'aria-label', t( node.dataset.i18nAriaLabel ) );
+
+				} );
+
+				ui.privateKeyInput.placeholder = t( 'input.placeholder' );
+				ui.hudToggleButton.textContent = state.hudVisible ? t( 'hudToggle.hide' ) : t( 'hudToggle.show' );
+
+			}
+
+			function setLanguage( nextLanguage, persist = true ) {
+
+				const language = i18n[ nextLanguage ] ? nextLanguage : 'en';
+				languageState.current = language;
+				document.documentElement.lang = language;
+
+				if ( persist ) {
+
+					try {
+
+						localStorage.setItem( languageState.storageKey, language );
+
+					} catch ( error ) {
+
+						console.warn( 'Language storage unavailable:', error );
+
+					}
+
+				}
+
+				const select = document.getElementById( 'languageSelect' );
+				if ( select ) select.value = language;
+
+				applyTranslations();
+				document.title = t( 'scene.pageTitle' );
+
+				if ( isSceneReady ) {
+					refreshUI();
+				}
+
+			}
+
+			function initLanguageSwitcher() {
+
+				const select = document.getElementById( 'languageSelect' );
+				if ( ! select ) return;
+
+				let saved = null;
+
+				try {
+
+					saved = localStorage.getItem( languageState.storageKey );
+
+				} catch ( error ) {
+
+					saved = null;
+
+				}
+
+				const auto = ( navigator.language || '' ).toLowerCase().startsWith( 'ru' ) ? 'ru' : 'en';
+				const initial = saved && i18n[ saved ] ? saved : auto;
+				select.value = initial;
+				setLanguage( initial, false );
+
+				select.addEventListener( 'change', () => {
+
+					setLanguage( select.value );
+
+				} );
+
+			}
+
 			init();
 
 			function init() {
+
+				initLanguageSwitcher();
 
 				scene = new THREE.Scene();
 				scene.background = new THREE.Color( 0x07101a );
@@ -491,7 +957,8 @@
 				bindEvents();
 				state.challengeNonce = generateNonce();
 				setActor( 'alice', false );
-				recordAudit( 'System ready. Awaiting key verification.', 'info' );
+				recordAudit( t( 'audit.systemReady' ), 'info' );
+				isSceneReady = true;
 				refreshUI();
 				toggleHudVisibility( true );
 
@@ -630,7 +1097,7 @@
 				beam.visible = false;
 				zone.add( beam );
 
-				const label = createWorldLabel( 'CRYPTO VAULT', 1024, 180, 3.9, 0.48, '#dff4ff', 'rgba(17, 58, 81, 0.9)' );
+				const label = createWorldLabel( t( 'world.vaultTitle' ), 1024, 180, 3.9, 0.48, '#dff4ff', 'rgba(17, 58, 81, 0.9)' );
 				label.mesh.position.set( 0, 5.7, - 2.6 );
 				zone.add( label.mesh );
 
@@ -640,6 +1107,7 @@
 				sceneRefs.vaultRing = ring;
 				sceneRefs.vaultBarrier = barrier;
 				sceneRefs.vaultBeam = beam;
+				sceneRefs.vaultTitleLabel = label;
 
 			}
 
@@ -652,6 +1120,7 @@
 
 					const actorId = actorList[ i ];
 					const actor = actors[ actorId ];
+					const isVaultOwner = actorId === vaultPolicy.ownerId;
 					const x = ( i - 1 ) * 4.7;
 
 					const terminal = new THREE.Group();
@@ -694,7 +1163,7 @@
 					ring.rotation.x = Math.PI / 2;
 					terminal.add( ring );
 
-					const label = createWorldLabel( `${actor.label}\n${actor.publicKey}`, 940, 240, 2.9, 0.8, '#dcf4ff', 'rgba(16, 58, 82, 0.88)' );
+					const label = createWorldLabel( `${getActorLabel( actorId )}${isVaultOwner ? t( 'actors.ownerSuffix' ) : ''}\n${actor.publicKey}`, 940, 240, 2.9, 0.8, '#dcf4ff', isVaultOwner ? 'rgba(76, 57, 19, 0.88)' : 'rgba(16, 58, 82, 0.88)' );
 					label.mesh.position.set( 0, 2.72, 0 );
 					terminal.add( label.mesh );
 
@@ -710,6 +1179,14 @@
 					actorsGroup.add( terminal );
 					sceneRefs.actorTerminals.push( { id: actorId, group: terminal, orb, ring, label, hit } );
 					sceneRefs.floatingGlyphs.push( { mesh: ring, speed: 0.55 + i * 0.08 } );
+
+					if ( isVaultOwner ) {
+
+						ring.material.color.setHex( 0xffd184 );
+						ring.material.emissive.setHex( 0xf0b24e );
+						ring.material.emissiveIntensity = 0.82;
+
+					}
 
 				}
 
@@ -770,18 +1247,19 @@
 				);
 				panel.add( body );
 
-				const title = createWorldLabel( 'VR KEY AUTH CONTROL', 1024, 180, 4.2, 0.46, '#dff4ff', 'rgba(20, 64, 91, 0.9)' );
+				const title = createWorldLabel( t( 'vr.title' ), 1024, 180, 4.2, 0.46, '#dff4ff', 'rgba(20, 64, 91, 0.9)' );
 				title.mesh.position.set( 0, 2.8, 0.08 );
 				panel.add( title.mesh );
+				panelState.titleLabel = title;
 
-				panelState.buttons.actorAlice = createVrButton( 'Actor Alice', 0x2d77a2, () => setActor( 'alice' ) );
-				panelState.buttons.actorBob = createVrButton( 'Actor Bob', 0x2d77a2, () => setActor( 'bob' ) );
-				panelState.buttons.actorEve = createVrButton( 'Actor Eve', 0x8a4f5a, () => setActor( 'eve' ) );
-				panelState.buttons.correct = createVrButton( 'Use Correct Key', 0x2f8a5f, useCorrectKey );
-				panelState.buttons.wrong = createVrButton( 'Use Wrong Key', 0xa34b4b, useWrongKey );
-				panelState.buttons.verify = createVrButton( 'Verify Access', 0x357bb0, verifyAccess );
-				panelState.buttons.clear = createVrButton( 'Clear Input', 0x6a5a89, clearInput );
-				panelState.buttons.reset = createVrButton( 'Reset Vault', 0x47658a, resetVault );
+				panelState.buttons.actorAlice = createVrButton( t( 'vr.actorAlice' ), 0x2d77a2, () => setActor( 'alice' ) );
+				panelState.buttons.actorBob = createVrButton( t( 'vr.actorBob' ), 0x2d77a2, () => setActor( 'bob' ) );
+				panelState.buttons.actorEve = createVrButton( t( 'vr.actorEve' ), 0x8a4f5a, () => setActor( 'eve' ) );
+				panelState.buttons.correct = createVrButton( t( 'vr.useCorrect' ), 0x2f8a5f, useCorrectKey );
+				panelState.buttons.wrong = createVrButton( t( 'vr.useWrong' ), 0xa34b4b, useWrongKey );
+				panelState.buttons.verify = createVrButton( t( 'vr.verifyAccess' ), 0x357bb0, verifyAccess );
+				panelState.buttons.clear = createVrButton( t( 'vr.clearInput' ), 0x6a5a89, clearInput );
+				panelState.buttons.reset = createVrButton( t( 'vr.resetVault' ), 0x47658a, resetVault );
 
 				panelState.buttons.actorAlice.group.position.set( - 1.25, 1.48, 0.1 );
 				panelState.buttons.actorBob.group.position.set( 1.25, 1.48, 0.1 );
@@ -803,31 +1281,31 @@
 					panelState.buttons.reset.group
 				);
 
-				panelState.actorLabel = createWorldLabel( 'Actor: Alice', 1024, 150, 4, 0.28, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
+				panelState.actorLabel = createWorldLabel( t( 'vr.actorOwner', { actor: getActorLabel( 'alice' ), owner: getActorLabel( vaultPolicy.ownerId ) } ), 1024, 150, 4, 0.28, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
 				panelState.actorLabel.mesh.position.set( 0, - 1.15, 0.1 );
 				panel.add( panelState.actorLabel.mesh );
 
-				panelState.publicLabel = createWorldLabel( 'Public: -', 1140, 150, 4.5, 0.28, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
+				panelState.publicLabel = createWorldLabel( t( 'vr.public', { publicKey: '-' } ), 1140, 150, 4.5, 0.28, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
 				panelState.publicLabel.mesh.position.set( 0, - 1.52, 0.1 );
 				panel.add( panelState.publicLabel.mesh );
 
-				panelState.privateLabel = createWorldLabel( 'Input: (empty)', 1140, 150, 4.5, 0.28, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
+				panelState.privateLabel = createWorldLabel( t( 'vr.inputOwner', { input: t( 'ui.empty' ), owner: t( 'ui.none' ) } ), 1140, 150, 4.5, 0.28, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
 				panelState.privateLabel.mesh.position.set( 0, - 1.89, 0.1 );
 				panel.add( panelState.privateLabel.mesh );
 
-				panelState.challengeLabel = createWorldLabel( 'Nonce: -', 1140, 150, 4.5, 0.28, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
+				panelState.challengeLabel = createWorldLabel( t( 'vr.nonce', { nonce: '-', lock: '' } ), 1140, 150, 4.5, 0.28, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
 				panelState.challengeLabel.mesh.position.set( 0, - 2.26, 0.1 );
 				panel.add( panelState.challengeLabel.mesh );
 
-				panelState.pipelineLabel = createWorldLabel( 'Pipeline: 0/3 passed', 1140, 150, 4.5, 0.28, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
+				panelState.pipelineLabel = createWorldLabel( t( 'vr.pipeline', { passed: 0, total: state.pipelineTotal, policy: getSecurityModeLabel() } ), 1140, 150, 4.5, 0.28, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
 				panelState.pipelineLabel.mesh.position.set( 0, - 2.63, 0.1 );
 				panel.add( panelState.pipelineLabel.mesh );
 
-				panelState.reasonLabel = createWorldLabel( 'Decision pending', 1140, 180, 4.5, 0.36, '#d8f2ff', 'rgba(20, 66, 90, 0.9)' );
+				panelState.reasonLabel = createWorldLabel( t( 'vr.decisionPending' ), 1140, 180, 4.5, 0.36, '#d8f2ff', 'rgba(20, 66, 90, 0.9)' );
 				panelState.reasonLabel.mesh.position.set( 0, - 3.07, 0.1 );
 				panel.add( panelState.reasonLabel.mesh );
 
-				panelState.auditLabel = createWorldLabel( 'Audit: 0 events', 1024, 140, 4, 0.26, '#d8f2ff', 'rgba(16, 49, 70, 0.88)' );
+				panelState.auditLabel = createWorldLabel( t( 'vr.audit', { events: 0, approved: 0, denied: 0 } ), 1024, 140, 4, 0.26, '#d8f2ff', 'rgba(16, 49, 70, 0.88)' );
 				panelState.auditLabel.mesh.position.set( 0, - 3.5, 0.1 );
 				panel.add( panelState.auditLabel.mesh );
 
@@ -985,21 +1463,46 @@
 
 			}
 
-			function buildSignature( keyToken, nonce ) {
+			function buildSignature( keyToken, nonce, actorId = '' ) {
 
-				const hashA = pseudoHash( `${keyToken}|${nonce}|KEYAUTH` );
-				const hashB = pseudoHash( `${nonce}|${keyToken}|SIGN` );
+				const hashA = pseudoHash( `${keyToken}|${nonce}|${actorId}|KEYAUTH` );
+				const hashB = pseudoHash( `${nonce}|${actorId}|${keyToken}|SIGN` );
 				return `SIG-${hashA.slice( 0, 4 )}-${hashA.slice( 4, 8 )}-${hashB.slice( 0, 4 )}-${hashB.slice( 4, 8 )}`;
 
 			}
 
-			function getExpectedSignature( actor, nonce ) {
+			function findInputOwnerId( input ) {
 
-				return buildSignature( actor.privateKey, nonce );
+				for ( const id in actors ) {
+
+					if ( actors[ id ].privateKey === input ) return id;
+
+				}
+
+				return null;
 
 			}
 
-			function runVerificationPipeline( actorId, input, expectedSignature, inputSignature ) {
+			function getLockoutRemainingMs() {
+
+				return Math.max( 0, state.lockoutUntil - performance.now() );
+
+			}
+
+			function isUnauthorizedViolation( violationType ) {
+
+				return violationType === 'holder-mismatch' || violationType === 'non-owner';
+
+			}
+
+			function getExpectedSignature( nonce ) {
+
+				const owner = actors[ vaultPolicy.ownerId ];
+				return buildSignature( owner.privateKey, nonce, vaultPolicy.ownerId );
+
+			}
+
+			function runVerificationPipeline( actorId, input, nonce, inputSignature ) {
 
 				const formatOk = /^[A-Z0-9-]{12,64}$/.test( input );
 				if ( ! formatOk ) {
@@ -1007,35 +1510,69 @@
 					return {
 						approved: false,
 						passedSteps: 0,
-						reason: 'Step 1/3 failed: private key format is invalid (A-Z, 0-9, dash, 12-64 chars).'
+						inputOwnerId: null,
+						violationType: 'format',
+						reason: t( 'reason.step1' )
 					};
 
 				}
 
-				if ( actorId === 'eve' ) {
+				const inputOwnerId = findInputOwnerId( input );
+				if ( ! inputOwnerId ) {
 
 					return {
 						approved: false,
 						passedSteps: 1,
-						reason: 'Step 2/3 failed: ownership check failed (Eve is not the vault owner).'
+						inputOwnerId: null,
+						violationType: 'unregistered',
+						reason: t( 'reason.step2' )
 					};
 
 				}
 
-				if ( inputSignature !== expectedSignature ) {
+				if ( inputOwnerId !== actorId ) {
 
 					return {
 						approved: false,
 						passedSteps: 2,
-						reason: 'Step 3/3 failed: challenge signature mismatch.'
+						inputOwnerId,
+						violationType: 'holder-mismatch',
+						reason: t( 'reason.step3', { owner: getActorLabel( inputOwnerId ), actor: getActorLabel( actorId ) } )
+					};
+
+				}
+
+				if ( actorId !== vaultPolicy.ownerId ) {
+
+					return {
+						approved: false,
+						passedSteps: 3,
+						inputOwnerId,
+						violationType: 'non-owner',
+						reason: t( 'reason.step4', { actor: getActorLabel( actorId ), owner: getActorLabel( vaultPolicy.ownerId ) } )
+					};
+
+				}
+
+				const expectedSignature = getExpectedSignature( nonce );
+				if ( inputSignature !== expectedSignature ) {
+
+					return {
+						approved: false,
+						passedSteps: 4,
+						inputOwnerId,
+						violationType: 'signature',
+						reason: t( 'reason.step5' )
 					};
 
 				}
 
 				return {
 					approved: true,
-					passedSteps: 3,
-					reason: 'Transaction approved: all 3 verification steps passed.'
+					passedSteps: 5,
+					inputOwnerId,
+					violationType: 'none',
+					reason: t( 'reason.approved' )
 				};
 
 			}
@@ -1105,14 +1642,17 @@
 				state.actorId = actorId;
 				ui.privateKeyInput.value = '';
 				state.decision = 'pending';
-				state.reason = 'Provide private key and run verification.';
+				state.reason = actorId === vaultPolicy.ownerId
+					? t( 'reason.ownerContext' )
+					: t( 'reason.notOwner', { actor: getActorLabel( actorId ) } );
 				state.pipelinePassed = 0;
 				state.lastSignature = '-';
+				state.inputOwnerId = null;
 				state.challengeNonce = generateNonce();
 
 				if ( log ) {
 
-					recordAudit( `Actor switched to ${actors[ actorId ].label}.`, 'info' );
+					recordAudit( t( 'audit.actorSwitched', { actor: getActorLabel( actorId ) } ), 'info' );
 
 				}
 
@@ -1129,7 +1669,11 @@
 
 			function useWrongKey() {
 
+				const foreignActorIds = Object.keys( actors ).filter( ( id ) => id !== state.actorId );
+				const stolenKey = actors[ foreignActorIds[ Math.floor( Math.random() * foreignActorIds.length ) ] ].privateKey;
+
 				const wrongSamples = [
+					stolenKey,
 					'WRONG-KEY-0001',
 					'EVE-OVERRIDE-FAIL',
 					'PRIVATE-KEY-NOT-MATCH',
@@ -1152,31 +1696,65 @@
 
 				unlockAudio();
 
-				const actor = actors[ state.actorId ];
+				const actorLabel = getActorLabel( state.actorId );
 				const input = ui.privateKeyInput.value.trim();
+				state.inputOwnerId = input.length > 0 ? findInputOwnerId( input ) : null;
+
+				const lockoutRemainingMs = getLockoutRemainingMs();
+				if ( lockoutRemainingMs > 0 ) {
+
+					const lockoutSeconds = ( lockoutRemainingMs / 1000 ).toFixed( 1 );
+					state.decision = 'denied';
+					state.pipelinePassed = 0;
+					state.lastSignature = '-';
+					state.reason = t( 'reason.lockoutActive', { seconds: lockoutSeconds } );
+					recordAudit( t( 'audit.blockedByLockout', { actor: actorLabel, seconds: lockoutSeconds } ), 'denied' );
+					applyDeniedVisuals();
+					refreshUI();
+					return;
+
+				}
+
 				const nonce = state.challengeNonce;
 
 				state.attempts ++;
 				vaultState.lastDecisionTime = performance.now();
-				state.lastSignature = input.length > 0 ? buildSignature( input, nonce ) : '-';
+				state.lastSignature = input.length > 0 ? buildSignature( input, nonce, state.actorId ) : '-';
 
-				const expectedSignature = getExpectedSignature( actor, nonce );
-				const result = runVerificationPipeline( state.actorId, input, expectedSignature, state.lastSignature );
+				const result = runVerificationPipeline( state.actorId, input, nonce, state.lastSignature );
 				state.pipelinePassed = result.passedSteps;
+				state.inputOwnerId = result.inputOwnerId;
 				state.reason = result.reason;
 
 				if ( result.approved ) {
 
 					state.decision = 'approved';
 					state.approved ++;
-					recordAudit( `${actor.label}: approved (3/3 passed, nonce ${truncateLabel( nonce, 18 )}).`, 'approved' );
+					state.unauthorizedAttempts = 0;
+					state.lockoutUntil = 0;
+					recordAudit( t( 'audit.approved', { actor: actorLabel, nonce: truncateLabel( nonce, 18 ) } ), 'approved' );
 					applyApprovedVisuals();
 
 				} else {
 
 					state.decision = 'denied';
 					state.denied ++;
-					recordAudit( `${actor.label}: denied (${result.passedSteps}/3 passed, nonce ${truncateLabel( nonce, 18 )}).`, 'denied' );
+					recordAudit( t( 'audit.denied', { actor: actorLabel, passed: result.passedSteps, nonce: truncateLabel( nonce, 18 ) } ), 'denied' );
+
+					if ( isUnauthorizedViolation( result.violationType ) ) {
+
+						state.unauthorizedAttempts ++;
+
+						if ( state.unauthorizedAttempts >= vaultPolicy.maxUnauthorizedAttempts ) {
+
+							state.lockoutUntil = performance.now() + vaultPolicy.lockoutDurationMs;
+							state.reason = t( 'reason.lockoutTriggered', { count: state.unauthorizedAttempts } );
+							recordAudit( t( 'audit.lockoutAlert', { seconds: ( vaultPolicy.lockoutDurationMs / 1000 ).toFixed( 0 ) } ), 'denied' );
+
+						}
+
+					}
+
 					applyDeniedVisuals();
 
 				}
@@ -1201,9 +1779,13 @@
 				for ( const terminal of sceneRefs.actorTerminals ) {
 
 					const isActive = terminal.id === state.actorId;
+					const isOwner = terminal.id === vaultPolicy.ownerId;
 					terminal.orb.material.color.setHex( isActive ? 0x7dffbe : 0x79c8ff );
 					terminal.orb.material.emissive.setHex( isActive ? 0x56ffb0 : 0x62bcff );
 					terminal.orb.material.emissiveIntensity = isActive ? 1.05 : 0.5;
+					terminal.ring.material.color.setHex( isOwner ? 0xffd184 : 0x9adfff );
+					terminal.ring.material.emissive.setHex( isOwner ? 0xf0b24e : 0x66c8ff );
+					terminal.ring.material.emissiveIntensity = isOwner ? ( isActive ? 1.02 : 0.8 ) : 0.52;
 
 				}
 
@@ -1226,9 +1808,13 @@
 				for ( const terminal of sceneRefs.actorTerminals ) {
 
 					const isActive = terminal.id === state.actorId;
+					const isOwner = terminal.id === vaultPolicy.ownerId;
 					terminal.orb.material.color.setHex( isActive ? 0xff8794 : 0x79c8ff );
 					terminal.orb.material.emissive.setHex( isActive ? 0xff6778 : 0x62bcff );
 					terminal.orb.material.emissiveIntensity = isActive ? 1.02 : 0.5;
+					terminal.ring.material.color.setHex( isOwner ? 0xffd184 : 0x9adfff );
+					terminal.ring.material.emissive.setHex( isOwner ? 0xf0b24e : 0x66c8ff );
+					terminal.ring.material.emissiveIntensity = isOwner ? 0.8 : 0.52;
 
 				}
 
@@ -1240,9 +1826,12 @@
 			function resetVault() {
 
 				state.decision = 'pending';
-				state.reason = 'Vault reset. Provide private key and verify again.';
+				state.reason = t( 'reason.reset' );
 				state.pipelinePassed = 0;
 				state.lastSignature = '-';
+				state.inputOwnerId = null;
+				state.unauthorizedAttempts = 0;
+				state.lockoutUntil = 0;
 				state.challengeNonce = generateNonce();
 				ui.privateKeyInput.value = '';
 
@@ -1258,13 +1847,17 @@
 
 				for ( const terminal of sceneRefs.actorTerminals ) {
 
+					const isOwner = terminal.id === vaultPolicy.ownerId;
 					terminal.orb.material.color.setHex( 0x7ec9ff );
 					terminal.orb.material.emissive.setHex( 0x63bdff );
 					terminal.orb.material.emissiveIntensity = 0.5;
+					terminal.ring.material.color.setHex( isOwner ? 0xffd184 : 0x9adfff );
+					terminal.ring.material.emissive.setHex( isOwner ? 0xf0b24e : 0x66c8ff );
+					terminal.ring.material.emissiveIntensity = isOwner ? 0.82 : 0.52;
 
 				}
 
-				recordAudit( 'Vault reset to secure standby mode.', 'info' );
+				recordAudit( t( 'audit.vaultResetStandby' ), 'info' );
 				refreshUI();
 
 			}
@@ -1288,27 +1881,45 @@
 			function refreshUI() {
 
 				const actor = actors[ state.actorId ];
-				ui.actorValue.textContent = actor.label;
-				ui.publicKeyValue.textContent = `PUB: ${actor.publicKey}`;
+				const lockoutRemainingMs = getLockoutRemainingMs();
+				const lockoutSeconds = ( lockoutRemainingMs / 1000 ).toFixed( 1 );
+				const securityModeLabel = getSecurityModeLabel();
+				const inputText = ui.privateKeyInput.value.trim();
+				const keyOwnerLabel = state.inputOwnerId
+					? getActorLabel( state.inputOwnerId )
+					: ( inputText.length > 0 ? t( 'ui.unknownUnregistered' ) : t( 'ui.none' ) );
+				ui.actorValue.textContent = getActorLabel( state.actorId );
+				ui.vaultOwnerValue.textContent = getActorLabel( vaultPolicy.ownerId );
+				ui.publicKeyValue.textContent = `${t( 'ui.pubPrefix' )}: ${actor.publicKey}`;
 				ui.challengeValue.textContent = state.challengeNonce;
 				ui.signatureValue.textContent = state.lastSignature;
-				ui.pipelineValue.textContent = `${state.pipelinePassed}/${state.pipelineTotal} passed`;
+				ui.keyOwnerValue.textContent = keyOwnerLabel;
+				ui.pipelineValue.textContent = t( 'pipeline.progress', { passed: state.pipelinePassed, total: state.pipelineTotal } );
+				ui.securityModeValue.textContent = lockoutRemainingMs > 0
+					? t( 'securityMode.withLockout', { mode: securityModeLabel, seconds: lockoutSeconds } )
+					: securityModeLabel;
 				ui.reasonValue.textContent = state.reason;
-				ui.metricsValue.textContent = `Attempts: ${state.attempts} | Approved: ${state.approved} | Denied: ${state.denied}`;
+				ui.metricsValue.textContent = t( 'metrics.summary', {
+					attempts: state.attempts,
+					approved: state.approved,
+					denied: state.denied,
+					unauthorized: state.unauthorizedAttempts,
+					lockout: lockoutRemainingMs > 0 ? t( 'metrics.lockoutTime', { seconds: lockoutSeconds } ) : t( 'metrics.lockoutOff' )
+				} );
 
 				if ( state.decision === 'approved' ) {
 
-					ui.decisionBadge.textContent = 'APPROVED';
+					ui.decisionBadge.textContent = t( 'status.approved' );
 					ui.decisionBadge.className = 'badge valid';
 
 				} else if ( state.decision === 'denied' ) {
 
-					ui.decisionBadge.textContent = 'DENIED';
+					ui.decisionBadge.textContent = t( 'status.denied' );
 					ui.decisionBadge.className = 'badge invalid';
 
 				} else {
 
-					ui.decisionBadge.textContent = 'PENDING';
+					ui.decisionBadge.textContent = t( 'status.pending' );
 					ui.decisionBadge.className = 'badge invalid';
 
 				}
@@ -1316,7 +1927,10 @@
 				ui.ownerAliceButton.disabled = state.actorId === 'alice';
 				ui.ownerBobButton.disabled = state.actorId === 'bob';
 				ui.ownerEveButton.disabled = state.actorId === 'eve';
-				ui.useCorrectKeyButton.disabled = state.actorId === 'eve';
+				ui.verifyButton.disabled = lockoutRemainingMs > 0 || inputText.length === 0;
+				ui.verifyButton.textContent = lockoutRemainingMs > 0
+					? t( 'vr.verifyLocked', { seconds: lockoutSeconds } )
+					: t( 'buttons.verify' );
 
 				refreshAuditList();
 				refreshWorldPanelLabels();
@@ -1326,7 +1940,7 @@
 
 			function refreshAuditList() {
 
-				ui.auditMeta.textContent = `${audit.entries.length} events`;
+				ui.auditMeta.textContent = t( 'audit.meta', { count: audit.entries.length } );
 				ui.auditLog.innerHTML = '';
 
 				for ( const entry of audit.entries ) {
@@ -1344,13 +1958,34 @@
 			function refreshWorldPanelLabels() {
 
 				const actor = actors[ state.actorId ];
-				if ( panelState.actorLabel ) panelState.actorLabel.redraw( `Actor: ${actor.label}` );
-				if ( panelState.publicLabel ) panelState.publicLabel.redraw( `Public: ${actor.publicKey}` );
+				const lockoutRemainingMs = getLockoutRemainingMs();
+				if ( panelState.titleLabel ) panelState.titleLabel.redraw( t( 'vr.title' ) );
+				if ( sceneRefs.vaultTitleLabel ) sceneRefs.vaultTitleLabel.redraw( t( 'world.vaultTitle' ) );
+				if ( panelState.actorLabel ) panelState.actorLabel.redraw( t( 'vr.actorOwner', { actor: getActorLabel( state.actorId ), owner: getActorLabel( vaultPolicy.ownerId ) } ) );
+				if ( panelState.publicLabel ) panelState.publicLabel.redraw( t( 'vr.public', { publicKey: actor.publicKey } ) );
+
+				for ( const terminal of sceneRefs.actorTerminals ) {
+
+					const actorInfo = actors[ terminal.id ];
+					if ( ! actorInfo || ! terminal.label ) continue;
+					const isOwner = terminal.id === vaultPolicy.ownerId;
+					terminal.label.redraw( `${getActorLabel( terminal.id )}${isOwner ? t( 'actors.ownerSuffix' ) : ''}\n${actorInfo.publicKey}` );
+
+				}
 
 				const inputText = ui.privateKeyInput.value.trim();
-				if ( panelState.privateLabel ) panelState.privateLabel.redraw( `Input: ${inputText.length === 0 ? '(empty)' : truncateLabel( inputText, 42 )}` );
-				if ( panelState.challengeLabel ) panelState.challengeLabel.redraw( `Nonce: ${truncateLabel( state.challengeNonce, 34 )}` );
-				if ( panelState.pipelineLabel ) panelState.pipelineLabel.redraw( `Pipeline: ${state.pipelinePassed}/${state.pipelineTotal} | Sig ${truncateLabel( state.lastSignature, 20 )}` );
+				const keyOwnerText = state.inputOwnerId ? getActorLabel( state.inputOwnerId ) : ( inputText.length > 0 ? t( 'ui.unknown' ) : t( 'ui.none' ) );
+				if ( panelState.privateLabel ) panelState.privateLabel.redraw( t( 'vr.inputOwner', {
+					input: inputText.length === 0 ? t( 'ui.empty' ) : truncateLabel( inputText, 42 ),
+					owner: keyOwnerText
+				} ) );
+				if ( panelState.challengeLabel ) {
+
+					const lockText = lockoutRemainingMs > 0 ? t( 'vr.lock', { seconds: ( lockoutRemainingMs / 1000 ).toFixed( 1 ) } ) : '';
+					panelState.challengeLabel.redraw( t( 'vr.nonce', { nonce: truncateLabel( state.challengeNonce, 34 ), lock: lockText } ) );
+
+				}
+				if ( panelState.pipelineLabel ) panelState.pipelineLabel.redraw( t( 'vr.pipeline', { passed: state.pipelinePassed, total: state.pipelineTotal, policy: getSecurityModeLabel() } ) );
 
 				if ( panelState.reasonLabel ) {
 
@@ -1364,7 +1999,11 @@
 
 				if ( panelState.auditLabel ) {
 
-					panelState.auditLabel.redraw( `Audit: ${audit.entries.length} events | ${state.approved} approved / ${state.denied} denied` );
+					panelState.auditLabel.redraw( t( 'vr.audit', {
+						events: audit.entries.length,
+						approved: state.approved,
+						denied: state.denied
+					} ) );
 
 				}
 
@@ -1373,13 +2012,24 @@
 			function refreshVrButtonState() {
 
 				if ( ! panelState.buttons.actorAlice ) return;
+				const inputText = ui.privateKeyInput.value.trim();
+				const lockoutRemainingMs = getLockoutRemainingMs();
+				const verifyEnabled = inputText.length > 0 && lockoutRemainingMs <= 0;
 
 				panelState.buttons.actorAlice.setEnabled( state.actorId !== 'alice' );
 				panelState.buttons.actorBob.setEnabled( state.actorId !== 'bob' );
 				panelState.buttons.actorEve.setEnabled( state.actorId !== 'eve' );
-				panelState.buttons.correct.setEnabled( state.actorId !== 'eve' );
-				panelState.buttons.verify.setEnabled( ui.privateKeyInput.value.trim().length > 0 );
-				panelState.buttons.clear.setEnabled( ui.privateKeyInput.value.trim().length > 0 );
+				panelState.buttons.actorAlice.setText( t( 'vr.actorAlice' ) );
+				panelState.buttons.actorBob.setText( t( 'vr.actorBob' ) );
+				panelState.buttons.actorEve.setText( t( 'vr.actorEve' ) );
+				panelState.buttons.correct.setEnabled( true );
+				panelState.buttons.correct.setText( t( 'vr.useCorrect' ) );
+				panelState.buttons.wrong.setText( t( 'vr.useWrong' ) );
+				panelState.buttons.verify.setEnabled( verifyEnabled );
+				panelState.buttons.verify.setText( lockoutRemainingMs > 0 ? t( 'vr.verifyLocked', { seconds: ( lockoutRemainingMs / 1000 ).toFixed( 1 ) } ) : t( 'vr.verifyAccess' ) );
+				panelState.buttons.clear.setEnabled( inputText.length > 0 );
+				panelState.buttons.clear.setText( t( 'vr.clearInput' ) );
+				panelState.buttons.reset.setText( t( 'vr.resetVault' ) );
 
 			}
 
@@ -1619,7 +2269,7 @@
 
 				state.hudVisible = forceVisible === undefined ? ! state.hudVisible : forceVisible;
 				ui.hud.classList.toggle( 'is-hidden', ! state.hudVisible );
-				ui.hudToggleButton.textContent = state.hudVisible ? 'Hide Panel (H)' : 'Show Panel (H)';
+				ui.hudToggleButton.textContent = state.hudVisible ? t( 'hudToggle.hide' ) : t( 'hudToggle.show' );
 				ui.hudToggleButton.setAttribute( 'aria-pressed', String( ! state.hudVisible ) );
 
 			}

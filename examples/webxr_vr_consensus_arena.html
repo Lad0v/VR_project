@@ -341,81 +341,110 @@
 					text-align: center;
 				}
 			}
+
+			.language-switcher {
+				position: fixed;
+				inset-block-end: 16px;
+				inset-inline-end: 16px;
+				z-index: 6;
+				display: inline-flex;
+				align-items: center;
+				gap: 8px;
+				padding: 6px 10px;
+				border-radius: 999px;
+				border: 1px solid rgba( 123, 199, 255, 0.4 );
+				background: rgba( 11, 32, 48, 0.82 );
+				backdrop-filter: blur( 4px );
+				color: #eaf7ff;
+				font-size: 12px;
+				font-weight: 600;
+				letter-spacing: 0.01em;
+			}
+
+			.language-switcher select {
+				background: rgba( 18, 46, 68, 0.95 );
+				border: 1px solid rgba( 123, 199, 255, 0.55 );
+				color: inherit;
+				border-radius: 999px;
+				padding: 4px 8px;
+				font-size: 12px;
+				cursor: pointer;
+			}
 		</style>
 	</head>
 	<body>
 		<div id="hud">
-			<h2>Scene 4: Consensus Arena</h2>
-			<p>
+			<h2 data-i18n="scene.title">Scene 4: Consensus Arena</h2>
+			<p data-i18n-html="scene.description">
 				Compare Proof of Work and Proof of Stake in one arena.<br>
 				PoW is slower and energy-heavy, PoS picks validators by stake and finalizes faster.
 			</p>
 			<div class="toolbar triple">
-				<button id="modePowButton">Mode: PoW</button>
-				<button id="modePosButton">Mode: PoS</button>
-				<button id="startRoundButton">Start Round</button>
+				<button id="modePowButton" data-i18n="buttons.modePow">Mode: PoW</button>
+				<button id="modePosButton" data-i18n="buttons.modePos">Mode: PoS</button>
+				<button id="startRoundButton" data-i18n="buttons.startRound">Start Round</button>
 			</div>
 			<div class="toolbar">
-				<button id="profileButton">Profile: Learning</button>
-				<button id="partitionButton">Partition: Off</button>
-				<button id="autoRunButton">Auto Run: Off</button>
-				<button id="randomizeStakeButton">Randomize Stakes</button>
-				<button id="rebalancePowerButton">Rebalance Hash Power</button>
-				<button id="boostStakeButton">Boost Selected Stake</button>
-				<button id="resetStatsButton">Reset Stats</button>
+				<button id="profileButton" data-i18n="buttons.profileLearning">Profile: Learning</button>
+				<button id="partitionButton" data-i18n="buttons.partitionOff">Partition: Off</button>
+				<button id="autoRunButton" data-i18n="buttons.autoRunOff">Auto Run: Off</button>
+				<button id="randomizeStakeButton" data-i18n="buttons.randomizeStake">Randomize Stakes</button>
+				<button id="rebalancePowerButton" data-i18n="buttons.rebalanceHash">Rebalance Hash Power</button>
+				<button id="boostStakeButton" data-i18n="buttons.boostStake">Boost Selected Stake</button>
+				<button id="resetStatsButton" data-i18n="buttons.resetStats">Reset Stats</button>
 			</div>
 			<div class="indicators">
-				<span>Mode</span>
+				<span data-i18n="labels.mode">Mode</span>
 				<span class="value" id="modeValue">Proof of Work</span>
-				<span>Profile</span>
+				<span data-i18n="labels.profile">Profile</span>
 				<span class="value" id="profileValue">Learning</span>
-				<span>Network</span>
+				<span data-i18n="labels.network">Network</span>
 				<span class="value" id="networkValue">Connected</span>
-				<span>Status</span>
+				<span data-i18n="labels.status">Status</span>
 				<span><span class="badge pending" id="stateBadge">PENDING</span></span>
-				<span>Round</span>
+				<span data-i18n="labels.round">Round</span>
 				<span class="value" id="roundValue">#0</span>
-				<span>Pipeline Stage</span>
+				<span data-i18n="labels.pipelineStage">Pipeline Stage</span>
 				<span class="value" id="stageValue">Idle (0%)</span>
-				<span>Validator</span>
+				<span data-i18n="labels.validator">Validator</span>
 				<span class="value" id="validatorValue">none</span>
-				<span>Round Metrics</span>
+				<span data-i18n="labels.roundMetrics">Round Metrics</span>
 				<span class="value" id="roundTimerValue">Latency 0.0s | Energy 0.0 | Compute 0.0</span>
-				<span>Economy</span>
+				<span data-i18n="labels.economy">Economy</span>
 				<span class="value" id="economyValue">Rewards 0.00 | Slashed 0.00</span>
-				<span>Summary</span>
+				<span data-i18n="labels.summary">Summary</span>
 				<span class="value" id="metricsValue">Rounds: 0 | Accepted: 0 | Rejected: 0</span>
-				<span>Event</span>
+				<span data-i18n="labels.event">Event</span>
 				<span class="value" id="eventValue">Select mode and start consensus round.</span>
 			</div>
 
 			<div class="panel">
 				<div class="panel-title">
-					<span>Consensus Pipeline</span>
+					<span data-i18n="panel.pipeline">Consensus Pipeline</span>
 					<span id="pipelineMeta">Stage 0/3</span>
 				</div>
 				<div class="pipeline-grid">
-					<div class="pipeline-step" id="pipelineStep0">1 Proposer</div>
-					<div class="pipeline-step" id="pipelineStep1">2 Gossip/Vote</div>
-					<div class="pipeline-step" id="pipelineStep2">3 Finalization</div>
+					<div class="pipeline-step" id="pipelineStep0" data-i18n="pipeline.step1">1 Proposer</div>
+					<div class="pipeline-step" id="pipelineStep1" data-i18n="pipeline.step2">2 Gossip/Vote</div>
+					<div class="pipeline-step" id="pipelineStep2" data-i18n="pipeline.step3">3 Finalization</div>
 				</div>
 				<div id="pipelineProgressBar"><div id="pipelineProgressFill"></div></div>
 			</div>
 
 			<div class="panel">
 				<div class="panel-title">
-					<span>PoW vs PoS Side-by-Side</span>
+					<span data-i18n="panel.sideBySide">PoW vs PoS Side-by-Side</span>
 				</div>
 				<div class="metrics-board">
-					<div class="metrics-head">Mode</div>
-					<div class="metrics-head">Avg Latency</div>
-					<div class="metrics-head">Avg Energy</div>
-					<div class="metrics-head">Throughput</div>
-					<div class="metrics-head">Rounds</div>
-					<div class="metrics-head">Rewards</div>
-					<div class="metrics-head">Slashed</div>
+					<div class="metrics-head" data-i18n="metricsHead.mode">Mode</div>
+					<div class="metrics-head" data-i18n="metricsHead.avgLatency">Avg Latency</div>
+					<div class="metrics-head" data-i18n="metricsHead.avgEnergy">Avg Energy</div>
+					<div class="metrics-head" data-i18n="metricsHead.throughput">Throughput</div>
+					<div class="metrics-head" data-i18n="metricsHead.rounds">Rounds</div>
+					<div class="metrics-head" data-i18n="metricsHead.rewards">Rewards</div>
+					<div class="metrics-head" data-i18n="metricsHead.slashed">Slashed</div>
 
-					<div class="metrics-cell mode">Proof of Work</div>
+					<div class="metrics-cell mode" data-i18n="mode.pow">Proof of Work</div>
 					<div class="metrics-cell" id="powLatencyValue">0.0s</div>
 					<div class="metrics-cell" id="powEnergyValue">0.0</div>
 					<div class="metrics-cell" id="powThroughputValue">0.0 blk/min</div>
@@ -423,7 +452,7 @@
 					<div class="metrics-cell" id="powRewardValue">0.00</div>
 					<div class="metrics-cell" id="powSlashValue">0.00</div>
 
-					<div class="metrics-cell mode">Proof of Stake</div>
+					<div class="metrics-cell mode" data-i18n="mode.pos">Proof of Stake</div>
 					<div class="metrics-cell" id="posLatencyValue">0.0s</div>
 					<div class="metrics-cell" id="posEnergyValue">0.0</div>
 					<div class="metrics-cell" id="posThroughputValue">0.0 blk/min</div>
@@ -435,7 +464,7 @@
 
 			<div class="panel">
 				<div class="panel-title">
-					<span>Validator Stakes and Hash Power</span>
+					<span data-i18n="panel.stakesHashPower">Validator Stakes and Hash Power</span>
 					<span id="stakeMeta">6 nodes</span>
 				</div>
 				<ul class="stake-list" id="stakeList"></ul>
@@ -443,18 +472,25 @@
 
 			<div class="panel">
 				<div class="panel-title">
-					<span>Consensus Log</span>
+					<span data-i18n="panel.consensusLog">Consensus Log</span>
 					<span id="auditMeta">0 events</span>
 				</div>
 				<ul class="audit-log" id="auditLog"></ul>
 			</div>
 
-			<div class="legend">
+			<div class="legend" data-i18n-html="legend.text">
 				<strong>Legend:</strong> Green means block accepted, red means consensus failed.<br>
 				In PoW winner is weighted by hash power; in PoS by validator stake and can be slashed.<br>
 				Partition mode can create fork pressure and quorum failures.<br>
 				<strong>VR:</strong> Use controller ray + trigger on panel buttons or validator nodes.
 			</div>
+		</div>
+		<div id="languageSwitcher" class="language-switcher">
+			<span data-i18n="language.label">Language</span>
+			<select id="languageSelect" aria-label="Language" data-i18n-aria-label="language.selectAria">
+				<option value="en">EN</option>
+				<option value="ru">RU</option>
+			</select>
 		</div>
 		<button id="hudToggleButton" class="hud-toggle" type="button" aria-controls="hud" aria-pressed="false">Hide Panel (H)</button>
 
@@ -482,7 +518,7 @@
 
 			const modeConfigs = {
 				pow: {
-					label: 'Proof of Work',
+					labelKey: 'mode.pow',
 					durationRange: [ 7.2, 11.4 ],
 					energyRange: [ 84, 126 ],
 					computeRange: [ 96, 146 ],
@@ -492,7 +528,7 @@
 					beamColor: 0xffb15f
 				},
 				pos: {
-					label: 'Proof of Stake',
+					labelKey: 'mode.pos',
 					durationRange: [ 2.4, 4.6 ],
 					energyRange: [ 12, 30 ],
 					computeRange: [ 20, 44 ],
@@ -514,7 +550,7 @@
 
 			const profileConfigs = {
 				learning: {
-					label: 'Learning',
+					labelKey: 'profile.learning',
 					durationScale: 1.18,
 					energyScale: 0.88,
 					computeScale: 0.9,
@@ -523,7 +559,7 @@
 					turbulenceScale: 0.75
 				},
 				stress: {
-					label: 'Stress-Test',
+					labelKey: 'profile.stress',
 					durationScale: 0.72,
 					energyScale: 1.22,
 					computeScale: 1.28,
@@ -534,9 +570,9 @@
 			};
 
 			const pipelineBase = [
-				{ key: 'proposer', label: 'Proposer Selected', weight: 0.24 },
-				{ key: 'vote', label: 'Gossip/Vote', weight: 0.43 },
-				{ key: 'finalize', label: 'Finalization', weight: 0.33 }
+				{ key: 'proposer', weight: 0.24 },
+				{ key: 'vote', weight: 0.43 },
+				{ key: 'finalize', weight: 0.33 }
 			];
 
 			const state = {
@@ -548,14 +584,15 @@
 				forkActive: false,
 				hudVisible: true,
 				decision: 'pending',
-				event: 'Select mode and start consensus round.',
+				eventKey: 'selectModeStart',
+				eventParams: {},
 				roundIndex: 0,
 				roundStartMs: 0,
 				roundDuration: 0,
 				roundProgress: 0,
 				stageIndex: - 1,
 				stageProgress: 0,
-				stageLabel: 'Idle',
+				stageKey: 'idle',
 				stageBreakpoints: [ 0.24, 0.67, 1 ],
 				roundTargetEnergy: 0,
 				roundTargetCompute: 0,
@@ -605,6 +642,7 @@
 			};
 
 			const panelState = {
+				titleLabel: null,
 				statusLabel: null,
 				roundLabel: null,
 				selectedLabel: null,
@@ -639,6 +677,543 @@
 				controllers: [],
 				interactiveTargets: []
 			};
+
+			const languageState = {
+				current: 'en',
+				storageKey: 'vr_lang'
+			};
+
+			const i18n = {
+				en: {
+					language: {
+						label: 'Language',
+						selectAria: 'Select language'
+					},
+					scene: {
+						pageTitle: 'three.js webxr - blockchain consensus arena scene 4',
+						title: 'Scene 4: Consensus Arena',
+						description: 'Compare Proof of Work and Proof of Stake in one arena.<br>PoW is slower and energy-heavy, PoS picks validators by stake and finalizes faster.'
+					},
+					buttons: {
+						modePow: 'Mode: PoW',
+						modePos: 'Mode: PoS',
+						startRound: 'Start Round',
+						profileLearning: 'Profile: Learning',
+						partitionOff: 'Partition: Off',
+						autoRunOff: 'Auto Run: Off',
+						randomizeStake: 'Randomize Stakes',
+						rebalanceHash: 'Rebalance Hash Power',
+						boostStake: 'Boost Selected Stake',
+						resetStats: 'Reset Stats'
+					},
+					labels: {
+						mode: 'Mode',
+						profile: 'Profile',
+						network: 'Network',
+						status: 'Status',
+						round: 'Round',
+						pipelineStage: 'Pipeline Stage',
+						validator: 'Validator',
+						roundMetrics: 'Round Metrics',
+						economy: 'Economy',
+						summary: 'Summary',
+						event: 'Event'
+					},
+					panel: {
+						pipeline: 'Consensus Pipeline',
+						sideBySide: 'PoW vs PoS Side-by-Side',
+						stakesHashPower: 'Validator Stakes and Hash Power',
+						consensusLog: 'Consensus Log'
+					},
+					metricsHead: {
+						mode: 'Mode',
+						avgLatency: 'Avg Latency',
+						avgEnergy: 'Avg Energy',
+						throughput: 'Throughput',
+						rounds: 'Rounds',
+						rewards: 'Rewards',
+						slashed: 'Slashed'
+					},
+					legend: {
+						text: '<strong>Legend:</strong> Green means block accepted, red means consensus failed.<br>In PoW winner is weighted by hash power; in PoS by validator stake and can be slashed.<br>Partition mode can create fork pressure and quorum failures.<br><strong>VR:</strong> Use controller ray + trigger on panel buttons or validator nodes.'
+					},
+					mode: {
+						pow: 'Proof of Work',
+						pos: 'Proof of Stake'
+					},
+					profile: {
+						learning: 'Learning',
+						stress: 'Stress-Test'
+					},
+					pipeline: {
+						step1: '1 Proposer',
+						step2: '2 Gossip/Vote',
+						step3: '3 Finalization',
+						stage: {
+							idle: 'Idle',
+							proposer: 'Proposer Selected',
+							vote: 'Gossip/Vote',
+							finalize: 'Finalization'
+						}
+					},
+					status: {
+						pending: 'PENDING',
+						valid: 'VALID',
+						invalid: 'INVALID',
+						running: 'RUNNING'
+					},
+					network: {
+						connected: 'Connected',
+						partitioned: 'Partitioned / Fork Risk'
+					},
+					hudToggle: {
+						hide: 'Hide Panel (H)',
+						show: 'Show Panel (H)'
+					},
+					validator: {
+						name: 'Node {id}',
+						worldLabel: '{name}\nStake {stake} | Hash {hash} | R {rewards}',
+						item: '{name} | stake {stake} | hash {hash} | reward {rewards}'
+					},
+					ui: {
+						none: 'none',
+						stageWithPercent: '{stage} ({percent}%)',
+						economy: 'Rewards {rewards} | Slashed {slashed}',
+						summary: 'Rounds: {rounds} | Accepted: {accepted} | Rejected: {rejected}',
+						roundWithProgress: '#{round} ({percent}%)',
+						roundOnly: '#{round}',
+						pipelineMeta: 'Stage {stage}/3',
+						roundLive: 'Target {target}s | Elapsed {elapsed}s | Energy {energy} | Compute {compute}',
+						roundDone: 'Latency {latency}s | Energy {energy} | Compute {compute} | Reward {reward} | Slash {slash}',
+						autoRunButton: 'Auto Run: {state}',
+						profileButton: 'Profile: {profile}',
+						partitionButton: 'Partition: {state}',
+						stateOn: 'On',
+						stateOff: 'Off',
+						throughput: '{value} blk/min',
+						stakeMeta: '{count} nodes',
+						auditMeta: '{count} events',
+						auditItem: '[{time}] {message}',
+						panelStatus: '{mode} {profile} | {status}',
+						panelRoundWithStage: 'Round #{round}: {stage} {percent}%',
+						panelRoundOnly: 'Round #{round}',
+						panelSelected: 'Selected: {name}',
+						panelMetrics: 'PoW {pow} blk/min | PoS {pos} blk/min | R {rewards} S {slashed}',
+						panelAudit: 'Log: {count} events'
+					},
+					vr: {
+						arenaTitle: 'CONSENSUS ARENA',
+						title: 'VR CONSENSUS CONTROL',
+						modePow: 'Mode PoW',
+						modePos: 'Mode PoS',
+						startRound: 'Start Round',
+						profileLearning: 'Profile Learning',
+						partitionOff: 'Partition Off',
+						autoOff: 'Auto: Off',
+						randomStake: 'Random Stakes',
+						rebalance: 'Rebalance Hash',
+						boostStake: 'Boost Stake',
+						resetStats: 'Reset Stats',
+						auto: 'Auto: {state}',
+						profile: 'Profile {profile}',
+						partition: 'Partition {state}'
+					},
+					event: {
+						selectModeStart: 'Select mode and start consensus round.',
+						cannotSwitchProfile: 'Cannot switch profile during active round.',
+						profileSwitched: 'Profile switched to {profile}.',
+						cannotTogglePartition: 'Cannot change network partition during active round.',
+						partitionEnabled: 'Network partition enabled. Fork risk increased.',
+						networkRestored: 'Network restored. Full connectivity.',
+						cannotSwitchMode: 'Cannot switch mode during active round.',
+						modeAlreadyActive: '{mode} already active.',
+						modeSelected: '{mode} selected.',
+						waitStakeChange: 'Wait for round completion before changing stakes.',
+						stakesRandomized: 'Validator stakes randomized.',
+						waitRebalance: 'Wait for round completion before rebalancing hash power.',
+						hashRebalanced: 'Hash power rebalanced for all validators.',
+						cannotBoostStake: 'Cannot boost stake during active round.',
+						selectValidatorFirst: 'Select validator first.',
+						stakeBoosted: '{validator} stake boosted.',
+						autoRunEnabled: 'Auto run enabled.',
+						autoRunStopped: 'Auto run stopped.',
+						roundStarted: '{mode} round #{round} started by {validator} ({profile}).',
+						autoRoundStarted: 'Auto: {mode} round #{round} started by {validator}.',
+						blockAccepted: 'Block accepted: {validator} finalized in {duration}s, reward {reward}.',
+						consensusFailed: 'Consensus failed: {validator} produced invalid block{slash}.',
+						slashedPart: ', slashed {amount}',
+						statsReset: 'Stats reset. Ready for new consensus rounds.',
+						roundStageUpdate: 'Round #{round}: {stage}'
+					},
+					audit: {
+						arenaInitialized: 'Consensus arena initialized. Ready for simulation.',
+						profileChanged: 'Run profile changed to {profile}.',
+						partitionToggled: 'Network partition {state}.',
+						modeSwitched: 'Mode switched to {mode}.',
+						validatorSelected: '{validator} selected for inspection.',
+						stakesReshuffled: 'Stake distribution reshuffled.',
+						hashProfileChanged: 'Hash power profile changed.',
+						stakeIncreased: '{validator} stake increased for PoS influence.',
+						autoRunToggled: 'Auto run {state}.',
+						roundStarted: 'Round #{round} started in {mode} with {validator} ({profile}).',
+						roundPartitioned: 'Round #{round}: network is partitioned.',
+						powForkDetected: 'Round #{round}: PoW fork detected, extra resolution stage latency.',
+						roundAccepted: 'Round #{round}: accepted by {validator}, reward {reward}.',
+						roundRejected: 'Round #{round}: rejected, {validator} failed consensus{slash}.',
+						slashPart: ', slash {amount}',
+						forkResolvedInvalid: 'Round #{round}: fork resolved with invalid branch discard.',
+						allMetricsReset: 'All round metrics reset.',
+						roundStageTo: 'Round #{round} stage -> {stage}.'
+					}
+				},
+				ru: {
+					language: {
+						label: 'Язык',
+						selectAria: 'Выбор языка'
+					},
+					scene: {
+						pageTitle: 'three.js webxr - арена консенсуса блокчейна, сцена 4',
+						title: 'Сцена 4: Арена консенсуса',
+						description: 'Сравните Proof of Work и Proof of Stake на одной арене.<br>PoW медленнее и энергозатратнее, PoS выбирает валидаторов по стейку и завершает быстрее.'
+					},
+					buttons: {
+						modePow: 'Режим: PoW',
+						modePos: 'Режим: PoS',
+						startRound: 'Запустить раунд',
+						profileLearning: 'Профиль: Обучение',
+						partitionOff: 'Сегментация: Выкл',
+						autoRunOff: 'Автозапуск: Выкл',
+						randomizeStake: 'Случайные стейки',
+						rebalanceHash: 'Перебалансировать хэш-мощность',
+						boostStake: 'Усилить стейк выбранного',
+						resetStats: 'Сбросить статистику'
+					},
+					labels: {
+						mode: 'Режим',
+						profile: 'Профиль',
+						network: 'Сеть',
+						status: 'Статус',
+						round: 'Раунд',
+						pipelineStage: 'Стадия пайплайна',
+						validator: 'Валидатор',
+						roundMetrics: 'Метрики раунда',
+						economy: 'Экономика',
+						summary: 'Сводка',
+						event: 'Событие'
+					},
+					panel: {
+						pipeline: 'Пайплайн консенсуса',
+						sideBySide: 'PoW vs PoS рядом',
+						stakesHashPower: 'Стейки валидаторов и хэш-мощность',
+						consensusLog: 'Лог консенсуса'
+					},
+					metricsHead: {
+						mode: 'Режим',
+						avgLatency: 'Ср. задержка',
+						avgEnergy: 'Ср. энергия',
+						throughput: 'Пропускная',
+						rounds: 'Раунды',
+						rewards: 'Награды',
+						slashed: 'Слэшинг'
+					},
+					legend: {
+						text: '<strong>Легенда:</strong> Зеленый означает принятие блока, красный - провал консенсуса.<br>В PoW победитель взвешивается по хэш-мощности; в PoS - по стейку валидатора и может быть заслешен.<br>Режим сегментации может вызвать давление форков и сбои кворума.<br><strong>VR:</strong> Используйте луч контроллера + триггер на кнопках панели или узлах валидаторов.'
+					},
+					mode: {
+						pow: 'Proof of Work',
+						pos: 'Proof of Stake'
+					},
+					profile: {
+						learning: 'Обучение',
+						stress: 'Стресс-тест'
+					},
+					pipeline: {
+						step1: '1 Предложение',
+						step2: '2 Gossip/Голосование',
+						step3: '3 Финализация',
+						stage: {
+							idle: 'Ожидание',
+							proposer: 'Выбран proposer',
+							vote: 'Gossip/Голосование',
+							finalize: 'Финализация'
+						}
+					},
+					status: {
+						pending: 'ОЖИДАНИЕ',
+						valid: 'ВАЛИДНО',
+						invalid: 'НЕВАЛИДНО',
+						running: 'В РАБОТЕ'
+					},
+					network: {
+						connected: 'Связная',
+						partitioned: 'Сегментация / Риск форка'
+					},
+					hudToggle: {
+						hide: 'Скрыть панель (H)',
+						show: 'Показать панель (H)'
+					},
+					validator: {
+						name: 'Узел {id}',
+						worldLabel: '{name}\nСтейк {stake} | Хэш {hash} | R {rewards}',
+						item: '{name} | стейк {stake} | хэш {hash} | награда {rewards}'
+					},
+					ui: {
+						none: 'нет',
+						stageWithPercent: '{stage} ({percent}%)',
+						economy: 'Награды {rewards} | Слэшинг {slashed}',
+						summary: 'Раунды: {rounds} | Принято: {accepted} | Отклонено: {rejected}',
+						roundWithProgress: '#{round} ({percent}%)',
+						roundOnly: '#{round}',
+						pipelineMeta: 'Стадия {stage}/3',
+						roundLive: 'Цель {target}s | Прошло {elapsed}s | Энергия {energy} | Compute {compute}',
+						roundDone: 'Задержка {latency}s | Энергия {energy} | Compute {compute} | Награда {reward} | Слэш {slash}',
+						autoRunButton: 'Автозапуск: {state}',
+						profileButton: 'Профиль: {profile}',
+						partitionButton: 'Сегментация: {state}',
+						stateOn: 'Вкл',
+						stateOff: 'Выкл',
+						throughput: '{value} blk/min',
+						stakeMeta: '{count} узлов',
+						auditMeta: '{count} событий',
+						auditItem: '[{time}] {message}',
+						panelStatus: '{mode} {profile} | {status}',
+						panelRoundWithStage: 'Раунд #{round}: {stage} {percent}%',
+						panelRoundOnly: 'Раунд #{round}',
+						panelSelected: 'Выбран: {name}',
+						panelMetrics: 'PoW {pow} blk/min | PoS {pos} blk/min | R {rewards} S {slashed}',
+						panelAudit: 'Лог: {count} событий'
+					},
+					vr: {
+						arenaTitle: 'АРЕНА КОНСЕНСУСА',
+						title: 'VR УПРАВЛЕНИЕ КОНСЕНСУСОМ',
+						modePow: 'Режим PoW',
+						modePos: 'Режим PoS',
+						startRound: 'Запуск раунда',
+						profileLearning: 'Профиль Обучение',
+						partitionOff: 'Сегментация Выкл',
+						autoOff: 'Авто: Выкл',
+						randomStake: 'Случ. стейки',
+						rebalance: 'Баланс хэша',
+						boostStake: 'Усилить стейк',
+						resetStats: 'Сброс',
+						auto: 'Авто: {state}',
+						profile: 'Профиль {profile}',
+						partition: 'Сегментация {state}'
+					},
+					event: {
+						selectModeStart: 'Выберите режим и запустите раунд консенсуса.',
+						cannotSwitchProfile: 'Нельзя менять профиль во время активного раунда.',
+						profileSwitched: 'Профиль переключен на {profile}.',
+						cannotTogglePartition: 'Нельзя менять сегментацию сети во время активного раунда.',
+						partitionEnabled: 'Сегментация сети включена. Риск форка повышен.',
+						networkRestored: 'Сеть восстановлена. Полная связность.',
+						cannotSwitchMode: 'Нельзя переключить режим во время активного раунда.',
+						modeAlreadyActive: '{mode} уже активен.',
+						modeSelected: 'Выбран {mode}.',
+						waitStakeChange: 'Дождитесь завершения раунда перед изменением стейков.',
+						stakesRandomized: 'Стейки валидаторов случайно перераспределены.',
+						waitRebalance: 'Дождитесь завершения раунда перед ребалансом хэш-мощности.',
+						hashRebalanced: 'Хэш-мощность всех валидаторов перебалансирована.',
+						cannotBoostStake: 'Нельзя усилить стейк во время активного раунда.',
+						selectValidatorFirst: 'Сначала выберите валидатора.',
+						stakeBoosted: 'Стейк {validator} увеличен.',
+						autoRunEnabled: 'Автозапуск включен.',
+						autoRunStopped: 'Автозапуск остановлен.',
+						roundStarted: 'Раунд {mode} #{round} запущен валидатором {validator} ({profile}).',
+						autoRoundStarted: 'Авто: раунд {mode} #{round} запущен валидатором {validator}.',
+						blockAccepted: 'Блок принят: {validator} завершил за {duration}s, награда {reward}.',
+						consensusFailed: 'Консенсус не пройден: {validator} предложил невалидный блок{slash}.',
+						slashedPart: ', слэш {amount}',
+						statsReset: 'Статистика сброшена. Можно запускать новые раунды.',
+						roundStageUpdate: 'Раунд #{round}: {stage}'
+					},
+					audit: {
+						arenaInitialized: 'Арена консенсуса инициализирована. Готово к симуляции.',
+						profileChanged: 'Профиль запуска изменен на {profile}.',
+						partitionToggled: 'Сегментация сети {state}.',
+						modeSwitched: 'Режим переключен на {mode}.',
+						validatorSelected: '{validator} выбран для анализа.',
+						stakesReshuffled: 'Распределение стейков перемешано.',
+						hashProfileChanged: 'Профиль хэш-мощности изменен.',
+						stakeIncreased: 'Стейк {validator} увеличен для влияния в PoS.',
+						autoRunToggled: 'Автозапуск {state}.',
+						roundStarted: 'Раунд #{round} запущен в {mode} с {validator} ({profile}).',
+						roundPartitioned: 'Раунд #{round}: сеть сегментирована.',
+						powForkDetected: 'Раунд #{round}: обнаружен PoW-форк, увеличена задержка разрешения.',
+						roundAccepted: 'Раунд #{round}: принят, валидатор {validator}, награда {reward}.',
+						roundRejected: 'Раунд #{round}: отклонен, {validator} не прошел консенсус{slash}.',
+						slashPart: ', слэш {amount}',
+						forkResolvedInvalid: 'Раунд #{round}: форк разрешен, невалидная ветка отброшена.',
+						allMetricsReset: 'Все метрики раундов сброшены.',
+						roundStageTo: 'Раунд #{round} стадия -> {stage}.'
+					}
+				}
+			};
+
+			let isSceneReady = false;
+
+			function getTranslationValue( key ) {
+
+				const current = i18n[ languageState.current ] || i18n.en;
+				const fallback = i18n.en;
+				const parts = key.split( '.' );
+				let value = current;
+
+				for ( const part of parts ) {
+
+					if ( value && Object.prototype.hasOwnProperty.call( value, part ) ) {
+						value = value[ part ];
+					} else {
+						value = undefined;
+						break;
+					}
+
+				}
+
+				if ( value !== undefined ) return value;
+
+				value = fallback;
+				for ( const part of parts ) {
+
+					if ( value && Object.prototype.hasOwnProperty.call( value, part ) ) {
+						value = value[ part ];
+					} else {
+						return undefined;
+					}
+
+				}
+
+				return value;
+
+			}
+
+			function t( key, params = {} ) {
+
+				const template = getTranslationValue( key );
+				if ( typeof template !== 'string' ) return key;
+
+				return template.replace( /\{(\w+)\}|#\{(\w+)\}/g, ( match, curly, hash ) => {
+
+					const token = curly || hash;
+					return Object.prototype.hasOwnProperty.call( params, token ) ? params[ token ] : match;
+
+				} );
+
+			}
+
+			function getModeLabel( modeKey ) {
+
+				const config = modeConfigs[ modeKey ];
+				return config ? t( config.labelKey ) : modeKey;
+
+			}
+
+			function getProfileLabel( profileKey = state.profile ) {
+
+				const config = profileConfigs[ profileKey ];
+				return config ? t( config.labelKey ) : profileKey;
+
+			}
+
+			function getStageLabel( stageKey = state.stageKey ) {
+
+				return t( `pipeline.stage.${stageKey}` );
+
+			}
+
+			function getValidatorLabel( validator ) {
+
+				if ( ! validator ) return t( 'ui.none' );
+				const suffix = String( validator.id ).split( '_' )[ 1 ] || String( validator.id );
+				return t( 'validator.name', { id: suffix.toUpperCase() } );
+
+			}
+
+			function setEvent( key, params = {} ) {
+
+				state.eventKey = key;
+				state.eventParams = { ...params };
+
+			}
+
+			function getEventText() {
+
+				return t( `event.${state.eventKey}`, state.eventParams );
+
+			}
+
+			function applyTranslations() {
+
+				document.querySelectorAll( '[data-i18n]' ).forEach( ( node ) => {
+
+					node.textContent = t( node.dataset.i18n );
+
+				} );
+
+				document.querySelectorAll( '[data-i18n-html]' ).forEach( ( node ) => {
+
+					node.innerHTML = t( node.dataset.i18nHtml );
+
+				} );
+
+				document.querySelectorAll( '[data-i18n-aria-label]' ).forEach( ( node ) => {
+
+					node.setAttribute( 'aria-label', t( node.dataset.i18nAriaLabel ) );
+
+				} );
+
+				if ( ui.hudToggleButton ) {
+					ui.hudToggleButton.textContent = state.hudVisible ? t( 'hudToggle.hide' ) : t( 'hudToggle.show' );
+				}
+
+			}
+
+			function setLanguage( nextLanguage, updateScene = true ) {
+
+				const lang = i18n[ nextLanguage ] ? nextLanguage : 'en';
+				languageState.current = lang;
+				document.documentElement.lang = lang;
+
+				try {
+					localStorage.setItem( languageState.storageKey, lang );
+				} catch ( error ) {
+					console.warn( 'Language storage unavailable:', error );
+				}
+
+				const select = document.getElementById( 'languageSelect' );
+				if ( select ) select.value = lang;
+
+				applyTranslations();
+				document.title = t( 'scene.pageTitle' );
+
+				if ( updateScene && isSceneReady ) {
+					refreshUI();
+				}
+
+			}
+
+			function initLanguageSwitcher() {
+
+				const select = document.getElementById( 'languageSelect' );
+				if ( ! select ) return;
+
+				let saved = null;
+				try {
+					saved = localStorage.getItem( languageState.storageKey );
+				} catch ( error ) {
+					saved = null;
+				}
+
+				const auto = ( navigator.language || '' ).toLowerCase().startsWith( 'ru' ) ? 'ru' : 'en';
+				const initial = saved && i18n[ saved ] ? saved : auto;
+				select.value = initial;
+				setLanguage( initial, false );
+
+				select.addEventListener( 'change', ( event ) => {
+					setLanguage( event.target.value );
+				} );
+
+			}
 
 			const ui = {
 				hud: document.getElementById( 'hud' ),
@@ -752,12 +1327,15 @@
 				setupVRPanel();
 				initAudio();
 				bindEvents();
+				initLanguageSwitcher();
 
 				setSelectedValidator( validators[ 0 ].id, false );
 				setMode( 'pow', false );
-				recordAudit( 'Consensus arena initialized. Ready for simulation.', 'info' );
+				setEvent( 'selectModeStart' );
+				recordAudit( t( 'audit.arenaInitialized' ), 'info' );
 				refreshUI();
 				toggleHudVisibility( true );
+				isSceneReady = true;
 
 			}
 
@@ -888,7 +1466,7 @@
 				partitionWall.visible = false;
 				group.add( partitionWall );
 
-				const title = createWorldLabel( 'CONSENSUS ARENA', 1024, 180, 4.3, 0.5, '#e7f6ff', 'rgba(18, 61, 86, 0.9)' );
+				const title = createWorldLabel( t( 'vr.arenaTitle' ), 1024, 180, 4.3, 0.5, '#e7f6ff', 'rgba(18, 61, 86, 0.9)' );
 				title.mesh.position.set( 0, 4.85, 0 );
 				group.add( title.mesh );
 
@@ -1054,20 +1632,21 @@
 				);
 				panel.add( body );
 
-				const title = createWorldLabel( 'VR CONSENSUS CONTROL', 1024, 180, 4.45, 0.48, '#dff4ff', 'rgba(20, 64, 91, 0.9)' );
+				const title = createWorldLabel( t( 'vr.title' ), 1024, 180, 4.45, 0.48, '#dff4ff', 'rgba(20, 64, 91, 0.9)' );
 				title.mesh.position.set( 0, 3.48, 0.08 );
 				panel.add( title.mesh );
+				panelState.titleLabel = title;
 
-				panelState.buttons.pow = createVrButton( 'Mode PoW', 0xae6a3c, () => setMode( 'pow' ) );
-				panelState.buttons.pos = createVrButton( 'Mode PoS', 0x2f8a5f, () => setMode( 'pos' ) );
-				panelState.buttons.start = createVrButton( 'Start Round', 0x357bb0, () => startRound( true ) );
-				panelState.buttons.profile = createVrButton( 'Profile Learning', 0x5e6ea1, toggleProfile );
-				panelState.buttons.partition = createVrButton( 'Partition Off', 0x8d4f5a, togglePartition );
-				panelState.buttons.auto = createVrButton( 'Auto: Off', 0x66608f, toggleAutoRun );
-				panelState.buttons.randomStake = createVrButton( 'Random Stakes', 0x4f6f92, randomizeStakes );
-				panelState.buttons.rebalance = createVrButton( 'Rebalance Hash', 0x5d668f, rebalanceHashPower );
-				panelState.buttons.boost = createVrButton( 'Boost Stake', 0x2f7c8d, boostSelectedStake );
-				panelState.buttons.reset = createVrButton( 'Reset Stats', 0x516285, resetStats );
+				panelState.buttons.pow = createVrButton( t( 'vr.modePow' ), 0xae6a3c, () => setMode( 'pow' ) );
+				panelState.buttons.pos = createVrButton( t( 'vr.modePos' ), 0x2f8a5f, () => setMode( 'pos' ) );
+				panelState.buttons.start = createVrButton( t( 'vr.startRound' ), 0x357bb0, () => startRound( true ) );
+				panelState.buttons.profile = createVrButton( t( 'vr.profileLearning' ), 0x5e6ea1, toggleProfile );
+				panelState.buttons.partition = createVrButton( t( 'vr.partitionOff' ), 0x8d4f5a, togglePartition );
+				panelState.buttons.auto = createVrButton( t( 'vr.autoOff' ), 0x66608f, toggleAutoRun );
+				panelState.buttons.randomStake = createVrButton( t( 'vr.randomStake' ), 0x4f6f92, randomizeStakes );
+				panelState.buttons.rebalance = createVrButton( t( 'vr.rebalance' ), 0x5d668f, rebalanceHashPower );
+				panelState.buttons.boost = createVrButton( t( 'vr.boostStake' ), 0x2f7c8d, boostSelectedStake );
+				panelState.buttons.reset = createVrButton( t( 'vr.resetStats' ), 0x516285, resetStats );
 
 				panelState.buttons.pow.group.position.set( - 1.38, 2.78, 0.1 );
 				panelState.buttons.pos.group.position.set( 1.38, 2.78, 0.1 );
@@ -1093,23 +1672,23 @@
 					panelState.buttons.reset.group
 				);
 
-				panelState.statusLabel = createWorldLabel( 'Status: pending', 1140, 160, 4.75, 0.3, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
+				panelState.statusLabel = createWorldLabel( t( 'ui.panelStatus', { mode: getModeLabel( state.mode ), profile: getProfileLabel(), status: t( 'status.pending' ) } ), 1140, 160, 4.75, 0.3, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
 				panelState.statusLabel.mesh.position.set( 0, - 0.95, 0.1 );
 				panel.add( panelState.statusLabel.mesh );
 
-				panelState.roundLabel = createWorldLabel( 'Round #0', 1140, 160, 4.75, 0.3, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
+				panelState.roundLabel = createWorldLabel( t( 'ui.panelRoundOnly', { round: 0 } ), 1140, 160, 4.75, 0.3, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
 				panelState.roundLabel.mesh.position.set( 0, - 1.35, 0.1 );
 				panel.add( panelState.roundLabel.mesh );
 
-				panelState.selectedLabel = createWorldLabel( 'Selected: Node A', 1140, 160, 4.75, 0.3, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
+				panelState.selectedLabel = createWorldLabel( t( 'ui.panelSelected', { name: getValidatorLabel( validators[ 0 ] ) } ), 1140, 160, 4.75, 0.3, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
 				panelState.selectedLabel.mesh.position.set( 0, - 1.74, 0.1 );
 				panel.add( panelState.selectedLabel.mesh );
 
-				panelState.metricsLabel = createWorldLabel( 'PoW 0.0 blk/min | PoS 0.0 blk/min', 1140, 160, 4.75, 0.3, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
+				panelState.metricsLabel = createWorldLabel( t( 'ui.panelMetrics', { pow: '0.0', pos: '0.0', rewards: '0.0', slashed: '0.0' } ), 1140, 160, 4.75, 0.3, '#dff4ff', 'rgba(17, 55, 79, 0.9)' );
 				panelState.metricsLabel.mesh.position.set( 0, - 2.13, 0.1 );
 				panel.add( panelState.metricsLabel.mesh );
 
-				panelState.auditLabel = createWorldLabel( 'Log: 0 events', 1024, 140, 4.3, 0.28, '#d8f2ff', 'rgba(16, 49, 70, 0.88)' );
+				panelState.auditLabel = createWorldLabel( t( 'ui.panelAudit', { count: 0 } ), 1024, 140, 4.3, 0.28, '#d8f2ff', 'rgba(16, 49, 70, 0.88)' );
 				panelState.auditLabel.mesh.position.set( 0, - 2.52, 0.1 );
 				panel.add( panelState.auditLabel.mesh );
 
@@ -1296,7 +1875,12 @@
 
 			function validatorLabelText( validator ) {
 
-				return `${validator.label}\nStake ${Math.round( validator.stake )} | Hash ${Math.round( validator.power )} | R ${validator.rewards.toFixed( 1 )}`;
+				return t( 'validator.worldLabel', {
+					name: getValidatorLabel( validator ),
+					stake: Math.round( validator.stake ),
+					hash: Math.round( validator.power ),
+					rewards: validator.rewards.toFixed( 1 )
+				} );
 
 			}
 
@@ -1376,7 +1960,7 @@
 				const next = breakpoints[ index ];
 				state.stageIndex = index;
 				state.stageProgress = next === prev ? 1 : clamp( ( progress - prev ) / ( next - prev ), 0, 1 );
-				state.stageLabel = pipelineBase[ index ].label;
+				state.stageKey = pipelineBase[ index ].key;
 
 			}
 
@@ -1384,15 +1968,15 @@
 
 				if ( state.roundInProgress ) {
 
-					state.event = 'Cannot switch profile during active round.';
+					setEvent( 'cannotSwitchProfile' );
 					refreshUI();
 					return;
 
 				}
 
 				state.profile = state.profile === 'learning' ? 'stress' : 'learning';
-				state.event = `Profile switched to ${getActiveProfileConfig().label}.`;
-				recordAudit( `Run profile changed to ${getActiveProfileConfig().label}.`, 'info' );
+				setEvent( 'profileSwitched', { profile: getProfileLabel() } );
+				recordAudit( t( 'audit.profileChanged', { profile: getProfileLabel() } ), 'info' );
 				refreshUI();
 
 			}
@@ -1401,7 +1985,7 @@
 
 				if ( state.roundInProgress ) {
 
-					state.event = 'Cannot change network partition during active round.';
+					setEvent( 'cannotTogglePartition' );
 					refreshUI();
 					return;
 
@@ -1409,8 +1993,8 @@
 
 				state.partitionActive = ! state.partitionActive;
 				sceneRefs.partitionWall.visible = state.partitionActive;
-				state.event = state.partitionActive ? 'Network partition enabled. Fork risk increased.' : 'Network restored. Full connectivity.';
-				recordAudit( `Network partition ${state.partitionActive ? 'enabled' : 'disabled'}.`, 'info' );
+				setEvent( state.partitionActive ? 'partitionEnabled' : 'networkRestored' );
+				recordAudit( t( 'audit.partitionToggled', { state: state.partitionActive ? t( 'ui.stateOn' ) : t( 'ui.stateOff' ) } ), 'info' );
 				refreshUI();
 
 			}
@@ -1459,7 +2043,7 @@
 
 				if ( state.roundInProgress ) {
 
-					state.event = 'Cannot switch mode during active round.';
+					setEvent( 'cannotSwitchMode' );
 					refreshUI();
 					return;
 
@@ -1467,7 +2051,7 @@
 
 				if ( state.mode === nextMode && log ) {
 
-					state.event = `${modeConfigs[ nextMode ].label} already active.`;
+					setEvent( 'modeAlreadyActive', { mode: getModeLabel( nextMode ) } );
 					refreshUI();
 					return;
 
@@ -1478,16 +2062,16 @@
 				state.roundProgress = 0;
 				state.stageIndex = - 1;
 				state.stageProgress = 0;
-				state.stageLabel = 'Idle';
+				state.stageKey = 'idle';
 				state.forkActive = false;
-				state.event = `${modeConfigs[ nextMode ].label} selected.`;
+				setEvent( 'modeSelected', { mode: getModeLabel( nextMode ) } );
 				state.resultPulse = 0;
 				sceneRefs.resultShield.visible = false;
 				applyModeVisuals();
 
 				if ( log ) {
 
-					recordAudit( `Mode switched to ${modeConfigs[ nextMode ].label}.`, 'info' );
+					recordAudit( t( 'audit.modeSwitched', { mode: getModeLabel( nextMode ) } ), 'info' );
 
 				}
 
@@ -1512,7 +2096,7 @@
 
 				if ( validator && log ) {
 
-					recordAudit( `${validator.label} selected for inspection.`, 'info' );
+					recordAudit( t( 'audit.validatorSelected', { validator: getValidatorLabel( validator ) } ), 'info' );
 
 				}
 
@@ -1524,7 +2108,7 @@
 
 				if ( state.roundInProgress ) {
 
-					state.event = 'Wait for round completion before changing stakes.';
+					setEvent( 'waitStakeChange' );
 					refreshUI();
 					return;
 
@@ -1536,8 +2120,8 @@
 
 				}
 
-				state.event = 'Validator stakes randomized.';
-				recordAudit( 'Stake distribution reshuffled.', 'info' );
+				setEvent( 'stakesRandomized' );
+				recordAudit( t( 'audit.stakesReshuffled' ), 'info' );
 				refreshUI();
 
 			}
@@ -1546,7 +2130,7 @@
 
 				if ( state.roundInProgress ) {
 
-					state.event = 'Wait for round completion before rebalancing hash power.';
+					setEvent( 'waitRebalance' );
 					refreshUI();
 					return;
 
@@ -1558,8 +2142,8 @@
 
 				}
 
-				state.event = 'Hash power rebalanced for all validators.';
-				recordAudit( 'Hash power profile changed.', 'info' );
+				setEvent( 'hashRebalanced' );
+				recordAudit( t( 'audit.hashProfileChanged' ), 'info' );
 				refreshUI();
 
 			}
@@ -1568,7 +2152,7 @@
 
 				if ( state.roundInProgress ) {
 
-					state.event = 'Cannot boost stake during active round.';
+					setEvent( 'cannotBoostStake' );
 					refreshUI();
 					return;
 
@@ -1577,7 +2161,7 @@
 				const selected = getValidatorById( state.selectedValidatorId );
 				if ( ! selected ) {
 
-					state.event = 'Select validator first.';
+					setEvent( 'selectValidatorFirst' );
 					refreshUI();
 					return;
 
@@ -1592,8 +2176,9 @@
 
 				}
 
-				state.event = `${selected.label} stake boosted.`;
-				recordAudit( `${selected.label} stake increased for PoS influence.`, 'info' );
+				const selectedName = getValidatorLabel( selected );
+				setEvent( 'stakeBoosted', { validator: selectedName } );
+				recordAudit( t( 'audit.stakeIncreased', { validator: selectedName } ), 'info' );
 				refreshUI();
 
 			}
@@ -1602,8 +2187,8 @@
 
 				state.autoRun = ! state.autoRun;
 				state.autoRunReadyAt = performance.now() + getActiveProfileConfig().autoDelay * 0.35;
-				state.event = state.autoRun ? 'Auto run enabled.' : 'Auto run stopped.';
-				recordAudit( `Auto run ${state.autoRun ? 'enabled' : 'disabled'}.`, 'info' );
+				setEvent( state.autoRun ? 'autoRunEnabled' : 'autoRunStopped' );
+				recordAudit( t( 'audit.autoRunToggled', { state: state.autoRun ? t( 'ui.stateOn' ) : t( 'ui.stateOff' ) } ), 'info' );
 				refreshUI();
 
 			}
@@ -1644,7 +2229,7 @@
 				state.stageBreakpoints = buildStageBreakpoints( mode, state.profile );
 				state.stageIndex = 0;
 				state.stageProgress = 0;
-				state.stageLabel = pipelineBase[ 0 ].label;
+				state.stageKey = pipelineBase[ 0 ].key;
 				state.roundTargetEnergy = targetEnergy;
 				state.roundTargetCompute = targetCompute;
 				state.roundEnergy = 0;
@@ -1652,21 +2237,29 @@
 				state.currentRoundReward = 0;
 				state.currentRoundSlash = 0;
 				state.currentValidatorId = validator.id;
-				state.event = `${config.label} round #${state.roundIndex} started by ${validator.label} (${profile.label}).`;
+				const modeLabel = getModeLabel( mode );
+				const profileLabel = getProfileLabel();
+				const validatorName = getValidatorLabel( validator );
+				setEvent( 'roundStarted', { mode: modeLabel, round: state.roundIndex, validator: validatorName, profile: profileLabel } );
 				state.resultPulse = 0;
 				sceneRefs.resultShield.visible = false;
 
-				recordAudit( `Round #${state.roundIndex} started in ${mode.toUpperCase()} with ${validator.label} (${profile.label}).`, 'info' );
+				recordAudit( t( 'audit.roundStarted', {
+					round: state.roundIndex,
+					mode: mode.toUpperCase(),
+					validator: validatorName,
+					profile: profileLabel
+				} ), 'info' );
 
 				if ( state.partitionActive ) {
 
-					recordAudit( `Round #${state.roundIndex}: network is partitioned.`, 'info' );
+					recordAudit( t( 'audit.roundPartitioned', { round: state.roundIndex } ), 'info' );
 
 				}
 
 				if ( state.forkActive ) {
 
-					recordAudit( `Round #${state.roundIndex}: PoW fork detected, extra resolution stage latency.`, 'invalid' );
+					recordAudit( t( 'audit.powForkDetected', { round: state.roundIndex } ), 'invalid' );
 
 				}
 
@@ -1676,7 +2269,7 @@
 
 				if ( isManual === false ) {
 
-					state.event = `Auto: ${config.label} round #${state.roundIndex} started by ${validator.label}.`;
+					setEvent( 'autoRoundStarted', { mode: modeLabel, round: state.roundIndex, validator: validatorName } );
 
 				}
 
@@ -1707,7 +2300,7 @@
 				state.roundProgress = 1;
 				state.stageIndex = 2;
 				state.stageProgress = 1;
-				state.stageLabel = pipelineBase[ 2 ].label;
+				state.stageKey = pipelineBase[ 2 ].key;
 				state.roundEnergy = state.roundTargetEnergy;
 				state.roundCompute = state.roundTargetCompute;
 				state.lastRoundLatency = state.roundDuration;
@@ -1732,8 +2325,17 @@
 
 					modeStat.approved ++;
 					modeStat.acceptedBlocks ++;
-					state.event = `Block accepted: ${validator.label} finalized in ${state.roundDuration.toFixed( 1 )}s, reward ${reward.toFixed( 2 )}.`;
-					recordAudit( `Round #${state.roundIndex}: accepted by ${validator.label}, reward ${reward.toFixed( 2 )}.`, 'valid' );
+					const acceptedValidator = getValidatorLabel( validator );
+					setEvent( 'blockAccepted', {
+						validator: acceptedValidator,
+						duration: state.roundDuration.toFixed( 1 ),
+						reward: reward.toFixed( 2 )
+					} );
+					recordAudit( t( 'audit.roundAccepted', {
+						round: state.roundIndex,
+						validator: acceptedValidator,
+						reward: reward.toFixed( 2 )
+					} ), 'valid' );
 					applyApprovedVisuals();
 
 				} else {
@@ -1753,12 +2355,19 @@
 					}
 
 					modeStat.rejected ++;
-					state.event = `Consensus failed: ${validator.label} produced invalid block${slashAmount > 0 ? `, slashed ${slashAmount.toFixed( 2 )}` : ''}.`;
-					recordAudit( `Round #${state.roundIndex}: rejected, ${validator.label} failed consensus${slashAmount > 0 ? `, slash ${slashAmount.toFixed( 2 )}` : ''}.`, 'invalid' );
+					const rejectedValidator = getValidatorLabel( validator );
+					const slashEventText = slashAmount > 0 ? t( 'event.slashedPart', { amount: slashAmount.toFixed( 2 ) } ) : '';
+					setEvent( 'consensusFailed', { validator: rejectedValidator, slash: slashEventText } );
+					const slashAuditText = slashAmount > 0 ? t( 'audit.slashPart', { amount: slashAmount.toFixed( 2 ) } ) : '';
+					recordAudit( t( 'audit.roundRejected', {
+						round: state.roundIndex,
+						validator: rejectedValidator,
+						slash: slashAuditText
+					} ), 'invalid' );
 
 					if ( state.forkActive ) {
 
-						recordAudit( `Round #${state.roundIndex}: fork resolved with invalid branch discard.`, 'invalid' );
+						recordAudit( t( 'audit.forkResolvedInvalid', { round: state.roundIndex } ), 'invalid' );
 
 					}
 
@@ -1887,7 +2496,7 @@
 				state.roundProgress = 0;
 				state.stageIndex = - 1;
 				state.stageProgress = 0;
-				state.stageLabel = 'Idle';
+				state.stageKey = 'idle';
 				state.roundDuration = 0;
 				state.roundEnergy = 0;
 				state.roundCompute = 0;
@@ -1898,7 +2507,7 @@
 				state.currentValidatorId = null;
 				state.forkActive = false;
 				state.decision = 'pending';
-				state.event = 'Stats reset. Ready for new consensus rounds.';
+				setEvent( 'statsReset' );
 				state.resultPulse = 0;
 				state.lastRoundReward = 0;
 				state.lastRoundSlash = 0;
@@ -1925,7 +2534,7 @@
 
 				}
 
-				recordAudit( 'All round metrics reset.', 'info' );
+				recordAudit( t( 'audit.allMetricsReset' ), 'info' );
 				refreshUI();
 
 			}
@@ -1968,51 +2577,64 @@
 				const selected = getValidatorById( state.selectedValidatorId );
 				const current = getValidatorById( state.currentValidatorId );
 				const totals = getTotals();
-				const profile = getActiveProfileConfig();
+				const profileLabel = getProfileLabel();
+				const stageLabel = getStageLabel();
+				const stageIndex = state.roundInProgress ? state.stageIndex + 1 : Math.max( state.stageIndex + 1, 0 );
 
-				ui.modeValue.textContent = modeConfigs[ state.mode ].label;
-				ui.profileValue.textContent = profile.label;
-				ui.networkValue.textContent = state.partitionActive ? 'Partitioned / Fork Risk' : 'Connected';
-				ui.stageValue.textContent = state.roundInProgress
-					? `${state.stageLabel} (${Math.floor( state.stageProgress * 100 )}%)`
-					: `${state.stageLabel} (${Math.floor( state.stageProgress * 100 )}%)`;
-				ui.economyValue.textContent = `Rewards ${state.totalRewards.toFixed( 2 )} | Slashed ${state.totalSlashed.toFixed( 2 )}`;
-				ui.eventValue.textContent = state.event;
-				ui.metricsValue.textContent = `Rounds: ${totals.rounds} | Accepted: ${totals.approved} | Rejected: ${totals.rejected}`;
-				ui.roundValue.textContent = state.roundInProgress ? `#${state.roundIndex} (${Math.floor( state.roundProgress * 100 )}%)` : `#${state.roundIndex}`;
-				ui.validatorValue.textContent = current ? current.label : 'none';
-				ui.pipelineMeta.textContent = state.roundInProgress ? `Stage ${state.stageIndex + 1}/3` : `Stage ${Math.max( state.stageIndex + 1, 0 )}/3`;
+				ui.modeValue.textContent = getModeLabel( state.mode );
+				ui.profileValue.textContent = profileLabel;
+				ui.networkValue.textContent = state.partitionActive ? t( 'network.partitioned' ) : t( 'network.connected' );
+				ui.stageValue.textContent = t( 'ui.stageWithPercent', { stage: stageLabel, percent: Math.floor( state.stageProgress * 100 ) } );
+				ui.economyValue.textContent = t( 'ui.economy', { rewards: state.totalRewards.toFixed( 2 ), slashed: state.totalSlashed.toFixed( 2 ) } );
+				ui.eventValue.textContent = getEventText();
+				ui.metricsValue.textContent = t( 'ui.summary', { rounds: totals.rounds, accepted: totals.approved, rejected: totals.rejected } );
+				ui.roundValue.textContent = state.roundInProgress
+					? t( 'ui.roundWithProgress', { round: state.roundIndex, percent: Math.floor( state.roundProgress * 100 ) } )
+					: t( 'ui.roundOnly', { round: state.roundIndex } );
+				ui.validatorValue.textContent = current ? getValidatorLabel( current ) : t( 'ui.none' );
+				ui.pipelineMeta.textContent = t( 'ui.pipelineMeta', { stage: stageIndex } );
 				ui.pipelineProgressFill.style.inlineSize = `${Math.floor( state.roundProgress * 100 )}%`;
 
 				if ( state.roundInProgress ) {
 
 					const elapsed = ( performance.now() - state.roundStartMs ) / 1000;
-					ui.roundTimerValue.textContent = `Target ${state.roundDuration.toFixed( 1 )}s | Elapsed ${elapsed.toFixed( 1 )}s | Energy ${state.roundEnergy.toFixed( 1 )} | Compute ${state.roundCompute.toFixed( 1 )}`;
+					ui.roundTimerValue.textContent = t( 'ui.roundLive', {
+						target: state.roundDuration.toFixed( 1 ),
+						elapsed: elapsed.toFixed( 1 ),
+						energy: state.roundEnergy.toFixed( 1 ),
+						compute: state.roundCompute.toFixed( 1 )
+					} );
 
 				} else {
 
-					ui.roundTimerValue.textContent = `Latency ${state.lastRoundLatency.toFixed( 1 )}s | Energy ${state.lastRoundEnergy.toFixed( 1 )} | Compute ${state.lastRoundCompute.toFixed( 1 )} | Reward ${state.lastRoundReward.toFixed( 2 )} | Slash ${state.lastRoundSlash.toFixed( 2 )}`;
+					ui.roundTimerValue.textContent = t( 'ui.roundDone', {
+						latency: state.lastRoundLatency.toFixed( 1 ),
+						energy: state.lastRoundEnergy.toFixed( 1 ),
+						compute: state.lastRoundCompute.toFixed( 1 ),
+						reward: state.lastRoundReward.toFixed( 2 ),
+						slash: state.lastRoundSlash.toFixed( 2 )
+					} );
 
 				}
 
 				if ( state.roundInProgress ) {
 
-					ui.stateBadge.textContent = 'PENDING';
+					ui.stateBadge.textContent = t( 'status.pending' );
 					ui.stateBadge.className = 'badge pending';
 
 				} else if ( state.decision === 'valid' ) {
 
-					ui.stateBadge.textContent = 'VALID';
+					ui.stateBadge.textContent = t( 'status.valid' );
 					ui.stateBadge.className = 'badge valid';
 
 				} else if ( state.decision === 'invalid' ) {
 
-					ui.stateBadge.textContent = 'INVALID';
+					ui.stateBadge.textContent = t( 'status.invalid' );
 					ui.stateBadge.className = 'badge invalid';
 
 				} else {
 
-					ui.stateBadge.textContent = 'PENDING';
+					ui.stateBadge.textContent = t( 'status.pending' );
 					ui.stateBadge.className = 'badge pending';
 
 				}
@@ -2047,9 +2669,10 @@
 
 			function autoRunButtonText() {
 
-				ui.autoRunButton.textContent = state.autoRun ? 'Auto Run: On' : 'Auto Run: Off';
-				ui.profileButton.textContent = `Profile: ${getActiveProfileConfig().label}`;
-				ui.partitionButton.textContent = `Partition: ${state.partitionActive ? 'On' : 'Off'}`;
+				const stateText = state.autoRun ? t( 'ui.stateOn' ) : t( 'ui.stateOff' );
+				ui.autoRunButton.textContent = t( 'ui.autoRunButton', { state: stateText } );
+				ui.profileButton.textContent = t( 'ui.profileButton', { profile: getProfileLabel() } );
+				ui.partitionButton.textContent = t( 'ui.partitionButton', { state: state.partitionActive ? t( 'ui.stateOn' ) : t( 'ui.stateOff' ) } );
 
 			}
 
@@ -2066,14 +2689,14 @@
 
 				ui.powLatencyValue.textContent = `${powAvgLatency.toFixed( 1 )}s`;
 				ui.powEnergyValue.textContent = powAvgEnergy.toFixed( 1 );
-				ui.powThroughputValue.textContent = `${calculateThroughput( 'pow' ).toFixed( 1 )} blk/min`;
+				ui.powThroughputValue.textContent = t( 'ui.throughput', { value: calculateThroughput( 'pow' ).toFixed( 1 ) } );
 				ui.powRoundsValue.textContent = String( powRounds );
 				ui.powRewardValue.textContent = modeMetrics.pow.rewards.toFixed( 2 );
 				ui.powSlashValue.textContent = modeMetrics.pow.slashed.toFixed( 2 );
 
 				ui.posLatencyValue.textContent = `${posAvgLatency.toFixed( 1 )}s`;
 				ui.posEnergyValue.textContent = posAvgEnergy.toFixed( 1 );
-				ui.posThroughputValue.textContent = `${calculateThroughput( 'pos' ).toFixed( 1 )} blk/min`;
+				ui.posThroughputValue.textContent = t( 'ui.throughput', { value: calculateThroughput( 'pos' ).toFixed( 1 ) } );
 				ui.posRoundsValue.textContent = String( posRounds );
 				ui.posRewardValue.textContent = modeMetrics.pos.rewards.toFixed( 2 );
 				ui.posSlashValue.textContent = modeMetrics.pos.slashed.toFixed( 2 );
@@ -2082,7 +2705,7 @@
 
 			function refreshStakeList() {
 
-				ui.stakeMeta.textContent = `${validators.length} nodes`;
+				ui.stakeMeta.textContent = t( 'ui.stakeMeta', { count: validators.length } );
 				ui.stakeList.innerHTML = '';
 
 				for ( const validator of validators ) {
@@ -2090,7 +2713,12 @@
 					const item = document.createElement( 'li' );
 					item.classList.toggle( 'selected', validator.id === state.selectedValidatorId );
 					item.classList.toggle( 'winner', validator.id === state.currentValidatorId );
-					item.textContent = `${validator.label} | stake ${validator.stake.toFixed( 1 )} | hash ${validator.power.toFixed( 1 )} | reward ${validator.rewards.toFixed( 2 )}`;
+					item.textContent = t( 'validator.item', {
+						name: getValidatorLabel( validator ),
+						stake: validator.stake.toFixed( 1 ),
+						hash: validator.power.toFixed( 1 ),
+						rewards: validator.rewards.toFixed( 2 )
+					} );
 					ui.stakeList.appendChild( item );
 
 				}
@@ -2106,7 +2734,7 @@
 
 			function refreshAuditList() {
 
-				ui.auditMeta.textContent = `${audit.entries.length} events`;
+				ui.auditMeta.textContent = t( 'ui.auditMeta', { count: audit.entries.length } );
 				ui.auditLog.innerHTML = '';
 
 				for ( const entry of audit.entries ) {
@@ -2114,7 +2742,7 @@
 					const item = document.createElement( 'li' );
 					item.classList.toggle( 'valid', entry.kind === 'valid' );
 					item.classList.toggle( 'invalid', entry.kind === 'invalid' );
-					item.textContent = `[${entry.time}] ${entry.message}`;
+					item.textContent = t( 'ui.auditItem', { time: entry.time, message: entry.message } );
 					ui.auditLog.appendChild( item );
 
 				}
@@ -2124,39 +2752,47 @@
 			function refreshWorldPanelLabels() {
 
 				const selected = getValidatorById( state.selectedValidatorId );
-				const profile = getActiveProfileConfig();
+				const profileLabel = getProfileLabel();
+				const stageLabel = getStageLabel();
+				const statusText = state.roundInProgress
+					? t( 'status.running' )
+					: ( state.decision === 'valid' || state.decision === 'invalid' ? t( `status.${state.decision}` ) : t( 'status.pending' ) );
 
 				if ( panelState.statusLabel ) {
 
-					const statusText = state.roundInProgress ? 'RUNNING' : state.decision.toUpperCase();
-					panelState.statusLabel.redraw( `${modeConfigs[ state.mode ].label} ${profile.label} | ${statusText}` );
+					panelState.statusLabel.redraw( t( 'ui.panelStatus', { mode: getModeLabel( state.mode ), profile: profileLabel, status: statusText } ) );
 
 				}
 
 				if ( panelState.roundLabel ) {
 
 					const roundText = state.roundInProgress
-						? `Round #${state.roundIndex}: ${state.stageLabel} ${Math.floor( state.stageProgress * 100 )}%`
-						: `Round #${state.roundIndex}`;
+						? t( 'ui.panelRoundWithStage', { round: state.roundIndex, stage: stageLabel, percent: Math.floor( state.stageProgress * 100 ) } )
+						: t( 'ui.panelRoundOnly', { round: state.roundIndex } );
 					panelState.roundLabel.redraw( roundText );
 
 				}
 
 				if ( panelState.selectedLabel ) {
 
-					panelState.selectedLabel.redraw( `Selected: ${selected ? selected.label : 'none'}` );
+					panelState.selectedLabel.redraw( t( 'ui.panelSelected', { name: selected ? getValidatorLabel( selected ) : t( 'ui.none' ) } ) );
 
 				}
 
 				if ( panelState.metricsLabel ) {
 
-					panelState.metricsLabel.redraw( `PoW ${calculateThroughput( 'pow' ).toFixed( 1 )} blk/min | PoS ${calculateThroughput( 'pos' ).toFixed( 1 )} blk/min | R ${state.totalRewards.toFixed( 1 )} S ${state.totalSlashed.toFixed( 1 )}` );
+					panelState.metricsLabel.redraw( t( 'ui.panelMetrics', {
+						pow: calculateThroughput( 'pow' ).toFixed( 1 ),
+						pos: calculateThroughput( 'pos' ).toFixed( 1 ),
+						rewards: state.totalRewards.toFixed( 1 ),
+						slashed: state.totalSlashed.toFixed( 1 )
+					} ) );
 
 				}
 
 				if ( panelState.auditLabel ) {
 
-					panelState.auditLabel.redraw( `Log: ${audit.entries.length} events` );
+					panelState.auditLabel.redraw( t( 'ui.panelAudit', { count: audit.entries.length } ) );
 
 				}
 
@@ -2176,10 +2812,17 @@
 				panelState.buttons.rebalance.setEnabled( ! state.roundInProgress );
 				panelState.buttons.boost.setEnabled( ! state.roundInProgress && !! state.selectedValidatorId );
 				panelState.buttons.reset.setEnabled( true );
-
-				panelState.buttons.auto.setText( state.autoRun ? 'Auto: On' : 'Auto: Off' );
-				panelState.buttons.profile.setText( `Profile ${getActiveProfileConfig().label}` );
-				panelState.buttons.partition.setText( `Partition ${state.partitionActive ? 'On' : 'Off'}` );
+				panelState.buttons.pow.setText( t( 'vr.modePow' ) );
+				panelState.buttons.pos.setText( t( 'vr.modePos' ) );
+				panelState.buttons.start.setText( t( 'vr.startRound' ) );
+				panelState.buttons.randomStake.setText( t( 'vr.randomStake' ) );
+				panelState.buttons.rebalance.setText( t( 'vr.rebalance' ) );
+				panelState.buttons.boost.setText( t( 'vr.boostStake' ) );
+				panelState.buttons.reset.setText( t( 'vr.resetStats' ) );
+				panelState.buttons.auto.setText( t( 'vr.auto', { state: state.autoRun ? t( 'ui.stateOn' ) : t( 'ui.stateOff' ) } ) );
+				panelState.buttons.profile.setText( t( 'vr.profile', { profile: getProfileLabel() } ) );
+				panelState.buttons.partition.setText( t( 'vr.partition', { state: state.partitionActive ? t( 'ui.stateOn' ) : t( 'ui.stateOff' ) } ) );
+				if ( panelState.titleLabel ) panelState.titleLabel.redraw( t( 'vr.title' ) );
 
 			}
 
@@ -2496,7 +3139,7 @@
 
 				state.hudVisible = forceVisible === undefined ? ! state.hudVisible : forceVisible;
 				ui.hud.classList.toggle( 'is-hidden', ! state.hudVisible );
-				ui.hudToggleButton.textContent = state.hudVisible ? 'Hide Panel (H)' : 'Show Panel (H)';
+				ui.hudToggleButton.textContent = state.hudVisible ? t( 'hudToggle.hide' ) : t( 'hudToggle.show' );
 				ui.hudToggleButton.setAttribute( 'aria-pressed', String( ! state.hudVisible ) );
 
 			}
@@ -2548,8 +3191,9 @@
 
 					if ( previousStage !== state.stageIndex ) {
 
-						state.event = `Round #${state.roundIndex}: ${state.stageLabel}`;
-						recordAudit( `Round #${state.roundIndex} stage -> ${state.stageLabel}.`, 'info' );
+						const stageLabel = getStageLabel();
+						setEvent( 'roundStageUpdate', { round: state.roundIndex, stage: stageLabel } );
+						recordAudit( t( 'audit.roundStageTo', { round: state.roundIndex, stage: stageLabel } ), 'info' );
 
 					}
 
@@ -2578,10 +3222,16 @@
 				if ( ! state.roundInProgress ) return;
 
 				const elapsed = ( performance.now() - state.roundStartMs ) / 1000;
-				ui.roundValue.textContent = `#${state.roundIndex} (${Math.floor( state.roundProgress * 100 )}%)`;
-				ui.roundTimerValue.textContent = `Target ${state.roundDuration.toFixed( 1 )}s | Elapsed ${elapsed.toFixed( 1 )}s | Energy ${state.roundEnergy.toFixed( 1 )} | Compute ${state.roundCompute.toFixed( 1 )}`;
-				ui.stageValue.textContent = `${state.stageLabel} (${Math.floor( state.stageProgress * 100 )}%)`;
-				ui.pipelineMeta.textContent = `Stage ${state.stageIndex + 1}/3`;
+				const stageLabel = getStageLabel();
+				ui.roundValue.textContent = t( 'ui.roundWithProgress', { round: state.roundIndex, percent: Math.floor( state.roundProgress * 100 ) } );
+				ui.roundTimerValue.textContent = t( 'ui.roundLive', {
+					target: state.roundDuration.toFixed( 1 ),
+					elapsed: elapsed.toFixed( 1 ),
+					energy: state.roundEnergy.toFixed( 1 ),
+					compute: state.roundCompute.toFixed( 1 )
+				} );
+				ui.stageValue.textContent = t( 'ui.stageWithPercent', { stage: stageLabel, percent: Math.floor( state.stageProgress * 100 ) } );
+				ui.pipelineMeta.textContent = t( 'ui.pipelineMeta', { stage: state.stageIndex + 1 } );
 				ui.pipelineProgressFill.style.inlineSize = `${Math.floor( state.roundProgress * 100 )}%`;
 
 				for ( let i = 0; i < ui.pipelineSteps.length; i ++ ) {
@@ -2592,8 +3242,17 @@
 
 				}
 
-				if ( panelState.roundLabel ) panelState.roundLabel.redraw( `Round #${state.roundIndex}: ${state.stageLabel} ${Math.floor( state.stageProgress * 100 )}%` );
-				if ( panelState.statusLabel ) panelState.statusLabel.redraw( `${modeConfigs[ state.mode ].label} | RUNNING` );
+				if ( panelState.roundLabel ) {
+					panelState.roundLabel.redraw( t( 'ui.panelRoundWithStage', { round: state.roundIndex, stage: stageLabel, percent: Math.floor( state.stageProgress * 100 ) } ) );
+				}
+
+				if ( panelState.statusLabel ) {
+					panelState.statusLabel.redraw( t( 'ui.panelStatus', {
+						mode: getModeLabel( state.mode ),
+						profile: getProfileLabel(),
+						status: t( 'status.running' )
+					} ) );
+				}
 
 			}
 
